@@ -83,6 +83,100 @@ python Channel.py --export wifi_report.csv
 - Python 3.6+
 - 需要启用WiFi扫描权限
 
+## 📖 使用方法
+
+### 基本使用
+
+1. **下载脚本**
+
+   ```bash
+   git clone https://github.com/RichelYu1998/wifi_scan.git
+   cd wifi_scan
+   ```
+
+2. **查看帮助**
+
+   ```bash
+   python Channel.py --help
+   ```
+
+3. **快速扫描**
+
+   ```bash
+   python Channel.py
+   ```
+
+4. **导出报告**
+
+   ```bash
+   python Channel.py --export wifi_report.csv
+   ```
+
+### 命令行使用场景
+
+```bash
+# 场景1: 基本WiFi扫描
+python Channel.py
+
+# 场景2: 导出详细CSV报告
+python Channel.py --export wifi_report.csv
+
+# 场景3: Windows系统（使用批处理文件）
+wifi_scan.bat
+
+# 场景4: macOS系统（使用Shell脚本）
+./wifi_scan_macos.sh
+
+# 场景5: Linux系统（使用Shell脚本）
+./wifi_scan.sh
+```
+
+## 📦 安装与环境要求
+
+### 系统要求
+
+- **操作系统**: Windows 10+, macOS 10.12+, Linux (Ubuntu 16.04+)
+- **Python版本**: 3.6 或更高版本
+- **磁盘空间**: 至少10MB可用空间
+- **权限**: 对WiFi适配器的访问权限
+
+### 安装步骤
+
+1. **克隆项目**
+
+   ```bash
+   git clone https://github.com/RichelYu1998/wifi_scan.git
+   cd wifi_scan
+   ```
+
+2. **验证Python版本**
+
+   ```bash
+   python --version
+   # 应该显示 Python 3.6+ 的版本
+   ```
+
+3. **运行脚本**
+
+   ```bash
+   python Channel.py
+   ```
+
+### 依赖项
+
+本脚本**无需额外安装第三方库**，仅使用Python标准库：
+
+- `subprocess` - 执行系统命令
+- `re` - 正则表达式
+- `argparse` - 命令行参数解析
+- `os` - 操作系统接口
+- `sys` - 系统相关参数和函数
+- `datetime` - 日期时间处理
+- `json` - JSON数据处理
+- `csv` - CSV文件导出
+- `platform` - 平台检测
+- `collections` - 数据结构工具
+
 ## 注意事项
 
 ### Windows系统
