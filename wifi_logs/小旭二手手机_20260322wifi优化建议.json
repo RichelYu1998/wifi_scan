@@ -1,0 +1,36 @@
+{
+  "scan_time": "2026-03-22T19:50:08.758061",
+  "total_networks": 1,
+  "recommended_channels": [
+    40
+  ],
+  "network_details": [
+    {
+      "ssid": "小旭二手手机",
+      "channel": 40,
+      "rssi_dbm": -83
+    }
+  ],
+  "channel_statistics": {
+    "40": {
+      "count": 1,
+      "total_rssi": -83,
+      "networks": [
+        {
+          "ssid": "小旭二手手机",
+          "channel": 40,
+          "rssi_dbm": -83
+        }
+      ],
+      "avg_rssi": -83.0
+    }
+  },
+  "optimization_suggestions": [
+    {
+      "type": "信道选择",
+      "priority": "高",
+      "suggestion": "使用推荐信道：40",
+      "reason": "这些信道当前网络数量最少，干扰最低"
+    }
+  ]
+}
