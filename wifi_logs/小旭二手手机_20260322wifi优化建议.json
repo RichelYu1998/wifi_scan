@@ -1,36 +1,146 @@
-{
-  "scan_time": "2026-03-22T20:03:56.093609",
-  "total_networks": 1,
-  "recommended_channels": [
-    44
-  ],
-  "network_details": [
-    {
-      "ssid": "小旭二手手机",
-      "channel": 44,
-      "rssi_dbm": -82
-    }
-  ],
-  "channel_statistics": {
-    "44": {
-      "count": 1,
-      "total_rssi": -82,
-      "networks": [
-        {
-          "ssid": "小旭二手手机",
-          "channel": 44,
-          "rssi_dbm": -82
-        }
-      ],
-      "avg_rssi": -82.0
-    }
+[
+  {
+    "scan_time": "2026-03-22T20:03:56.093609",
+    "total_networks": 1,
+    "recommended_channels": [
+      44
+    ],
+    "network_details": [
+      {
+        "ssid": "小旭二手手机",
+        "channel": 44,
+        "rssi_dbm": -82
+      }
+    ],
+    "channel_statistics": {
+      "44": {
+        "count": 1,
+        "total_rssi": -82,
+        "networks": [
+          {
+            "ssid": "小旭二手手机",
+            "channel": 44,
+            "rssi_dbm": -82
+          }
+        ],
+        "avg_rssi": -82.0
+      }
+    },
+    "optimization_suggestions": [
+      {
+        "type": "信道选择",
+        "priority": "高",
+        "suggestion": "使用推荐信道：44",
+        "reason": "这些信道当前网络数量最少，干扰最低"
+      }
+    ]
   },
-  "optimization_suggestions": [
-    {
-      "type": "信道选择",
-      "priority": "高",
-      "suggestion": "使用推荐信道：44",
-      "reason": "这些信道当前网络数量最少，干扰最低"
-    }
-  ]
-}
+  {
+    "scan_time": "2026-03-22T20:10:06.428578",
+    "total_networks": 1,
+    "recommended_channels": [
+      48
+    ],
+    "network_details": [
+      {
+        "ssid": "小旭二手手机",
+        "channel": 48,
+        "rssi_dbm": -84
+      }
+    ],
+    "channel_statistics": {
+      "48": {
+        "count": 1,
+        "total_rssi": -84,
+        "networks": [
+          {
+            "ssid": "小旭二手手机",
+            "channel": 48,
+            "rssi_dbm": -84
+          }
+        ],
+        "avg_rssi": -84.0
+      }
+    },
+    "optimization_suggestions": [
+      {
+        "type": "信道选择",
+        "priority": "高",
+        "suggestion": "使用推荐信道：48",
+        "reason": "这些信道当前网络数量最少，干扰最低"
+      }
+    ]
+  },
+  {
+    "scan_time": "2026-03-22T20:10:09.979083",
+    "total_networks": 1,
+    "recommended_channels": [
+      48
+    ],
+    "network_details": [
+      {
+        "ssid": "小旭二手手机",
+        "channel": 48,
+        "rssi_dbm": -71
+      }
+    ],
+    "channel_statistics": {
+      "48": {
+        "count": 1,
+        "total_rssi": -71,
+        "networks": [
+          {
+            "ssid": "小旭二手手机",
+            "channel": 48,
+            "rssi_dbm": -71
+          }
+        ],
+        "avg_rssi": -71.0
+      }
+    },
+    "optimization_suggestions": [
+      {
+        "type": "信道选择",
+        "priority": "高",
+        "suggestion": "使用推荐信道：48",
+        "reason": "这些信道当前网络数量最少，干扰最低"
+      }
+    ]
+  },
+  {
+    "scan_time": "2026-03-22T20:10:12.744158",
+    "total_networks": 1,
+    "recommended_channels": [
+      36
+    ],
+    "network_details": [
+      {
+        "ssid": "小旭二手手机",
+        "channel": 36,
+        "rssi_dbm": -71
+      }
+    ],
+    "channel_statistics": {
+      "36": {
+        "count": 1,
+        "total_rssi": -71,
+        "networks": [
+          {
+            "ssid": "小旭二手手机",
+            "channel": 36,
+            "rssi_dbm": -71
+          }
+        ],
+        "avg_rssi": -71.0
+      }
+    },
+    "optimization_suggestions": [
+      {
+        "type": "信道选择",
+        "priority": "高",
+        "suggestion": "使用推荐信道：36",
+        "reason": "这些信道当前网络数量最少，干扰最低"
+      }
+    ]
+  }
+]

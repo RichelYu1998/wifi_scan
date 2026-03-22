@@ -1,0 +1,108 @@
+[
+  {
+    "scan_time": "2026-03-25T22:30:43.954223",
+    "total_networks": 4,
+    "recommended_channels": [
+      8,
+      36,
+      4
+    ],
+    "network_details": [
+      {
+        "ssid": "Xiaomi_7119",
+        "channel": 8,
+        "rssi_dbm": -68
+      },
+      {
+        "ssid": "605",
+        "channel": 4,
+        "rssi_dbm": -66
+      },
+      {
+        "ssid": "@PHICOMM_C0",
+        "channel": 4,
+        "rssi_dbm": -47
+      },
+      {
+        "ssid": "TP-LINK_E8C9",
+        "channel": 36,
+        "rssi_dbm": -35
+      }
+    ],
+    "channel_statistics": {
+      "8": {
+        "count": 1,
+        "total_rssi": -68,
+        "networks": [
+          {
+            "ssid": "Xiaomi_7119",
+            "channel": 8,
+            "rssi_dbm": -68
+          }
+        ],
+        "avg_rssi": -68.0
+      },
+      "4": {
+        "count": 2,
+        "total_rssi": -113,
+        "networks": [
+          {
+            "ssid": "605",
+            "channel": 4,
+            "rssi_dbm": -66
+          },
+          {
+            "ssid": "@PHICOMM_C0",
+            "channel": 4,
+            "rssi_dbm": -47
+          }
+        ],
+        "avg_rssi": -56.5
+      },
+      "36": {
+        "count": 1,
+        "total_rssi": -35,
+        "networks": [
+          {
+            "ssid": "TP-LINK_E8C9",
+            "channel": 36,
+            "rssi_dbm": -35
+          }
+        ],
+        "avg_rssi": -35.0
+      }
+    },
+    "optimization_suggestions": [
+      {
+        "type": "当前连接",
+        "priority": "信息",
+        "suggestion": "已连接到: TP-LINK_E8C9 (信道36, 5G频段)",
+        "reason": "基于当前连接状态提供优化建议"
+      },
+      {
+        "type": "信道选择",
+        "priority": "高",
+        "suggestion": "使用推荐信道：8, 36, 4",
+        "reason": "这些信道当前网络数量最少，干扰最低"
+      },
+      {
+        "type": "2.4G频段",
+        "priority": "高",
+        "suggestion": "避免使用重叠信道：8, 4",
+        "reason": "2.4G频段只有1、6、11三个不重叠信道"
+      },
+      {
+        "type": "5G频段",
+        "priority": "中",
+        "suggestion": "优先使用非DFS信道：52, 56, 60, 64, 149, 153, 157, 161, 165",
+        "reason": "非DFS信道不会受到雷达干扰，连接更稳定"
+      },
+      {
+        "type": "5G优化",
+        "priority": "高",
+        "suggestion": "建议将路由器切换到信道：36",
+        "reason": "当前使用信道36，建议切换到干扰更少的信道"
+      }
+    ]
+  }
+]

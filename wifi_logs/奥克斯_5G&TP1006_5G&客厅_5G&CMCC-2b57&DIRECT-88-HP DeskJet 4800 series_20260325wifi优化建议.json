@@ -1,0 +1,185 @@
+[
+  {
+    "scan_time": "2026-03-25T22:24:12.390254",
+    "total_networks": 10,
+    "recommended_channels": [
+      64,
+      2,
+      6
+    ],
+    "network_details": [
+      {
+        "ssid": "奥克斯_5G",
+        "channel": 149,
+        "rssi_dbm": -95
+      },
+      {
+        "ssid": "TP1006_5G",
+        "channel": 64,
+        "rssi_dbm": -94
+      },
+      {
+        "ssid": "客厅_5G",
+        "channel": 149,
+        "rssi_dbm": -90
+      },
+      {
+        "ssid": "CMCC-2b57",
+        "channel": 2,
+        "rssi_dbm": -79
+      },
+      {
+        "ssid": "DIRECT-88-HP DeskJet 4800 series",
+        "channel": 6,
+        "rssi_dbm": -78
+      },
+      {
+        "ssid": "703",
+        "channel": 4,
+        "rssi_dbm": -76
+      },
+      {
+        "ssid": "TP-LINK_706",
+        "channel": 7,
+        "rssi_dbm": -69
+      },
+      {
+        "ssid": "@PHICOMM_C0",
+        "channel": 4,
+        "rssi_dbm": -50
+      },
+      {
+        "ssid": "ChinaNet-WsMV",
+        "channel": 13,
+        "rssi_dbm": -46
+      },
+      {
+        "ssid": "TP-LINK_E8C9",
+        "channel": 36,
+        "rssi_dbm": -37
+      }
+    ],
+    "channel_statistics": {
+      "149": {
+        "count": 2,
+        "total_rssi": -185,
+        "networks": [
+          {
+            "ssid": "奥克斯_5G",
+            "channel": 149,
+            "rssi_dbm": -95
+          },
+          {
+            "ssid": "客厅_5G",
+            "channel": 149,
+            "rssi_dbm": -90
+          }
+        ],
+        "avg_rssi": -92.5
+      },
+      "64": {
+        "count": 1,
+        "total_rssi": -94,
+        "networks": [
+          {
+            "ssid": "TP1006_5G",
+            "channel": 64,
+            "rssi_dbm": -94
+          }
+        ],
+        "avg_rssi": -94.0
+      },
+      "2": {
+        "count": 1,
+        "total_rssi": -79,
+        "networks": [
+          {
+            "ssid": "CMCC-2b57",
+            "channel": 2,
+            "rssi_dbm": -79
+          }
+        ],
+        "avg_rssi": -79.0
+      },
+      "6": {
+        "count": 1,
+        "total_rssi": -78,
+        "networks": [
+          {
+            "ssid": "DIRECT-88-HP DeskJet 4800 series",
+            "channel": 6,
+            "rssi_dbm": -78
+          }
+        ],
+        "avg_rssi": -78.0
+      },
+      "4": {
+        "count": 2,
+        "total_rssi": -126,
+        "networks": [
+          {
+            "ssid": "703",
+            "channel": 4,
+            "rssi_dbm": -76
+          },
+          {
+            "ssid": "@PHICOMM_C0",
+            "channel": 4,
+            "rssi_dbm": -50
+          }
+        ],
+        "avg_rssi": -63.0
+      },
+      "7": {
+        "count": 1,
+        "total_rssi": -69,
+        "networks": [
+          {
+            "ssid": "TP-LINK_706",
+            "channel": 7,
+            "rssi_dbm": -69
+          }
+        ],
+        "avg_rssi": -69.0
+      },
+      "13": {
+        "count": 1,
+        "total_rssi": -46,
+        "networks": [
+          {
+            "ssid": "ChinaNet-WsMV",
+            "channel": 13,
+            "rssi_dbm": -46
+          }
+        ],
+        "avg_rssi": -46.0
+      },
+      "36": {
+        "count": 1,
+        "total_rssi": -37,
+        "networks": [
+          {
+            "ssid": "TP-LINK_E8C9",
+            "channel": 36,
+            "rssi_dbm": -37
+          }
+        ],
+        "avg_rssi": -37.0
+      }
+    },
+    "optimization_suggestions": [
+      {
+        "type": "信道选择",
+        "priority": "高",
+        "suggestion": "使用推荐信道：64, 2, 6",
+        "reason": "这些信道当前网络数量最少，干扰最低"
+      },
+      {
+        "type": "2.4G频段",
+        "priority": "高",
+        "suggestion": "避免使用重叠信道：2, 4, 7, 13",
+        "reason": "2.4G频段只有1、6、11三个不重叠信道"
+      }
+    ]
+  }
+]

@@ -1,0 +1,1069 @@
+[
+  {
+    "scan_time": "2026-03-25T22:37:04.727123",
+    "total_networks": 10,
+    "recommended_channels": [
+      149,
+      6,
+      7
+    ],
+    "network_details": [
+      {
+        "ssid": "客厅_5G",
+        "channel": 149,
+        "rssi_dbm": -87
+      },
+      {
+        "ssid": "DIRECT-88-HP DeskJet 4800 series",
+        "channel": 6,
+        "rssi_dbm": -77
+      },
+      {
+        "ssid": "TP-LINK_706",
+        "channel": 7,
+        "rssi_dbm": -69
+      },
+      {
+        "ssid": "Xiaomi_7119",
+        "channel": 8,
+        "rssi_dbm": -67
+      },
+      {
+        "ssid": "905",
+        "channel": 8,
+        "rssi_dbm": -65
+      },
+      {
+        "ssid": "605",
+        "channel": 4,
+        "rssi_dbm": -62
+      },
+      {
+        "ssid": "客厅",
+        "channel": 1,
+        "rssi_dbm": -60
+      },
+      {
+        "ssid": "@PHICOMM_C0",
+        "channel": 4,
+        "rssi_dbm": -51
+      },
+      {
+        "ssid": "ChinaNet-WsMV",
+        "channel": 13,
+        "rssi_dbm": -50
+      },
+      {
+        "ssid": "TP-LINK_E8C9",
+        "channel": 36,
+        "rssi_dbm": -33
+      }
+    ],
+    "channel_statistics": {
+      "149": {
+        "count": 1,
+        "total_rssi": -87,
+        "networks": [
+          {
+            "ssid": "客厅_5G",
+            "channel": 149,
+            "rssi_dbm": -87
+          }
+        ],
+        "avg_rssi": -87.0
+      },
+      "6": {
+        "count": 1,
+        "total_rssi": -77,
+        "networks": [
+          {
+            "ssid": "DIRECT-88-HP DeskJet 4800 series",
+            "channel": 6,
+            "rssi_dbm": -77
+          }
+        ],
+        "avg_rssi": -77.0
+      },
+      "7": {
+        "count": 1,
+        "total_rssi": -69,
+        "networks": [
+          {
+            "ssid": "TP-LINK_706",
+            "channel": 7,
+            "rssi_dbm": -69
+          }
+        ],
+        "avg_rssi": -69.0
+      },
+      "8": {
+        "count": 2,
+        "total_rssi": -132,
+        "networks": [
+          {
+            "ssid": "Xiaomi_7119",
+            "channel": 8,
+            "rssi_dbm": -67
+          },
+          {
+            "ssid": "905",
+            "channel": 8,
+            "rssi_dbm": -65
+          }
+        ],
+        "avg_rssi": -66.0
+      },
+      "4": {
+        "count": 2,
+        "total_rssi": -113,
+        "networks": [
+          {
+            "ssid": "605",
+            "channel": 4,
+            "rssi_dbm": -62
+          },
+          {
+            "ssid": "@PHICOMM_C0",
+            "channel": 4,
+            "rssi_dbm": -51
+          }
+        ],
+        "avg_rssi": -56.5
+      },
+      "1": {
+        "count": 1,
+        "total_rssi": -60,
+        "networks": [
+          {
+            "ssid": "客厅",
+            "channel": 1,
+            "rssi_dbm": -60
+          }
+        ],
+        "avg_rssi": -60.0
+      },
+      "13": {
+        "count": 1,
+        "total_rssi": -50,
+        "networks": [
+          {
+            "ssid": "ChinaNet-WsMV",
+            "channel": 13,
+            "rssi_dbm": -50
+          }
+        ],
+        "avg_rssi": -50.0
+      },
+      "36": {
+        "count": 1,
+        "total_rssi": -33,
+        "networks": [
+          {
+            "ssid": "TP-LINK_E8C9",
+            "channel": 36,
+            "rssi_dbm": -33
+          }
+        ],
+        "avg_rssi": -33.0
+      }
+    },
+    "optimization_suggestions": [
+      {
+        "type": "当前连接",
+        "priority": "信息",
+        "suggestion": "已连接到: TP-LINK_E8C9 (信道36, 5G频段)",
+        "reason": "基于当前连接状态提供优化建议"
+      },
+      {
+        "type": "信道选择",
+        "priority": "高",
+        "suggestion": "使用推荐信道：149, 6, 7",
+        "reason": "这些信道当前网络数量最少，干扰最低"
+      },
+      {
+        "type": "2.4G频段",
+        "priority": "高",
+        "suggestion": "避免使用重叠信道：7, 8, 4, 13",
+        "reason": "2.4G频段只有1、6、11三个不重叠信道"
+      },
+      {
+        "type": "5G频段",
+        "priority": "中",
+        "suggestion": "优先使用非DFS信道：52, 56, 60, 64, 149, 153, 157, 161, 165",
+        "reason": "非DFS信道不会受到雷达干扰，连接更稳定"
+      },
+      {
+        "type": "5G优化",
+        "priority": "高",
+        "suggestion": "建议将路由器切换到信道：149",
+        "reason": "当前使用信道36，建议切换到干扰更少的信道"
+      }
+    ]
+  },
+  {
+    "scan_time": "2026-03-25T22:42:03.816406",
+    "location": {
+      "country": "China",
+      "region": "Anhui",
+      "city": "Hefei",
+      "isp": "Chinanet",
+      "ip": "114.103.224.116"
+    },
+    "total_networks": 10,
+    "recommended_channels": [
+      149,
+      40,
+      36
+    ],
+    "network_details": [
+      {
+        "ssid": "TP-LINK_1403",
+        "channel": 149,
+        "rssi_dbm": -95
+      },
+      {
+        "ssid": "1701_5G",
+        "channel": 40,
+        "rssi_dbm": -93
+      },
+      {
+        "ssid": "508",
+        "channel": 13,
+        "rssi_dbm": -79
+      },
+      {
+        "ssid": "DIRECT-21-HP Smart Tank 510",
+        "channel": 8,
+        "rssi_dbm": -75
+      },
+      {
+        "ssid": "905",
+        "channel": 8,
+        "rssi_dbm": -71
+      },
+      {
+        "ssid": "Xiaomi_7119",
+        "channel": 8,
+        "rssi_dbm": -67
+      },
+      {
+        "ssid": "605",
+        "channel": 4,
+        "rssi_dbm": -61
+      },
+      {
+        "ssid": "@PHICOMM_C0",
+        "channel": 4,
+        "rssi_dbm": -48
+      },
+      {
+        "ssid": "ChinaNet-WsMV",
+        "channel": 13,
+        "rssi_dbm": -47
+      },
+      {
+        "ssid": "TP-LINK_E8C9",
+        "channel": 36,
+        "rssi_dbm": -31
+      }
+    ],
+    "channel_statistics": {
+      "149": {
+        "count": 1,
+        "total_rssi": -95,
+        "networks": [
+          {
+            "ssid": "TP-LINK_1403",
+            "channel": 149,
+            "rssi_dbm": -95
+          }
+        ],
+        "avg_rssi": -95.0
+      },
+      "40": {
+        "count": 1,
+        "total_rssi": -93,
+        "networks": [
+          {
+            "ssid": "1701_5G",
+            "channel": 40,
+            "rssi_dbm": -93
+          }
+        ],
+        "avg_rssi": -93.0
+      },
+      "13": {
+        "count": 2,
+        "total_rssi": -126,
+        "networks": [
+          {
+            "ssid": "508",
+            "channel": 13,
+            "rssi_dbm": -79
+          },
+          {
+            "ssid": "ChinaNet-WsMV",
+            "channel": 13,
+            "rssi_dbm": -47
+          }
+        ],
+        "avg_rssi": -63.0
+      },
+      "8": {
+        "count": 3,
+        "total_rssi": -213,
+        "networks": [
+          {
+            "ssid": "DIRECT-21-HP Smart Tank 510",
+            "channel": 8,
+            "rssi_dbm": -75
+          },
+          {
+            "ssid": "905",
+            "channel": 8,
+            "rssi_dbm": -71
+          },
+          {
+            "ssid": "Xiaomi_7119",
+            "channel": 8,
+            "rssi_dbm": -67
+          }
+        ],
+        "avg_rssi": -71.0
+      },
+      "4": {
+        "count": 2,
+        "total_rssi": -109,
+        "networks": [
+          {
+            "ssid": "605",
+            "channel": 4,
+            "rssi_dbm": -61
+          },
+          {
+            "ssid": "@PHICOMM_C0",
+            "channel": 4,
+            "rssi_dbm": -48
+          }
+        ],
+        "avg_rssi": -54.5
+      },
+      "36": {
+        "count": 1,
+        "total_rssi": -31,
+        "networks": [
+          {
+            "ssid": "TP-LINK_E8C9",
+            "channel": 36,
+            "rssi_dbm": -31
+          }
+        ],
+        "avg_rssi": -31.0
+      }
+    },
+    "optimization_suggestions": [
+      {
+        "type": "当前连接",
+        "priority": "信息",
+        "suggestion": "已连接到: TP-LINK_E8C9 (信道36, 5G频段)",
+        "reason": "基于当前连接状态提供优化建议"
+      },
+      {
+        "type": "信道选择",
+        "priority": "高",
+        "suggestion": "使用推荐信道：149, 40, 36",
+        "reason": "这些信道当前网络数量最少，干扰最低"
+      },
+      {
+        "type": "2.4G频段",
+        "priority": "高",
+        "suggestion": "避免使用重叠信道：13, 8, 4",
+        "reason": "2.4G频段只有1、6、11三个不重叠信道"
+      },
+      {
+        "type": "5G频段",
+        "priority": "中",
+        "suggestion": "优先使用非DFS信道：52, 56, 60, 64, 149, 153, 157, 161, 165",
+        "reason": "非DFS信道不会受到雷达干扰，连接更稳定"
+      },
+      {
+        "type": "5G优化",
+        "priority": "低",
+        "suggestion": "当前信道36已经是最佳信道之一",
+        "reason": "当前使用的信道干扰较少，无需切换"
+      }
+    ]
+  },
+  {
+    "scan_time": "2026-03-25T22:42:53.828558",
+    "location": {
+      "country": "China",
+      "region": "Anhui",
+      "city": "Hefei",
+      "isp": "Chinanet",
+      "ip": "114.103.224.116"
+    },
+    "total_networks": 13,
+    "recommended_channels": [
+      149,
+      2,
+      7
+    ],
+    "network_details": [
+      {
+        "ssid": "客厅_5G",
+        "channel": 149,
+        "rssi_dbm": -91
+      },
+      {
+        "ssid": "TP-LINK_706",
+        "channel": 36,
+        "rssi_dbm": -91
+      },
+      {
+        "ssid": "DIRECT-88-HP DeskJet 4800 series",
+        "channel": 6,
+        "rssi_dbm": -80
+      },
+      {
+        "ssid": "CU_eEXF",
+        "channel": 2,
+        "rssi_dbm": -76
+      },
+      {
+        "ssid": "DIRECT-21-HP Smart Tank 510",
+        "channel": 8,
+        "rssi_dbm": -75
+      },
+      {
+        "ssid": "905",
+        "channel": 6,
+        "rssi_dbm": -71
+      },
+      {
+        "ssid": "TP-LINK_706",
+        "channel": 7,
+        "rssi_dbm": -69
+      },
+      {
+        "ssid": "Xiaomi_7119",
+        "channel": 8,
+        "rssi_dbm": -68
+      },
+      {
+        "ssid": "605",
+        "channel": 4,
+        "rssi_dbm": -65
+      },
+      {
+        "ssid": "客厅",
+        "channel": 1,
+        "rssi_dbm": -62
+      },
+      {
+        "ssid": "@PHICOMM_C0",
+        "channel": 4,
+        "rssi_dbm": -49
+      },
+      {
+        "ssid": "ChinaNet-WsMV",
+        "channel": 13,
+        "rssi_dbm": -46
+      },
+      {
+        "ssid": "TP-LINK_E8C9",
+        "channel": 36,
+        "rssi_dbm": -34
+      }
+    ],
+    "channel_statistics": {
+      "149": {
+        "count": 1,
+        "total_rssi": -91,
+        "networks": [
+          {
+            "ssid": "客厅_5G",
+            "channel": 149,
+            "rssi_dbm": -91
+          }
+        ],
+        "avg_rssi": -91.0
+      },
+      "36": {
+        "count": 2,
+        "total_rssi": -125,
+        "networks": [
+          {
+            "ssid": "TP-LINK_706",
+            "channel": 36,
+            "rssi_dbm": -91
+          },
+          {
+            "ssid": "TP-LINK_E8C9",
+            "channel": 36,
+            "rssi_dbm": -34
+          }
+        ],
+        "avg_rssi": -62.5
+      },
+      "6": {
+        "count": 2,
+        "total_rssi": -151,
+        "networks": [
+          {
+            "ssid": "DIRECT-88-HP DeskJet 4800 series",
+            "channel": 6,
+            "rssi_dbm": -80
+          },
+          {
+            "ssid": "905",
+            "channel": 6,
+            "rssi_dbm": -71
+          }
+        ],
+        "avg_rssi": -75.5
+      },
+      "2": {
+        "count": 1,
+        "total_rssi": -76,
+        "networks": [
+          {
+            "ssid": "CU_eEXF",
+            "channel": 2,
+            "rssi_dbm": -76
+          }
+        ],
+        "avg_rssi": -76.0
+      },
+      "8": {
+        "count": 2,
+        "total_rssi": -143,
+        "networks": [
+          {
+            "ssid": "DIRECT-21-HP Smart Tank 510",
+            "channel": 8,
+            "rssi_dbm": -75
+          },
+          {
+            "ssid": "Xiaomi_7119",
+            "channel": 8,
+            "rssi_dbm": -68
+          }
+        ],
+        "avg_rssi": -71.5
+      },
+      "7": {
+        "count": 1,
+        "total_rssi": -69,
+        "networks": [
+          {
+            "ssid": "TP-LINK_706",
+            "channel": 7,
+            "rssi_dbm": -69
+          }
+        ],
+        "avg_rssi": -69.0
+      },
+      "4": {
+        "count": 2,
+        "total_rssi": -114,
+        "networks": [
+          {
+            "ssid": "605",
+            "channel": 4,
+            "rssi_dbm": -65
+          },
+          {
+            "ssid": "@PHICOMM_C0",
+            "channel": 4,
+            "rssi_dbm": -49
+          }
+        ],
+        "avg_rssi": -57.0
+      },
+      "1": {
+        "count": 1,
+        "total_rssi": -62,
+        "networks": [
+          {
+            "ssid": "客厅",
+            "channel": 1,
+            "rssi_dbm": -62
+          }
+        ],
+        "avg_rssi": -62.0
+      },
+      "13": {
+        "count": 1,
+        "total_rssi": -46,
+        "networks": [
+          {
+            "ssid": "ChinaNet-WsMV",
+            "channel": 13,
+            "rssi_dbm": -46
+          }
+        ],
+        "avg_rssi": -46.0
+      }
+    },
+    "optimization_suggestions": [
+      {
+        "type": "当前连接",
+        "priority": "信息",
+        "suggestion": "已连接到: TP-LINK_E8C9 (信道36, 5G频段)",
+        "reason": "基于当前连接状态提供优化建议"
+      },
+      {
+        "type": "信道选择",
+        "priority": "高",
+        "suggestion": "使用推荐信道：149, 2, 7",
+        "reason": "这些信道当前网络数量最少，干扰最低"
+      },
+      {
+        "type": "2.4G频段",
+        "priority": "高",
+        "suggestion": "避免使用重叠信道：2, 8, 7, 4, 13",
+        "reason": "2.4G频段只有1、6、11三个不重叠信道"
+      },
+      {
+        "type": "5G频段",
+        "priority": "中",
+        "suggestion": "优先使用非DFS信道：52, 56, 60, 64, 149, 153, 157, 161, 165",
+        "reason": "非DFS信道不会受到雷达干扰，连接更稳定"
+      },
+      {
+        "type": "5G优化",
+        "priority": "高",
+        "suggestion": "建议将路由器切换到信道：149",
+        "reason": "当前使用信道36，建议切换到干扰更少的信道"
+      }
+    ]
+  },
+  {
+    "scan_time": "2026-03-25T22:45:44.665789",
+    "location": {
+      "country": "China",
+      "region": "AH",
+      "region_en": "AH",
+      "city": "合肥",
+      "city_en": "Hefei",
+      "isp": "Chinanet",
+      "ip": "114.103.224.116"
+    },
+    "total_networks": 9,
+    "recommended_channels": [
+      64,
+      6,
+      2
+    ],
+    "network_details": [
+      {
+        "ssid": "TP1006_5G",
+        "channel": 64,
+        "rssi_dbm": -93
+      },
+      {
+        "ssid": "DIRECT-88-HP DeskJet 4800 series",
+        "channel": 6,
+        "rssi_dbm": -80
+      },
+      {
+        "ssid": "CU_eEXF",
+        "channel": 2,
+        "rssi_dbm": -76
+      },
+      {
+        "ssid": "1702",
+        "channel": 11,
+        "rssi_dbm": -74
+      },
+      {
+        "ssid": "Xiaomi_7119",
+        "channel": 8,
+        "rssi_dbm": -68
+      },
+      {
+        "ssid": "605",
+        "channel": 4,
+        "rssi_dbm": -60
+      },
+      {
+        "ssid": "@PHICOMM_C0",
+        "channel": 4,
+        "rssi_dbm": -49
+      },
+      {
+        "ssid": "ChinaNet-WsMV",
+        "channel": 13,
+        "rssi_dbm": -46
+      },
+      {
+        "ssid": "TP-LINK_E8C9",
+        "channel": 36,
+        "rssi_dbm": -32
+      }
+    ],
+    "channel_statistics": {
+      "64": {
+        "count": 1,
+        "total_rssi": -93,
+        "networks": [
+          {
+            "ssid": "TP1006_5G",
+            "channel": 64,
+            "rssi_dbm": -93
+          }
+        ],
+        "avg_rssi": -93.0
+      },
+      "6": {
+        "count": 1,
+        "total_rssi": -80,
+        "networks": [
+          {
+            "ssid": "DIRECT-88-HP DeskJet 4800 series",
+            "channel": 6,
+            "rssi_dbm": -80
+          }
+        ],
+        "avg_rssi": -80.0
+      },
+      "2": {
+        "count": 1,
+        "total_rssi": -76,
+        "networks": [
+          {
+            "ssid": "CU_eEXF",
+            "channel": 2,
+            "rssi_dbm": -76
+          }
+        ],
+        "avg_rssi": -76.0
+      },
+      "11": {
+        "count": 1,
+        "total_rssi": -74,
+        "networks": [
+          {
+            "ssid": "1702",
+            "channel": 11,
+            "rssi_dbm": -74
+          }
+        ],
+        "avg_rssi": -74.0
+      },
+      "8": {
+        "count": 1,
+        "total_rssi": -68,
+        "networks": [
+          {
+            "ssid": "Xiaomi_7119",
+            "channel": 8,
+            "rssi_dbm": -68
+          }
+        ],
+        "avg_rssi": -68.0
+      },
+      "4": {
+        "count": 2,
+        "total_rssi": -109,
+        "networks": [
+          {
+            "ssid": "605",
+            "channel": 4,
+            "rssi_dbm": -60
+          },
+          {
+            "ssid": "@PHICOMM_C0",
+            "channel": 4,
+            "rssi_dbm": -49
+          }
+        ],
+        "avg_rssi": -54.5
+      },
+      "13": {
+        "count": 1,
+        "total_rssi": -46,
+        "networks": [
+          {
+            "ssid": "ChinaNet-WsMV",
+            "channel": 13,
+            "rssi_dbm": -46
+          }
+        ],
+        "avg_rssi": -46.0
+      },
+      "36": {
+        "count": 1,
+        "total_rssi": -32,
+        "networks": [
+          {
+            "ssid": "TP-LINK_E8C9",
+            "channel": 36,
+            "rssi_dbm": -32
+          }
+        ],
+        "avg_rssi": -32.0
+      }
+    },
+    "optimization_suggestions": [
+      {
+        "type": "当前连接",
+        "priority": "信息",
+        "suggestion": "已连接到: TP-LINK_E8C9 (信道36, 5G频段)",
+        "reason": "基于当前连接状态提供优化建议"
+      },
+      {
+        "type": "信道选择",
+        "priority": "高",
+        "suggestion": "使用推荐信道：64, 6, 2",
+        "reason": "这些信道当前网络数量最少，干扰最低"
+      },
+      {
+        "type": "2.4G频段",
+        "priority": "高",
+        "suggestion": "避免使用重叠信道：2, 8, 4, 13",
+        "reason": "2.4G频段只有1、6、11三个不重叠信道"
+      },
+      {
+        "type": "5G频段",
+        "priority": "中",
+        "suggestion": "优先使用非DFS信道：52, 56, 60, 64, 149, 153, 157, 161, 165",
+        "reason": "非DFS信道不会受到雷达干扰，连接更稳定"
+      },
+      {
+        "type": "5G优化",
+        "priority": "高",
+        "suggestion": "建议将路由器切换到信道：64",
+        "reason": "当前使用信道36，建议切换到干扰更少的信道"
+      }
+    ]
+  },
+  {
+    "scan_time": "2026-03-25T22:46:22.841906",
+    "location": {
+      "country": "China",
+      "region": "安徽",
+      "region_en": "Anhui",
+      "city": "合肥",
+      "city_en": "Hefei",
+      "isp": "Chinanet",
+      "ip": "114.103.224.116"
+    },
+    "total_networks": 11,
+    "recommended_channels": [
+      149,
+      3,
+      2
+    ],
+    "network_details": [
+      {
+        "ssid": "CMCC-ub7g",
+        "channel": 8,
+        "rssi_dbm": -85
+      },
+      {
+        "ssid": "客厅_5G",
+        "channel": 149,
+        "rssi_dbm": -85
+      },
+      {
+        "ssid": "CMCC-h75u",
+        "channel": 3,
+        "rssi_dbm": -78
+      },
+      {
+        "ssid": "CU_eEXF",
+        "channel": 2,
+        "rssi_dbm": -75
+      },
+      {
+        "ssid": "1002",
+        "channel": 11,
+        "rssi_dbm": -73
+      },
+      {
+        "ssid": "Xiaomi_7119",
+        "channel": 8,
+        "rssi_dbm": -69
+      },
+      {
+        "ssid": "客厅",
+        "channel": 1,
+        "rssi_dbm": -63
+      },
+      {
+        "ssid": "605",
+        "channel": 4,
+        "rssi_dbm": -61
+      },
+      {
+        "ssid": "@PHICOMM_C0",
+        "channel": 4,
+        "rssi_dbm": -49
+      },
+      {
+        "ssid": "ChinaNet-WsMV",
+        "channel": 13,
+        "rssi_dbm": -44
+      },
+      {
+        "ssid": "TP-LINK_E8C9",
+        "channel": 36,
+        "rssi_dbm": -34
+      }
+    ],
+    "channel_statistics": {
+      "8": {
+        "count": 2,
+        "total_rssi": -154,
+        "networks": [
+          {
+            "ssid": "CMCC-ub7g",
+            "channel": 8,
+            "rssi_dbm": -85
+          },
+          {
+            "ssid": "Xiaomi_7119",
+            "channel": 8,
+            "rssi_dbm": -69
+          }
+        ],
+        "avg_rssi": -77.0
+      },
+      "149": {
+        "count": 1,
+        "total_rssi": -85,
+        "networks": [
+          {
+            "ssid": "客厅_5G",
+            "channel": 149,
+            "rssi_dbm": -85
+          }
+        ],
+        "avg_rssi": -85.0
+      },
+      "3": {
+        "count": 1,
+        "total_rssi": -78,
+        "networks": [
+          {
+            "ssid": "CMCC-h75u",
+            "channel": 3,
+            "rssi_dbm": -78
+          }
+        ],
+        "avg_rssi": -78.0
+      },
+      "2": {
+        "count": 1,
+        "total_rssi": -75,
+        "networks": [
+          {
+            "ssid": "CU_eEXF",
+            "channel": 2,
+            "rssi_dbm": -75
+          }
+        ],
+        "avg_rssi": -75.0
+      },
+      "11": {
+        "count": 1,
+        "total_rssi": -73,
+        "networks": [
+          {
+            "ssid": "1002",
+            "channel": 11,
+            "rssi_dbm": -73
+          }
+        ],
+        "avg_rssi": -73.0
+      },
+      "1": {
+        "count": 1,
+        "total_rssi": -63,
+        "networks": [
+          {
+            "ssid": "客厅",
+            "channel": 1,
+            "rssi_dbm": -63
+          }
+        ],
+        "avg_rssi": -63.0
+      },
+      "4": {
+        "count": 2,
+        "total_rssi": -110,
+        "networks": [
+          {
+            "ssid": "605",
+            "channel": 4,
+            "rssi_dbm": -61
+          },
+          {
+            "ssid": "@PHICOMM_C0",
+            "channel": 4,
+            "rssi_dbm": -49
+          }
+        ],
+        "avg_rssi": -55.0
+      },
+      "13": {
+        "count": 1,
+        "total_rssi": -44,
+        "networks": [
+          {
+            "ssid": "ChinaNet-WsMV",
+            "channel": 13,
+            "rssi_dbm": -44
+          }
+        ],
+        "avg_rssi": -44.0
+      },
+      "36": {
+        "count": 1,
+        "total_rssi": -34,
+        "networks": [
+          {
+            "ssid": "TP-LINK_E8C9",
+            "channel": 36,
+            "rssi_dbm": -34
+          }
+        ],
+        "avg_rssi": -34.0
+      }
+    },
+    "optimization_suggestions": [
+      {
+        "type": "当前连接",
+        "priority": "信息",
+        "suggestion": "已连接到: TP-LINK_E8C9 (信道36, 5G频段)",
+        "reason": "基于当前连接状态提供优化建议"
+      },
+      {
+        "type": "信道选择",
+        "priority": "高",
+        "suggestion": "使用推荐信道：149, 3, 2",
+        "reason": "这些信道当前网络数量最少，干扰最低"
+      },
+      {
+        "type": "2.4G频段",
+        "priority": "高",
+        "suggestion": "避免使用重叠信道：8, 3, 2, 4, 13",
+        "reason": "2.4G频段只有1、6、11三个不重叠信道"
+      },
+      {
+        "type": "5G频段",
+        "priority": "中",
+        "suggestion": "优先使用非DFS信道：52, 56, 60, 64, 149, 153, 157, 161, 165",
+        "reason": "非DFS信道不会受到雷达干扰，连接更稳定"
+      },
+      {
+        "type": "5G优化",
+        "priority": "高",
+        "suggestion": "建议将路由器切换到信道：149",
+        "reason": "当前使用信道36，建议切换到干扰更少的信道"
+      }
+    ]
+  }
+]
