@@ -340,7 +340,7 @@ class WiFiChannelScanner:
             return False
 
     def _save_log(self, networks, channel_stats, suggestions):
-        """保存日志文件"""
+        """保存日志文件 - 将相同WiFi的扫描结果追加到同一个文件中"""
         current_date = datetime.datetime.now().strftime("%Y%m%d")
         
         # 获取所有WiFi网络名称作为文件名前缀
@@ -371,7 +371,8 @@ class WiFiChannelScanner:
         log_filename = f"{wifi_name}_{current_date}wifi优化建议.json"
         log_path = os.path.join(self.log_dir, log_filename)
 
-        log_data = {
+        # 创建新的扫描记录
+        new_scan_record = {
             "scan_time": datetime.datetime.now().isoformat(),
             "total_networks": len(networks),
             "recommended_channels": self.get_recommended_channels(),
@@ -380,10 +381,33 @@ class WiFiChannelScanner:
             "optimization_suggestions": suggestions
         }
 
+        # 检查文件是否已存在
+        if os.path.exists(log_path):
+            # 读取现有数据
+            try:
+                with open(log_path, "r", encoding="utf-8") as f:
+                    existing_data = json.load(f)
+                
+                # 如果现有数据是数组格式，直接追加
+                if isinstance(existing_data, list):
+                    existing_data.append(new_scan_record)
+                    log_data = existing_data
+                else:
+                    # 如果现有数据是单个对象，转换为数组格式
+                    log_data = [existing_data, new_scan_record]
+            except (json.JSONDecodeError, Exception) as e:
+                # 如果文件损坏或格式错误，创建新的数组
+                print(f"⚠️ 日志文件格式错误，重新创建: {e}")
+                log_data = [new_scan_record]
+        else:
+            # 文件不存在，创建新的数组
+            log_data = [new_scan_record]
+
+        # 保存数据
         with open(log_path, "w", encoding="utf-8") as f:
             json.dump(log_data, f, ensure_ascii=False, indent=2)
 
-        print(f"📝 日志已保存: {log_path}")
+        print(f"📝 日志已追加保存: {log_path} (共{len(log_data)}次扫描记录)")
         return log_path
 
     def generate_report(self, export_csv=None):
