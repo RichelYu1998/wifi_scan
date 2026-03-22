@@ -6,6 +6,7 @@ import sys
 import datetime
 import json
 import csv
+import platform
 from collections import defaultdict
 
 
@@ -13,11 +14,19 @@ class WiFiChannelScanner:
     def __init__(self):
         self.scan_results = []
         self.channel_stats = {}
-        self.executable_name = "netsh"
+        self.platform = platform.system()
         self.log_dir = "wifi_logs"
 
         if not os.path.exists(self.log_dir):
             os.makedirs(self.log_dir)
+
+    def get_platform_info(self):
+        """获取平台信息"""
+        return {
+            'system': self.platform,
+            'version': platform.release(),
+            'machine': platform.machine()
+        }
 
     def run_command(self, command):
         """执行Windows命令"""
@@ -36,15 +45,30 @@ class WiFiChannelScanner:
 
     def scan_wifi_networks(self):
         """扫描WiFi网络"""
-        print("正在扫描WiFi网络...")
+        print(f"正在扫描WiFi网络（平台: {self.platform}）...")
         self.scan_results = []
 
         try:
+            if self.platform == "Windows":
+                return self._scan_windows()
+            elif self.platform == "Darwin":  # macOS
+                return self._scan_macos()
+            else:
+                print(f"不支持的操作系统: {self.platform}，使用演示数据")
+                return self._use_demo_data()
+                
+        except Exception as e:
+            print(f"扫描异常: {e}，使用演示数据")
+            return self._use_demo_data()
+
+    def _scan_windows(self):
+        """Windows系统WiFi扫描"""
+        try:
             # 尝试使用netsh命令扫描真实WiFi网络
-            command = [self.executable_name, "wlan", "show", "network", "mode=bssid"]
+            command = ["netsh", "wlan", "show", "network", "mode=bssid"]
             output = self.run_command(command)
             
-            if "错误" in output or "异常" in output:
+            if "错误" in output or "异常" in output or "No wireless" in output:
                 print("WiFi扫描失败，使用演示数据...")
                 return self._use_demo_data()
             
@@ -91,19 +115,86 @@ class WiFiChannelScanner:
             # 如果没有扫描到网络，使用简化扫描
             if not self.scan_results:
                 print("详细扫描无结果，尝试简化扫描...")
-                return self._scan_simple()
+                return self._scan_simple_windows()
                 
             print(f"发现 {len(self.scan_results)} 个真实WiFi网络")
             return self.scan_results
             
         except Exception as e:
-            print(f"扫描异常: {e}，使用演示数据")
+            print(f"Windows扫描异常: {e}，使用演示数据")
             return self._use_demo_data()
 
-    def _scan_simple(self):
-        """简化扫描：只获取SSID列表"""
+    def _scan_macos(self):
+        """macOS系统WiFi扫描"""
         try:
-            command = [self.executable_name, "wlan", "show", "network"]
+            # 检查airport命令是否可用
+            airport_paths = [
+                "/System/Library/PrivateFrameworks/Apple80211.framework/Versions/Current/Resources/airport",
+                "/usr/local/bin/airport"
+            ]
+            
+            airport_cmd = None
+            for path in airport_paths:
+                if os.path.exists(path):
+                    airport_cmd = path
+                    break
+            
+            if not airport_cmd:
+                print("未找到airport命令，使用演示数据...")
+                return self._use_demo_data()
+            
+            # 使用airport命令扫描WiFi
+            command = [airport_cmd, "-s"]
+            output = self.run_command(command)
+            
+            if not output or "airport: command not found" in output:
+                print("WiFi扫描失败，使用演示数据...")
+                return self._use_demo_data()
+            
+            # 解析airport命令输出
+            lines = output.split('\n')
+            for line in lines:
+                line = line.strip()
+                if not line or line.startswith('SSID'):
+                    continue
+                
+                # 解析格式：SSID BSSID RSSI CHANNEL HT CC SECURITY
+                parts = line.split()
+                if len(parts) >= 4:
+                    ssid = parts[0]
+                    rssi = parts[2]
+                    channel = parts[3]
+                    
+                    # 处理信道格式（可能包含+或-）
+                    channel = re.sub(r'[+-].*', '', channel)
+                    
+                    try:
+                        channel_num = int(channel)
+                        rssi_num = int(rssi)
+                        
+                        self.scan_results.append({
+                            'ssid': ssid,
+                            'channel': channel_num,
+                            'rssi_dbm': rssi_num
+                        })
+                    except ValueError:
+                        continue
+            
+            if self.scan_results:
+                print(f"发现 {len(self.scan_results)} 个真实WiFi网络")
+                return self.scan_results
+            else:
+                print("未扫描到WiFi网络，使用演示数据...")
+                return self._use_demo_data()
+                
+        except Exception as e:
+            print(f"macOS扫描异常: {e}，使用演示数据")
+            return self._use_demo_data()
+
+    def _scan_simple_windows(self):
+        """Windows简化扫描：只获取SSID列表"""
+        try:
+            command = ["netsh", "wlan", "show", "network"]
             output = self.run_command(command)
             
             lines = output.split('\n')
@@ -129,6 +220,14 @@ class WiFiChannelScanner:
                 return self._use_demo_data()
                 
         except Exception:
+            return self._use_demo_data()
+
+    def _scan_simple(self):
+        """简化扫描：只获取SSID列表（兼容旧版本）"""
+        if self.platform == "Windows":
+            return self._scan_simple_windows()
+        else:
+            # 对于非Windows系统，直接使用演示数据
             return self._use_demo_data()
 
     def _use_demo_data(self):
