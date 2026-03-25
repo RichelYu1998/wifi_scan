@@ -527,13 +527,17 @@ class WiFiChannelScanner:
 
         # 获取当前连接的WiFi信息
         current_wifi = self.get_current_wifi_info()
-        current_channel = None
         current_ssid = None
+        current_channel = None
         
         if current_wifi:
             try:
                 current_ssid = current_wifi.get('SSID', '')
-                current_channel = int(current_wifi.get('channel', 0))
+                channel_str = current_wifi.get('channel', '0')
+                # 处理channel字段可能包含逗号的情况，如 "36,1"
+                if ',' in channel_str:
+                    channel_str = channel_str.split(',')[0]
+                current_channel = int(channel_str)
             except (ValueError, TypeError):
                 pass
 
@@ -543,12 +547,20 @@ class WiFiChannelScanner:
             channel_24g = None
             channel_5g = None
             
+            # 优先使用当前连接的信道信息
+            if current_channel:
+                if current_channel <= 14:
+                    channel_24g = current_channel
+                elif current_channel >= 36:
+                    channel_5g = current_channel
+            
+            # 从扫描结果中查找另一个频段的信道
             for net in self.scan_results:
                 if net['ssid'] == current_ssid:
                     ch = net['channel']
-                    if ch <= 14:
+                    if ch <= 14 and not channel_24g:
                         channel_24g = ch
-                    elif ch >= 36:
+                    elif ch >= 36 and not channel_5g:
                         channel_5g = ch
             
             # 显示格式：2.4G在信道XX，5G在信道XX
@@ -706,7 +718,11 @@ class WiFiChannelScanner:
         if current_wifi:
             try:
                 current_ssid = current_wifi.get('SSID', '')
-                current_channel = int(current_wifi.get('channel', 0))
+                channel_str = current_wifi.get('channel', '0')
+                # 处理channel字段可能包含逗号的情况，如 "36,1"
+                if ',' in channel_str:
+                    channel_str = channel_str.split(',')[0]
+                current_channel = int(channel_str)
                 # 清理文件名中的非法字符
                 current_ssid = re.sub(r'[<>:"/\\|?*]', '', current_ssid)
                 current_ssid = current_ssid.strip()
@@ -721,13 +737,21 @@ class WiFiChannelScanner:
         channel_24g = None
         channel_5g = None
         
+        # 优先使用当前连接的信道信息
+        if current_channel:
+            if current_channel <= 14:
+                channel_24g = current_channel
+            elif current_channel >= 36:
+                channel_5g = current_channel
+        
+        # 从扫描结果中查找另一个频段的信道
         if current_ssid:
             for net in networks:
                 if net['ssid'] == current_ssid:
                     ch = net['channel']
-                    if ch <= 14:
+                    if ch <= 14 and not channel_24g:
                         channel_24g = ch
-                    elif ch >= 36:
+                    elif ch >= 36 and not channel_5g:
                         channel_5g = ch
 
         # 如果没有传入地理位置信息，则获取
