@@ -294,6 +294,24 @@ pip install geopy geographiclib
 
 ## 📝 版本历史
 
+### v2.2 (2026-03-26)
+- 🔧 **脚本更新**：更新所有启动脚本的Python文件调用逻辑
+- 📝 **文件一致性**：所有脚本统一调用 `wifi_scan.py`，与主程序文件名保持一致
+- ✅ **测试验证**：macOS脚本运行测试通过，功能正常
+- 🛠️ **修复内容**：
+  - Linux脚本：`python3 Channel.py` → `python3 wifi_scan.py`
+  - macOS脚本：`python3 Channel.py` → `python3 wifi_scan.py`
+  - Windows脚本：`python Channel.py` → `python wifi_scan.py`
+- 🧪 **测试结果**：
+  - Python环境正常（Python 3.13.5）
+  - WiFi扫描功能正常工作
+  - 发现真实WiFi网络
+  - 生成正确的JSON日志文件
+  - 优化建议功能正常
+
+**更新说明**：
+由于主程序文件从 `Channel.py` 重命名为 `wifi_scan.py`，所有启动脚本需要相应更新Python文件调用路径，确保脚本能够正确启动主程序。
+
 ### v2.1 (2026-03-26)
 - 🐛 **Bug修复**：修复macOS系统下无法正确获取当前连接WiFi信道的问题
 - 🔧 **技术细节**：处理airport命令返回的channel字段格式（如"36,1"）

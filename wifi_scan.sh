@@ -26,7 +26,7 @@ fi
 echo "🚀 开始WiFi信道扫描..."
 echo ""
 
-python3 Channel.py
+python3 wifi_scan.py
 
 if [ $? -eq 0 ]; then
     echo ""

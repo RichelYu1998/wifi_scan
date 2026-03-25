@@ -28,7 +28,7 @@ REM 运行WiFi扫描程序
 echo 🚀 开始WiFi信道扫描...
 echo.
 
-python Channel.py
+python wifi_scan.py
 
 if %errorlevel% equ 0 (
     echo.
