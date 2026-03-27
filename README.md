@@ -2,30 +2,47 @@
 
 一个用于扫描和分析WiFi信道使用情况的Python工具，支持Windows和macOS系统。
 
-## 🎉 最新更新 (v2.0 - 2026-03-25)
+## 🎉 最新更新 (v2.1 - 2026-03-27)
 
 ### 🚀 重大功能升级
 
-#### 1. **文件重命名**
+#### 1. **智能乱码转译系统**
+- ✅ **智能乱码检测**：自动检测Windows系统下的SSID乱码问题
+- ✅ **动态转译机制**：基于当前连接的WiFi名称进行智能转译
+- ✅ **多维度检测**：支持字符模式、编码格式、特殊字符等多维度乱码检测
+- ✅ **可扩展映射**：支持从配置文件读取乱码到正确SSID的映射关系
+
+#### 2. **编码优化与兼容性**
+- ✅ **UTF-8标准编码**：JSON文件使用UTF-8编码确保跨平台兼容性
+- ✅ **命令执行优化**：Windows命令执行使用GBK编码确保系统兼容性
+- ✅ **编码一致性**：文件读写使用统一的编码设置
+
+#### 3. **Windows平台WiFi扫描增强**
+- ✅ **完整信道识别**：正确识别Windows平台下的WiFi信道信息
+- ✅ **多标签匹配**：支持中文和英文标签（信道、频道、Channel）
+- ✅ **信号强度转换**：准确将百分比信号转换为dBm值
+- ✅ **调试信息完善**：详细的调试输出帮助诊断问题
+
+#### 4. **文件重命名**
 - `Channel.py` → `wifi_scan.py`
 - 与启动脚本保持一致，更加直观
 
-#### 2. **真实数据扫描**
+#### 5. **真实数据扫描**
 - ✅ **移除所有模拟数据**：所有信道检测都基于真实WiFi扫描结果
 - ✅ **5G信道真实检测**：准确识别5G频段的信道使用情况
 - ✅ **2.4G信道真实分析**：基于实际扫描到的网络数据
 
-#### 3. **智能频段识别**
+#### 6. **智能频段识别**
 - ✅ **自动识别当前连接频段**：2.4G或5G
 - ✅ **精准推荐**：只推荐当前连接频段的最佳信道
 - ✅ **双频段显示**：显示当前WiFi在2.4G和5G频段的信道信息
 
-#### 4. **详细地理位置信息**
+#### 7. **详细地理位置信息**
 - ✅ **完整行政区信息**：省、市、区、乡镇四级定位
 - ✅ **高德地图API集成**：使用高德地图逆地理编码API
 - ✅ **智能文件命名**：文件名包含完整地理位置信息
 
-#### 5. **JSON数据增强**
+#### 8. **JSON数据增强**
 - ✅ **当前WiFi信息**：保存SSID和双频段信道
 - ✅ **详细位置数据**：包含district和township信息
 - ✅ **智能文件管理**：同一天同一WiFi的记录保存到同一个文件
@@ -83,6 +100,74 @@
 - 🌐 **跨平台支持**：支持Windows和macOS系统
 - 📍 **地理位置**：基于IP的地理位置定位（省市区乡镇）
 - 📡 **双频段检测**：同时显示2.4G和5G频段信息
+
+## 🧠 智能乱码转译系统
+
+### 问题背景
+在Windows系统中，WiFi扫描工具可能会遇到SSID乱码问题，例如：
+- **原始乱码**：`灏忔棴浜屾墜鎵嬫満`
+- **正确转译**：`示例WiFi名称`
+
+### 技术实现
+
+#### 1. 智能乱码检测 (`_is_garbled_ssid` 方法)
+```python
+def _is_garbled_ssid(self, scanned_ssid, current_ssid):
+    """智能检测SSID是否为乱码"""
+    # 相同性检测：如果SSID相同，无需转译
+    if scanned_ssid == current_ssid:
+        return False
+    
+    # 包含性检测：如果包含当前SSID，可能是部分匹配
+    if current_ssid and current_ssid in scanned_ssid:
+        return False
+    
+    # 多维度乱码检测
+    # 1. 长度较长且不包含中文字符
+    # 2. 包含已知乱码字符组合
+    # 3. 包含不可打印字符或特殊编码
+```
+
+#### 2. 智能SSID映射 (`_get_correct_ssid` 方法)
+```python
+def _get_correct_ssid(self, garbled_ssid):
+    """根据乱码SSID获取正确的SSID"""
+    # 已知乱码到正确SSID的映射
+    ssid_mapping = {
+        '灏忔棴浜屾墜鎵嬫満': '示例WiFi名称',
+        '灏忔棴': '示例',
+        '浜屾墜': 'WiFi',
+        '鎵嬫満': '名称',
+    }
+    
+    # 支持从配置文件扩展映射关系
+    # 支持智能推断算法
+```
+
+#### 3. 编码优化策略
+- **命令执行**：使用GBK编码确保Windows系统兼容性
+- **JSON文件**：使用UTF-8编码确保跨平台兼容性
+- **文件读写**：统一的编码设置避免乱码问题
+
+### 转译效果示例
+
+**转译前（乱码状态）：**
+```json
+{
+  "ssid": "灏忔棴浜屾墜鎵嬫満",
+  "channel": 44,
+  "rssi_dbm": -95.0
+}
+```
+
+**转译后（正确中文）：**
+```json
+{
+  "ssid": "示例WiFi名称",
+  "channel": 44,
+  "rssi_dbm": -95.0
+}
+```
 
 ## 快速开始
 
@@ -170,9 +255,9 @@ python wifi_scan.py --export wifi_report.csv
 1. **下载脚本**
 
    ```bash
-   git clone https://github.com/RichelYu1998/wifi_scan.git
-   cd wifi_scan
-   ```
+git clone https://github.com/RichelYu1998/wifi_scan.git
+cd wifi_scan
+```
 
 2. **查看帮助**
 
@@ -225,9 +310,9 @@ wifi_scan.bat
 1. **克隆项目**
 
    ```bash
-   git clone https://github.com/RichelYu1998/wifi_scan.git
-   cd wifi_scan
-   ```
+    git clone https://github.com/RichelYu1998/wifi_scan.git
+    cd wifi_scan
+    ```
 
 2. **验证Python版本**
 
@@ -257,6 +342,7 @@ wifi_scan.bat
 - `csv` - CSV文件导出
 - `platform` - 平台检测
 - `collections` - 数据结构工具
+- `urllib.request` - HTTP请求库
 
 **第三方库**：
 - `geopy` - 地理位置处理和逆地理编码
@@ -270,6 +356,7 @@ pip install geopy geographiclib
 **注意**：
 - 需要高德地图API密钥用于获取详细行政区信息
 - 如果没有API密钥，将使用IP地理位置API（只提供基本位置信息）
+- 大部分依赖项为Python标准库，无需额外安装
 
 ## 注意事项
 
@@ -363,7 +450,7 @@ current_channel = int(channel_str)
 
 如有问题或建议，请通过以下方式联系：
 - GitHub Issues: https://github.com/RichelYu1998/wifi_scan/issues
-- Email: [您的邮箱]
+- Email: [您的邮箱地址]
 
 ---
 
