@@ -1,0 +1,397 @@
+{
+  "update_time": "2026-03-28T00:00:00.000000",
+  "source": "manual",
+  "projectors": [
+    {
+      "id": 1,
+      "brand": "爱普生",
+      "model": "CH-TW6250",
+      "price": 4999,
+      "resolution": "1080P",
+      "brightness": 3300,
+      "contrast": 15000,
+      "lifespan": 12000,
+      "screen_size": "30-300英寸",
+      "throw_distance": "2.9-9.6米",
+      "features": ["3D功能", "自动梯形校正", "侧投功能", "无线投屏"],
+      "usage_scenario": "家庭娱乐",
+      "purchase_links": {
+        "京东": "https://search.jd.com/Search?keyword=爱普生CH-TW6250",
+        "天猫": "https://s.taobao.com/search?q=爱普生CH-TW6250",
+        "拼多多": "https://mobile.yangkeduo.com/search_result.html?keyword=爱普生CH-TW6250",
+        "苏宁": "https://search.suning.com/%E7%88%B1%E6%99%AE%E7%94%9FCH-TW6250"
+      }
+    },
+    {
+      "id": 2,
+      "brand": "爱普生",
+      "model": "CH-TW7000",
+      "price": 5999,
+      "resolution": "1080P",
+      "brightness": 3000,
+      "contrast": 16000,
+      "lifespan": 10000,
+      "screen_size": "30-300英寸",
+      "throw_distance": "2.8-9.6米",
+      "features": ["3D功能", "自动梯形校正", "侧投功能", "无线投屏", "HDR支持"],
+      "usage_scenario": "家庭娱乐",
+      "purchase_links": {
+        "京东": "https://search.jd.com/Search?keyword=爱普生CH-TW7000",
+        "天猫": "https://s.taobao.com/search?q=爱普生CH-TW7000",
+        "拼多多": "https://mobile.yangkeduo.com/search_result.html?keyword=爱普生CH-TW7000"
+      }
+    },
+    {
+      "id": 3,
+      "brand": "极米",
+      "model": "H6",
+      "price": 2699,
+      "resolution": "1080P",
+      "brightness": 800,
+      "contrast": 5000,
+      "lifespan": 30000,
+      "screen_size": "40-120英寸",
+      "throw_distance": "1.1-10米",
+      "features": ["自动梯形校正", "侧投功能", "无线投屏", "蓝牙音响", "智能系统"],
+      "usage_scenario": "家庭娱乐",
+      "purchase_links": {
+        "京东": "https://search.jd.com/Search?keyword=极米H6",
+        "天猫": "https://s.taobao.com/search?q=极米H6",
+        "拼多多": "https://mobile.yangkeduo.com/search_result.html?keyword=极米H6",
+        "官方商城": "https://www.xgimi.com"
+      }
+    },
+    {
+      "id": 4,
+      "brand": "极米",
+      "model": "H3",
+      "price": 3299,
+      "resolution": "720P",
+      "brightness": 600,
+      "contrast": 4000,
+      "lifespan": 30000,
+      "screen_size": "40-120英寸",
+      "throw_distance": "1.2-10米",
+      "features": ["自动梯形校正", "侧投功能", "无线投屏", "蓝牙音响"],
+      "usage_scenario": "入门家用",
+      "purchase_links": {
+        "京东": "https://search.jd.com/Search?keyword=极米H3",
+        "天猫": "https://s.taobao.com/search?q=极米H3",
+        "拼多多": "https://mobile.yangkeduo.com/search_result.html?keyword=极米H3"
+      }
+    },
+    {
+      "id": 5,
+      "brand": "坚果",
+      "model": "G9S",
+      "price": 4299,
+      "resolution": "1080P",
+      "brightness": 1200,
+      "contrast": 6000,
+      "lifespan": 30000,
+      "screen_size": "40-180英寸",
+      "throw_distance": "1.5-8米",
+      "features": ["自动梯形校正", "侧投功能", "无线投屏", "蓝牙音响", "智能系统", "HDR支持"],
+      "usage_scenario": "家庭娱乐",
+      "purchase_links": {
+        "京东": "https://search.jd.com/Search?keyword=坚果G9S",
+        "天猫": "https://s.taobao.com/search?q=坚果G9S",
+        "拼多多": "https://mobile.yangkeduo.com/search_result.html?keyword=坚果G9S",
+        "官方商城": "https://www.jmgo.com"
+      }
+    },
+    {
+      "id": 6,
+      "brand": "坚果",
+      "model": "G9",
+      "price": 3299,
+      "resolution": "720P",
+      "brightness": 800,
+      "contrast": 5000,
+      "lifespan": 30000,
+      "screen_size": "40-150英寸",
+      "throw_distance": "1.5-8米",
+      "features": ["自动梯形校正", "侧投功能", "无线投屏", "蓝牙音响", "智能系统"],
+      "usage_scenario": "入门家用",
+      "purchase_links": {
+        "京东": "https://search.jd.com/Search?keyword=坚果G9",
+        "天猫": "https://s.taobao.com/search?q=坚果G9",
+        "拼多多": "https://mobile.yangkeduo.com/search_result.html?keyword=坚果G9"
+      }
+    },
+    {
+      "id": 7,
+      "brand": "当贝",
+      "model": "X5",
+      "price": 3499,
+      "resolution": "1080P",
+      "brightness": 2400,
+      "contrast": 10000,
+      "lifespan": 20000,
+      "screen_size": "40-200英寸",
+      "throw_distance": "1.5-6米",
+      "features": ["自动梯形校正", "侧投功能", "无线投屏", "HDR支持", "高刷新率"],
+      "usage_scenario": "家庭娱乐",
+      "purchase_links": {
+        "京东": "https://search.jd.com/Search?keyword=当贝X5",
+        "天猫": "https://s.taobao.com/search?q=当贝X5",
+        "拼多多": "https://mobile.yangkeduo.com/search_result.html?keyword=当贝X5",
+        "官方商城": "https://www.dangbei.com"
+      }
+    },
+    {
+      "id": 8,
+      "brand": "当贝",
+      "model": "X3",
+      "price": 2499,
+      "resolution": "720P",
+      "brightness": 1800,
+      "contrast": 8000,
+      "lifespan": 20000,
+      "screen_size": "40-180英寸",
+      "throw_distance": "1.5-6米",
+      "features": ["自动梯形校正", "侧投功能", "无线投屏"],
+      "usage_scenario": "入门家用",
+      "purchase_links": {
+        "京东": "https://search.jd.com/Search?keyword=当贝X3",
+        "天猫": "https://s.taobao.com/search?q=当贝X3",
+        "拼多多": "https://mobile.yangkeduo.com/search_result.html?keyword=当贝X3"
+      }
+    },
+    {
+      "id": 9,
+      "brand": "峰米",
+      "model": "V10",
+      "price": 4599,
+      "resolution": "4K",
+      "brightness": 2500,
+      "contrast": 15000,
+      "lifespan": 30000,
+      "screen_size": "40-200英寸",
+      "throw_distance": "1.2-10米",
+      "features": ["4K支持", "HDR支持", "自动梯形校正", "侧投功能", "无线投屏", "智能系统", "激光光源"],
+      "usage_scenario": "高端家用",
+      "purchase_links": {
+        "京东": "https://search.jd.com/Search?keyword=峰米V10",
+        "天猫": "https://s.taobao.com/search?q=峰米V10",
+        "拼多多": "https://mobile.yangkeduo.com/search_result.html?keyword=峰米V10",
+        "官方商城": "https://www.apemans.com"
+      }
+    },
+    {
+      "id": 10,
+      "brand": "峰米",
+      "model": "V8",
+      "price": 3299,
+      "resolution": "1080P",
+      "brightness": 1200,
+      "contrast": 10000,
+      "lifespan": 30000,
+      "screen_size": "40-150英寸",
+      "throw_distance": "1.2-8米",
+      "features": ["自动梯形校正", "侧投功能", "无线投屏", "智能系统"],
+      "usage_scenario": "家庭娱乐",
+      "purchase_links": {
+        "京东": "https://search.jd.com/Search?keyword=峰米V8",
+        "天猫": "https://s.taobao.com/search?q=峰米V8",
+        "拼多多": "https://mobile.yangkeduo.com/search_result.html?keyword=峰米V8"
+      }
+    },
+    {
+      "id": 11,
+      "brand": "米家",
+      "model": "MJJJGTYDS03",
+      "price": 4999,
+      "resolution": "4K",
+      "brightness": 1600,
+      "contrast": 10000,
+      "lifespan": 25000,
+      "screen_size": "60-200英寸",
+      "throw_distance": "1.1-10米",
+      "features": ["4K支持", "HDR支持", "自动梯形校正", "侧投功能", "无线投屏", "智能系统", "激光光源"],
+      "usage_scenario": "高端家用",
+      "purchase_links": {
+        "京东": "https://search.jd.com/Search?keyword=米家4K投影仪",
+        "天猫": "https://s.taobao.com/search?q=米家4K投影仪",
+        "拼多多": "https://mobile.yangkeduo.com/search_result.html?keyword=米家4K投影仪",
+        "小米商城": "https://www.mi.com"
+      }
+    },
+    {
+      "id": 12,
+      "brand": "米家",
+      "model": "MJJJGTYDS02",
+      "price": 2999,
+      "resolution": "1080P",
+      "brightness": 1200,
+      "contrast": 8000,
+      "lifespan": 25000,
+      "screen_size": "40-150英寸",
+      "throw_distance": "1.1-8米",
+      "features": ["自动梯形校正", "侧投功能", "无线投屏", "智能系统"],
+      "usage_scenario": "家庭娱乐",
+      "purchase_links": {
+        "京东": "https://search.jd.com/Search?keyword=米家投影仪",
+        "天猫": "https://s.taobao.com/search?q=米家投影仪",
+        "拼多多": "https://mobile.yangkeduo.com/search_result.html?keyword=米家投影仪",
+        "小米商城": "https://www.mi.com"
+      }
+    },
+    {
+      "id": 13,
+      "brand": "明基",
+      "model": "W2700",
+      "price": 4499,
+      "resolution": "1080P",
+      "brightness": 3800,
+      "contrast": 20000,
+      "lifespan": 15000,
+      "screen_size": "30-300英寸",
+      "throw_distance": "1.0-10米",
+      "features": ["自动梯形校正", "侧投功能", "HDR支持", "高刷新率"],
+      "usage_scenario": "家庭娱乐",
+      "purchase_links": {
+        "京东": "https://search.jd.com/Search?keyword=明基W2700",
+        "天猫": "https://s.taobao.com/search?q=明基W2700",
+        "拼多多": "https://mobile.yangkeduo.com/search_result.html?keyword=明基W2700",
+        "苏宁": "https://search.suning.com/%E6%98%8E%E5%9F%BACW2700"
+      }
+    },
+    {
+      "id": 14,
+      "brand": "明基",
+      "model": "W1130",
+      "price": 3499,
+      "resolution": "1080P",
+      "brightness": 3400,
+      "contrast": 15000,
+      "lifespan": 15000,
+      "screen_size": "30-200英寸",
+      "throw_distance": "1.0-8米",
+      "features": ["自动梯形校正", "侧投功能", "HDR支持"],
+      "usage_scenario": "家庭娱乐",
+      "purchase_links": {
+        "京东": "https://search.jd.com/Search?keyword=明基W1130",
+        "天猫": "https://s.taobao.com/search?q=明基W1130",
+        "拼多多": "https://mobile.yangkeduo.com/search_result.html?keyword=明基W1130"
+      }
+    },
+    {
+      "id": 15,
+      "brand": "索尼",
+      "model": "VPL-XW5000",
+      "price": 8999,
+      "resolution": "4K",
+      "brightness": 5000,
+      "contrast": 30000,
+      "lifespan": 20000,
+      "screen_size": "40-300英寸",
+      "throw_distance": "2.4-15.2米",
+      "features": ["4K支持", "HDR支持", "自动梯形校正", "侧投功能", "激光光源", "低延迟"],
+      "usage_scenario": "高端家用",
+      "purchase_links": {
+        "京东": "https://search.jd.com/Search?keyword=索尼VPL-XW5000",
+        "天猫": "https://s.taobao.com/search?q=索尼VPL-XW5000",
+        "拼多多": "https://mobile.yangkeduo.com/search_result.html?keyword=索尼VPL-XW5000",
+        "苏宁": "https://search.suning.com/%E7%B4%A2%E5%B0%BCVPL-XW5000"
+      }
+    },
+    {
+      "id": 16,
+      "brand": "索尼",
+      "model": "VPL-XW3000",
+      "price": 5999,
+      "resolution": "4K",
+      "brightness": 3000,
+      "contrast": 20000,
+      "lifespan": 20000,
+      "screen_size": "40-200英寸",
+      "throw_distance": "2.4-10米",
+      "features": ["4K支持", "HDR支持", "自动梯形校正", "侧投功能", "激光光源"],
+      "usage_scenario": "中端家用",
+      "purchase_links": {
+        "京东": "https://search.jd.com/Search?keyword=索尼VPL-XW3000",
+        "天猫": "https://s.taobao.com/search?q=索尼VPL-XW3000",
+        "拼多多": "https://mobile.yangkeduo.com/search_result.html?keyword=索尼VPL-XW3000",
+        "苏宁": "https://search.suning.com/%E7%B4%A2%E5%B0%BCVPL-XW3000"
+      }
+    },
+    {
+      "id": 17,
+      "brand": "宏碁",
+      "model": "V7850i",
+      "price": 3999,
+      "resolution": "1080P",
+      "brightness": 3500,
+      "contrast": 10000,
+      "lifespan": 15000,
+      "screen_size": "30-300英寸",
+      "throw_distance": "1.2-9.8米",
+      "features": ["自动梯形校正", "侧投功能", "HDR支持", "无线投屏"],
+      "usage_scenario": "家庭娱乐",
+      "purchase_links": {
+        "京东": "https://search.jd.com/Search?keyword=宏碁V7850i",
+        "天猫": "https://s.taobao.com/search?q=宏碁V7850i",
+        "拼多多": "https://mobile.yangkeduo.com/search_result.html?keyword=宏碁V7850i"
+      }
+    },
+    {
+      "id": 18,
+      "brand": "宏碁",
+      "model": "H6517BD",
+      "price": 2799,
+      "resolution": "1080P",
+      "brightness": 4000,
+      "contrast": 12000,
+      "lifespan": 15000,
+      "screen_size": "30-200英寸",
+      "throw_distance": "1.2-8米",
+      "features": ["自动梯形校正", "侧投功能", "HDR支持"],
+      "usage_scenario": "家庭娱乐",
+      "purchase_links": {
+        "京东": "https://search.jd.com/Search?keyword=宏碁H6517BD",
+        "天猫": "https://s.taobao.com/search?q=宏碁H6517BD",
+        "拼多多": "https://mobile.yangkeduo.com/search_result.html?keyword=宏碁H6517BD",
+        "苏宁": "https://search.suning.com/%E5%AE%8F%E7%A2%81H6517BD"
+      }
+    },
+    {
+      "id": 19,
+      "brand": "优派",
+      "model": "X10-4K",
+      "price": 5499,
+      "resolution": "4K",
+      "brightness": 3500,
+      "contrast": 15000,
+      "lifespan": 15000,
+      "screen_size": "30-300英寸",
+      "throw_distance": "1.2-10米",
+      "features": ["4K支持", "HDR支持", "自动梯形校正", "侧投功能", "无线投屏"],
+      "usage_scenario": "中端家用",
+      "purchase_links": {
+        "京东": "https://search.jd.com/Search?keyword=优派X10-4K",
+        "天猫": "https://s.taobao.com/search?q=优派X10-4K",
+        "拼多多": "https://mobile.yangkeduo.com/search_result.html?keyword=优派X10-4K"
+      }
+    },
+    {
+      "id": 20,
+      "brand": "优派",
+      "model": "X6",
+      "price": 3999,
+      "resolution": "1080P",
+      "brightness": 3200,
+      "contrast": 12000,
+      "lifespan": 15000,
+      "screen_size": "30-200英寸",
+      "throw_distance": "1.2-8米",
+      "features": ["自动梯形校正", "侧投功能", "HDR支持", "无线投屏"],
+      "usage_scenario": "家庭娱乐",
+      "purchase_links": {
+        "京东": "https://search.jd.com/Search?keyword=优派X6",
+        "天猫": "https://s.taobao.com/search?q=优派X6",
+        "拼多多": "https://mobile.yangkeduo.com/search_result.html?keyword=优派X6"
+      }
+    }
+  ]
+}

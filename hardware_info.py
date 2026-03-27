@@ -51,6 +51,28 @@ except ImportError:
             elif debug:
                 print(f"调试：{message}")
 
+try:
+    from hardware_performance_updater import HardwarePerformanceUpdater
+except ImportError:
+    class HardwarePerformanceUpdater:
+        def __init__(self, escape_manager=None):
+            pass
+        
+        def get_performance_data(self):
+            return {
+                'cpu': {},
+                'gpu': {},
+                'memory': {}
+            }
+        
+        def update_all_performance_data(self, force_update=False):
+            return {
+                'cpu': {'update_time': '', 'data': {}},
+                'gpu': {'update_time': '', 'data': {}},
+                'memory': {'update_time': '', 'data': {}},
+                'update_time': ''
+            }
+
 
 class HardwareInfo:
     """硬件信息检测器 - 检测CPU、显卡、内存等硬件信息"""
@@ -64,7 +86,11 @@ class HardwareInfo:
         self.escape_manager = escape_manager
         self.cross_platform_utils = cross_platform_utils
         
-        self.cpu_performance_map = {
+        # 使用硬件性能数据更新器获取最新数据
+        self.performance_updater = HardwarePerformanceUpdater(escape_manager)
+        performance_data = self.performance_updater.get_performance_data()
+        
+        self.cpu_performance_map = performance_data['cpu'] if performance_data['cpu'] else {
             'i9': 100, 'i7': 85, 'i5': 70, 'i3': 55,
             'Core i9': 100, 'Core i7': 85, 'Core i5': 70, 'Core i3': 55,
             'Ryzen 9': 100, 'Ryzen 7': 85, 'Ryzen 5': 70, 'Ryzen 3': 55,
@@ -73,7 +99,7 @@ class HardwareInfo:
             'M3 Pro': 100, 'M3 Max': 100, 'M3 Ultra': 100,
         }
         
-        self.gpu_performance_map = {
+        self.gpu_performance_map = performance_data['gpu'] if performance_data['gpu'] else {
             'RTX 4090': 100, 'RTX 4080': 95, 'RTX 4070': 90,
             'RTX 3090': 95, 'RTX 3080': 90, 'RTX 3070': 85,
             'RTX 4060': 80, 'RTX 3060': 75,
@@ -85,7 +111,7 @@ class HardwareInfo:
             'Apple M2 Pro': 100, 'Apple M3 Pro': 100,
         }
         
-        self.memory_capacity_map = {
+        self.memory_capacity_map = performance_data['memory'] if performance_data['memory'] else {
             32: 100, 24: 95, 16: 85, 12: 75, 8: 60, 4: 40, 2: 20,
         }
     
@@ -266,108 +292,32 @@ class HardwareInfo:
         
         # 根据内存容量匹配性能评分
         for capacity, score in self.memory_capacity_map.items():
-            if total_gb >= capacity:
+            if total_gb >= float(capacity):
                 return score
         
         return 20  # 默认评分
-
-
-if __name__ == '__main__':
-    hw = HardwareInfo()
-    info = hw.get_hardware_info()
-    print("硬件信息检测结果:")
-    print(f"CPU: {info['cpu']['名称']}")
-    print(f"显卡: {info['gpu']['名称']}")
-    print(f"内存: {info['memory']['总容量_GB']}GB")
-    print(f"性能评分: {info['performance_score']}")
     
-    def _get_gpu_info(self):
-        """获取显卡信息"""
-        gpu_info = {'名称': '未知', '显存_MB': 0}
-        try:
-            system = platform.system()
-            if system == 'Darwin':
-                result = subprocess.run(['system_profiler', 'SPDisplaysDataType'], 
-                    capture_output=True, text=True, timeout=10)
-                if result.returncode == 0:
-                    lines = result.stdout.split('\n')
-                    for i, line in enumerate(lines):
-                        if 'Chipset Model' in line or 'Display' in line:
-                            if 'Apple' not in gpu_info['名称']:
-                                gpu_info['名称'] = line.split(':')[-1].strip() if ':' in line else line.strip()
-                        if 'VRAM' in line or 'Memory' in line:
-                            mem_match = re.search(r'(\d+)\s*(MB|GB)', line)
-                            if mem_match:
-                                mem_size = int(mem_match.group(1))
-                                if mem_match.group(2) == 'GB':
-                                    mem_size *= 1024
-                                gpu_info['显存_MB'] = mem_size
-            elif system == 'Linux':
-                result = subprocess.run(['lspci'], capture_output=True, text=True, timeout=5)
-                if result.returncode == 0:
-                    for line in result.stdout.split('\n'):
-                        if 'VGA' in line or 'Display' in line:
-                            gpu_info['名称'] = line.split(':')[-1].strip()
-            elif system == 'Windows':
-                try:
-                    import wmi
-                    c = wmi.WMI()
-                    for video in c.Win32_VideoController():
-                        gpu_info['名称'] = video.Name
-                        if video.AdapterRAM:
-                            gpu_info['显存_MB'] = int(video.AdapterRAM) // (1024 * 1024)
-                except:
-                    pass
-        except Exception as e:
-            self.escape_manager.debug_log(f"获取显卡信息失败: {e}")
-        return gpu_info
-    
-    def _get_memory_info(self):
-        """获取内存信息"""
-        memory_info = {'总容量_GB': 0, '可用_GB': 0, '已用_percent': 0}
-        try:
-            mem = psutil.virtual_memory()
-            memory_info['总容量_GB'] = round(mem.total / (1024**3), 2)
-            memory_info['可用_GB'] = round(mem.available / (1024**3), 2)
-            memory_info['已用_percent'] = mem.percent
-        except Exception as e:
-            self.escape_manager.debug_log(f"获取内存信息失败: {e}")
-        return memory_info
-    
-    def _get_system_info(self):
-        """获取系统信息"""
-        return {
-            '系统': platform.system(),
-            '版本': platform.version(),
-            '机器': platform.machine(),
-            '处理器': platform.processor(),
-        }
-    
-    def _calculate_performance_score(self, hardware_info):
-        """计算综合性能评分"""
-        cpu_score = 50
-        gpu_score = 50
-        memory_score = 50
+    def update_performance_data(self, force_update=False):
+        """手动更新硬件性能数据"""
+        self.escape_manager.debug_log("开始手动更新硬件性能数据")
         
-        cpu_name = hardware_info.get('cpu', {}).get('名称', '').lower()
-        for model, score in self.cpu_performance_map.items():
-            if model.lower() in cpu_name:
-                cpu_score = score
-                break
+        # 重新获取性能数据
+        performance_data = self.performance_updater.update_all_performance_data(force_update)
         
-        gpu_name = hardware_info.get('gpu', {}).get('名称', '').lower()
-        for model, score in self.gpu_performance_map.items():
-            if model.lower() in gpu_name:
-                gpu_score = score
-                break
+        # 更新性能映射
+        if performance_data['cpu'] and performance_data['cpu']['data']:
+            self.cpu_performance_map = performance_data['cpu']['data']
+            self.escape_manager.debug_log(f"CPU性能数据已更新，包含 {len(self.cpu_performance_map)} 个型号")
         
-        total_memory = hardware_info.get('memory', {}).get('总容量_GB', 0)
-        for capacity, score in sorted(self.memory_capacity_map.items(), reverse=True):
-            if total_memory >= capacity:
-                memory_score = score
-                break
+        if performance_data['gpu'] and performance_data['gpu']['data']:
+            self.gpu_performance_map = performance_data['gpu']['data']
+            self.escape_manager.debug_log(f"GPU性能数据已更新，包含 {len(self.gpu_performance_map)} 个型号")
         
-        return round((cpu_score * 0.4 + gpu_score * 0.4 + memory_score * 0.2), 1)
+        if performance_data['memory'] and performance_data['memory']['data']:
+            self.memory_capacity_map = performance_data['memory']['data']
+            self.escape_manager.debug_log(f"内存性能数据已更新，包含 {len(self.memory_capacity_map)} 个规格")
+        
+        return performance_data
 
 
 if __name__ == '__main__':

@@ -1,0 +1,186 @@
+{
+  "update_time": "2026-03-28T14:32:01.968858",
+  "source": "default",
+  "prices": {
+    "1": {
+      "original_price": 4999,
+      "subsidy_price": 3990,
+      "subsidy_amount": 1009,
+      "has_subsidy": true,
+      "subsidy_rate": 0.2,
+      "platform": "默认",
+      "update_time": "2026-03-28T14:32:01.968875"
+    },
+    "2": {
+      "original_price": 5999,
+      "subsidy_price": 4790,
+      "subsidy_amount": 1209,
+      "has_subsidy": true,
+      "subsidy_rate": 0.2,
+      "platform": "默认",
+      "update_time": "2026-03-28T14:32:01.968884"
+    },
+    "3": {
+      "original_price": 2699,
+      "subsidy_price": 2150,
+      "subsidy_amount": 549,
+      "has_subsidy": true,
+      "subsidy_rate": 0.2,
+      "platform": "默认",
+      "update_time": "2026-03-28T14:32:01.968888"
+    },
+    "4": {
+      "original_price": 3299,
+      "subsidy_price": 2630,
+      "subsidy_amount": 669,
+      "has_subsidy": true,
+      "subsidy_rate": 0.2,
+      "platform": "默认",
+      "update_time": "2026-03-28T14:32:01.968891"
+    },
+    "5": {
+      "original_price": 4299,
+      "subsidy_price": 3430,
+      "subsidy_amount": 869,
+      "has_subsidy": true,
+      "subsidy_rate": 0.2,
+      "platform": "默认",
+      "update_time": "2026-03-28T14:32:01.968894"
+    },
+    "6": {
+      "original_price": 3299,
+      "subsidy_price": 2630,
+      "subsidy_amount": 669,
+      "has_subsidy": true,
+      "subsidy_rate": 0.2,
+      "platform": "默认",
+      "update_time": "2026-03-28T14:32:01.968896"
+    },
+    "7": {
+      "original_price": 3499,
+      "subsidy_price": 2790,
+      "subsidy_amount": 709,
+      "has_subsidy": true,
+      "subsidy_rate": 0.2,
+      "platform": "默认",
+      "update_time": "2026-03-28T14:32:01.968898"
+    },
+    "8": {
+      "original_price": 2499,
+      "subsidy_price": 1990,
+      "subsidy_amount": 509,
+      "has_subsidy": true,
+      "subsidy_rate": 0.2,
+      "platform": "默认",
+      "update_time": "2026-03-28T14:32:01.968902"
+    },
+    "9": {
+      "original_price": 4599,
+      "subsidy_price": 3670,
+      "subsidy_amount": 929,
+      "has_subsidy": true,
+      "subsidy_rate": 0.2,
+      "platform": "默认",
+      "update_time": "2026-03-28T14:32:01.968904"
+    },
+    "10": {
+      "original_price": 3299,
+      "subsidy_price": 2630,
+      "subsidy_amount": 669,
+      "has_subsidy": true,
+      "subsidy_rate": 0.2,
+      "platform": "默认",
+      "update_time": "2026-03-28T14:32:01.968906"
+    },
+    "11": {
+      "original_price": 4999,
+      "subsidy_price": 3990,
+      "subsidy_amount": 1009,
+      "has_subsidy": true,
+      "subsidy_rate": 0.2,
+      "platform": "默认",
+      "update_time": "2026-03-28T14:32:01.968908"
+    },
+    "12": {
+      "original_price": 2999,
+      "subsidy_price": 2390,
+      "subsidy_amount": 609,
+      "has_subsidy": true,
+      "subsidy_rate": 0.2,
+      "platform": "默认",
+      "update_time": "2026-03-28T14:32:01.968910"
+    },
+    "13": {
+      "original_price": 4499,
+      "subsidy_price": 3590,
+      "subsidy_amount": 909,
+      "has_subsidy": true,
+      "subsidy_rate": 0.2,
+      "platform": "默认",
+      "update_time": "2026-03-28T14:32:01.968912"
+    },
+    "14": {
+      "original_price": 3499,
+      "subsidy_price": 2790,
+      "subsidy_amount": 709,
+      "has_subsidy": true,
+      "subsidy_rate": 0.2,
+      "platform": "默认",
+      "update_time": "2026-03-28T14:32:01.968914"
+    },
+    "15": {
+      "original_price": 8999,
+      "subsidy_price": 7190,
+      "subsidy_amount": 1809,
+      "has_subsidy": true,
+      "subsidy_rate": 0.2,
+      "platform": "默认",
+      "update_time": "2026-03-28T14:32:01.968916"
+    },
+    "16": {
+      "original_price": 5999,
+      "subsidy_price": 4790,
+      "subsidy_amount": 1209,
+      "has_subsidy": true,
+      "subsidy_rate": 0.2,
+      "platform": "默认",
+      "update_time": "2026-03-28T14:32:01.968918"
+    },
+    "17": {
+      "original_price": 3999,
+      "subsidy_price": 3190,
+      "subsidy_amount": 809,
+      "has_subsidy": true,
+      "subsidy_rate": 0.2,
+      "platform": "默认",
+      "update_time": "2026-03-28T14:32:01.968920"
+    },
+    "18": {
+      "original_price": 2799,
+      "subsidy_price": 2230,
+      "subsidy_amount": 569,
+      "has_subsidy": true,
+      "subsidy_rate": 0.2,
+      "platform": "默认",
+      "update_time": "2026-03-28T14:32:01.968922"
+    },
+    "19": {
+      "original_price": 5499,
+      "subsidy_price": 4390,
+      "subsidy_amount": 1109,
+      "has_subsidy": true,
+      "subsidy_rate": 0.2,
+      "platform": "默认",
+      "update_time": "2026-03-28T14:32:01.968924"
+    },
+    "20": {
+      "original_price": 3999,
+      "subsidy_price": 3190,
+      "subsidy_amount": 809,
+      "has_subsidy": true,
+      "subsidy_rate": 0.2,
+      "platform": "默认",
+      "update_time": "2026-03-28T14:32:01.968926"
+    }
+  }
+}

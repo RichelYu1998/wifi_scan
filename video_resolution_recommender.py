@@ -264,4 +264,7 @@ if __name__ == '__main__':
     recommendations = recommender.recommend_resolution(speed_info)
     print("视频分辨率推荐结果:")
     for platform_name, rec in recommendations.items():
-        print(f"{platform_name}: {rec['recommended']} - {rec['description']}")
+        if '推荐分辨率' in rec:
+            print(f"{platform_name}: {rec['推荐分辨率']} - {rec['分辨率描述']}")
+        else:
+            print(f"{platform_name}: {rec['recommended']} - {rec['description']}")
