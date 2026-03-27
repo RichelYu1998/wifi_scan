@@ -1,0 +1,2574 @@
+[
+  {
+    "scan_time": "2026-03-27T22:15:24.030097",
+    "location": {
+      "country": "中国",
+      "region": "安徽",
+      "region_en": "Anhui",
+      "city": "合肥",
+      "city_en": "Hefei",
+      "isp": "Chinanet",
+      "运营商": "Chinanet",
+      "ip": "114.103.224.116",
+      "lat": 31.8696,
+      "lon": 117.293,
+      "district": "庐阳区",
+      "township": "逍遥津街道",
+      "village": "县桥社区"
+    },
+    "current_wifi": {
+      "ssid": "TP-LINK_E8C9",
+      "channel_24g": null,
+      "channel_5g": 165
+    },
+    "network_card": {
+      "网卡完整描述": "macOS无线网卡",
+      "网卡品牌型号": "无线网卡"
+    },
+    "total_networks": 8,
+    "recommended_channels": [
+      149,
+      165
+    ],
+    "network_details": [
+      {
+        "ssid": "客厅_5G",
+        "channel": 149,
+        "rssi_dbm": -82
+      },
+      {
+        "ssid": "5303",
+        "channel": 1,
+        "rssi_dbm": -76
+      },
+      {
+        "ssid": "Xiaomi_7119",
+        "channel": 8,
+        "rssi_dbm": -74
+      },
+      {
+        "ssid": "TP-LINK_706",
+        "channel": 7,
+        "rssi_dbm": -71
+      },
+      {
+        "ssid": "客厅",
+        "channel": 1,
+        "rssi_dbm": -64
+      },
+      {
+        "ssid": "@PHICOMM_C0",
+        "channel": 4,
+        "rssi_dbm": -50
+      },
+      {
+        "ssid": "ChinaNet-WsMV",
+        "channel": 13,
+        "rssi_dbm": -41
+      },
+      {
+        "ssid": "TP-LINK_E8C9",
+        "channel": 165,
+        "rssi_dbm": -33
+      }
+    ],
+    "channel_statistics": {
+      "149": {
+        "count": 1,
+        "total_rssi": -82,
+        "networks": [
+          {
+            "ssid": "客厅_5G",
+            "channel": 149,
+            "rssi_dbm": -82
+          }
+        ],
+        "avg_rssi": -82.0
+      },
+      "1": {
+        "count": 2,
+        "total_rssi": -140,
+        "networks": [
+          {
+            "ssid": "5303",
+            "channel": 1,
+            "rssi_dbm": -76
+          },
+          {
+            "ssid": "客厅",
+            "channel": 1,
+            "rssi_dbm": -64
+          }
+        ],
+        "avg_rssi": -70.0
+      },
+      "8": {
+        "count": 1,
+        "total_rssi": -74,
+        "networks": [
+          {
+            "ssid": "Xiaomi_7119",
+            "channel": 8,
+            "rssi_dbm": -74
+          }
+        ],
+        "avg_rssi": -74.0
+      },
+      "7": {
+        "count": 1,
+        "total_rssi": -71,
+        "networks": [
+          {
+            "ssid": "TP-LINK_706",
+            "channel": 7,
+            "rssi_dbm": -71
+          }
+        ],
+        "avg_rssi": -71.0
+      },
+      "4": {
+        "count": 1,
+        "total_rssi": -50,
+        "networks": [
+          {
+            "ssid": "@PHICOMM_C0",
+            "channel": 4,
+            "rssi_dbm": -50
+          }
+        ],
+        "avg_rssi": -50.0
+      },
+      "13": {
+        "count": 1,
+        "total_rssi": -41,
+        "networks": [
+          {
+            "ssid": "ChinaNet-WsMV",
+            "channel": 13,
+            "rssi_dbm": -41
+          }
+        ],
+        "avg_rssi": -41.0
+      },
+      "165": {
+        "count": 1,
+        "total_rssi": -33,
+        "networks": [
+          {
+            "ssid": "TP-LINK_E8C9",
+            "channel": 165,
+            "rssi_dbm": -33
+          }
+        ],
+        "avg_rssi": -33.0
+      }
+    },
+    "optimization_suggestions": [
+      {
+        "type": "信道选择",
+        "priority": "高",
+        "suggestion": "使用推荐信道：149",
+        "reason": "当前网络数量最少，干扰最低"
+      },
+      {
+        "type": "5G优化",
+        "priority": "低",
+        "suggestion": "5G频段可用，干扰较少",
+        "reason": "5G频段信道更多，干扰更少"
+      }
+    ]
+  },
+  {
+    "scan_time": "2026-03-27T22:18:56.316405",
+    "location": {
+      "country": "中国",
+      "region": "安徽",
+      "region_en": "Anhui",
+      "city": "合肥",
+      "city_en": "Hefei",
+      "isp": "Chinanet",
+      "运营商": "Chinanet",
+      "ip": "114.103.224.116",
+      "lat": 31.8696,
+      "lon": 117.293,
+      "district": "庐阳区",
+      "township": "逍遥津街道",
+      "village": "县桥社区"
+    },
+    "current_wifi": {
+      "ssid": "TP-LINK_E8C9",
+      "channel_24g": null,
+      "channel_5g": 165
+    },
+    "network_card": {
+      "网卡完整描述": "Wi-Fi  (0x14E4, 0x4388)",
+      "网卡品牌型号": "无线网卡"
+    },
+    "total_networks": 8,
+    "recommended_channels": [
+      36,
+      149,
+      165
+    ],
+    "network_details": [
+      {
+        "ssid": "TP-LINK_706",
+        "channel": 36,
+        "rssi_dbm": -94
+      },
+      {
+        "ssid": "客厅_5G",
+        "channel": 149,
+        "rssi_dbm": -82
+      },
+      {
+        "ssid": "CMCC-tfgm",
+        "channel": 2,
+        "rssi_dbm": -80
+      },
+      {
+        "ssid": "客厅",
+        "channel": 1,
+        "rssi_dbm": -67
+      },
+      {
+        "ssid": "TP-LINK_706",
+        "channel": 7,
+        "rssi_dbm": -67
+      },
+      {
+        "ssid": "@PHICOMM_C0",
+        "channel": 4,
+        "rssi_dbm": -49
+      },
+      {
+        "ssid": "ChinaNet-WsMV",
+        "channel": 13,
+        "rssi_dbm": -40
+      },
+      {
+        "ssid": "TP-LINK_E8C9",
+        "channel": 165,
+        "rssi_dbm": -33
+      }
+    ],
+    "channel_statistics": {
+      "36": {
+        "count": 1,
+        "total_rssi": -94,
+        "networks": [
+          {
+            "ssid": "TP-LINK_706",
+            "channel": 36,
+            "rssi_dbm": -94
+          }
+        ],
+        "avg_rssi": -94.0
+      },
+      "149": {
+        "count": 1,
+        "total_rssi": -82,
+        "networks": [
+          {
+            "ssid": "客厅_5G",
+            "channel": 149,
+            "rssi_dbm": -82
+          }
+        ],
+        "avg_rssi": -82.0
+      },
+      "2": {
+        "count": 1,
+        "total_rssi": -80,
+        "networks": [
+          {
+            "ssid": "CMCC-tfgm",
+            "channel": 2,
+            "rssi_dbm": -80
+          }
+        ],
+        "avg_rssi": -80.0
+      },
+      "1": {
+        "count": 1,
+        "total_rssi": -67,
+        "networks": [
+          {
+            "ssid": "客厅",
+            "channel": 1,
+            "rssi_dbm": -67
+          }
+        ],
+        "avg_rssi": -67.0
+      },
+      "7": {
+        "count": 1,
+        "total_rssi": -67,
+        "networks": [
+          {
+            "ssid": "TP-LINK_706",
+            "channel": 7,
+            "rssi_dbm": -67
+          }
+        ],
+        "avg_rssi": -67.0
+      },
+      "4": {
+        "count": 1,
+        "total_rssi": -49,
+        "networks": [
+          {
+            "ssid": "@PHICOMM_C0",
+            "channel": 4,
+            "rssi_dbm": -49
+          }
+        ],
+        "avg_rssi": -49.0
+      },
+      "13": {
+        "count": 1,
+        "total_rssi": -40,
+        "networks": [
+          {
+            "ssid": "ChinaNet-WsMV",
+            "channel": 13,
+            "rssi_dbm": -40
+          }
+        ],
+        "avg_rssi": -40.0
+      },
+      "165": {
+        "count": 1,
+        "total_rssi": -33,
+        "networks": [
+          {
+            "ssid": "TP-LINK_E8C9",
+            "channel": 165,
+            "rssi_dbm": -33
+          }
+        ],
+        "avg_rssi": -33.0
+      }
+    },
+    "optimization_suggestions": [
+      {
+        "type": "信道选择",
+        "priority": "高",
+        "suggestion": "使用推荐信道：36",
+        "reason": "当前网络数量最少，干扰最低"
+      },
+      {
+        "type": "5G优化",
+        "priority": "低",
+        "suggestion": "5G频段可用，干扰较少",
+        "reason": "5G频段信道更多，干扰更少"
+      }
+    ]
+  },
+  {
+    "scan_time": "2026-03-27T22:22:21.671587",
+    "location": {
+      "country": "中国",
+      "region": "安徽",
+      "region_en": "Anhui",
+      "city": "合肥",
+      "city_en": "Hefei",
+      "isp": "Chinanet",
+      "运营商": "Chinanet",
+      "ip": "114.103.224.116",
+      "lat": 31.8696,
+      "lon": 117.293,
+      "district": "庐阳区",
+      "township": "逍遥津街道",
+      "village": "县桥社区"
+    },
+    "current_wifi": {
+      "ssid": "TP-LINK_E8C9",
+      "channel_24g": null,
+      "channel_5g": 165
+    },
+    "network_card": {
+      "网卡完整描述": "Wi-Fi  (0x14E4, 0x4388)",
+      "网卡品牌型号": "Broadcom无线网卡",
+      "max_bandwidth_mbps": 2400,
+      "max_bandwidth_gbps": 2.4,
+      "最大支持带宽": "2.4G",
+      "网卡型号": "Broadcom无线网卡",
+      "WiFi标准": "WiFi 6 (802.11ax)"
+    },
+    "total_networks": 8,
+    "recommended_channels": [
+      149,
+      165
+    ],
+    "network_details": [
+      {
+        "ssid": "5303",
+        "channel": 1,
+        "rssi_dbm": -82
+      },
+      {
+        "ssid": "客厅_5G",
+        "channel": 149,
+        "rssi_dbm": -78
+      },
+      {
+        "ssid": "TP-LINK_706",
+        "channel": 7,
+        "rssi_dbm": -68
+      },
+      {
+        "ssid": "605",
+        "channel": 4,
+        "rssi_dbm": -60
+      },
+      {
+        "ssid": "客厅",
+        "channel": 1,
+        "rssi_dbm": -60
+      },
+      {
+        "ssid": "@PHICOMM_C0",
+        "channel": 4,
+        "rssi_dbm": -48
+      },
+      {
+        "ssid": "ChinaNet-WsMV",
+        "channel": 13,
+        "rssi_dbm": -42
+      },
+      {
+        "ssid": "TP-LINK_E8C9",
+        "channel": 165,
+        "rssi_dbm": -33
+      }
+    ],
+    "channel_statistics": {
+      "1": {
+        "count": 2,
+        "total_rssi": -142,
+        "networks": [
+          {
+            "ssid": "5303",
+            "channel": 1,
+            "rssi_dbm": -82
+          },
+          {
+            "ssid": "客厅",
+            "channel": 1,
+            "rssi_dbm": -60
+          }
+        ],
+        "avg_rssi": -71.0
+      },
+      "149": {
+        "count": 1,
+        "total_rssi": -78,
+        "networks": [
+          {
+            "ssid": "客厅_5G",
+            "channel": 149,
+            "rssi_dbm": -78
+          }
+        ],
+        "avg_rssi": -78.0
+      },
+      "7": {
+        "count": 1,
+        "total_rssi": -68,
+        "networks": [
+          {
+            "ssid": "TP-LINK_706",
+            "channel": 7,
+            "rssi_dbm": -68
+          }
+        ],
+        "avg_rssi": -68.0
+      },
+      "4": {
+        "count": 2,
+        "total_rssi": -108,
+        "networks": [
+          {
+            "ssid": "605",
+            "channel": 4,
+            "rssi_dbm": -60
+          },
+          {
+            "ssid": "@PHICOMM_C0",
+            "channel": 4,
+            "rssi_dbm": -48
+          }
+        ],
+        "avg_rssi": -54.0
+      },
+      "13": {
+        "count": 1,
+        "total_rssi": -42,
+        "networks": [
+          {
+            "ssid": "ChinaNet-WsMV",
+            "channel": 13,
+            "rssi_dbm": -42
+          }
+        ],
+        "avg_rssi": -42.0
+      },
+      "165": {
+        "count": 1,
+        "total_rssi": -33,
+        "networks": [
+          {
+            "ssid": "TP-LINK_E8C9",
+            "channel": 165,
+            "rssi_dbm": -33
+          }
+        ],
+        "avg_rssi": -33.0
+      }
+    },
+    "optimization_suggestions": [
+      {
+        "type": "信道选择",
+        "priority": "高",
+        "suggestion": "使用推荐信道：149",
+        "reason": "当前网络数量最少，干扰最低"
+      },
+      {
+        "type": "5G优化",
+        "priority": "低",
+        "suggestion": "5G频段可用，干扰较少",
+        "reason": "5G频段信道更多，干扰更少"
+      }
+    ]
+  },
+  {
+    "scan_time": "2026-03-27T22:29:48.565079",
+    "location": {
+      "country": "中国",
+      "region": "安徽",
+      "region_en": "Anhui",
+      "city": "合肥",
+      "city_en": "Hefei",
+      "isp": "Chinanet",
+      "运营商": "Chinanet",
+      "ip": "114.103.224.116",
+      "lat": 31.8696,
+      "lon": 117.293,
+      "district": "庐阳区",
+      "township": "逍遥津街道",
+      "village": "县桥社区"
+    },
+    "current_wifi": {
+      "ssid": "TP-LINK_E8C9",
+      "channel_24g": null,
+      "channel_5g": 165
+    },
+    "network_card": {
+      "网卡完整描述": "Wi-Fi  (0x14E4, 0x4388)",
+      "网卡品牌型号": "Broadcom无线网卡",
+      "max_bandwidth_mbps": 2400,
+      "max_bandwidth_gbps": 2.4,
+      "最大支持带宽": "2.4G",
+      "网卡型号": "Broadcom无线网卡",
+      "WiFi标准": "WiFi 6 (802.11ax)"
+    },
+    "total_networks": 10,
+    "recommended_channels": [
+      165,
+      149
+    ],
+    "network_details": [
+      {
+        "ssid": "TP-LINK_1403",
+        "channel": 149,
+        "rssi_dbm": -92
+      },
+      {
+        "ssid": "耘心教育",
+        "channel": 11,
+        "rssi_dbm": -82
+      },
+      {
+        "ssid": "CMCC-tfgm",
+        "channel": 2,
+        "rssi_dbm": -80
+      },
+      {
+        "ssid": "客厅_5G",
+        "channel": 149,
+        "rssi_dbm": -78
+      },
+      {
+        "ssid": "Xiaomi_7119",
+        "channel": 8,
+        "rssi_dbm": -75
+      },
+      {
+        "ssid": "TP-LINK_706",
+        "channel": 7,
+        "rssi_dbm": -69
+      },
+      {
+        "ssid": "905",
+        "channel": 8,
+        "rssi_dbm": -68
+      },
+      {
+        "ssid": "客厅",
+        "channel": 1,
+        "rssi_dbm": -60
+      },
+      {
+        "ssid": "ChinaNet-WsMV",
+        "channel": 13,
+        "rssi_dbm": -42
+      },
+      {
+        "ssid": "TP-LINK_E8C9",
+        "channel": 165,
+        "rssi_dbm": -28
+      }
+    ],
+    "channel_statistics": {
+      "149": {
+        "count": 2,
+        "total_rssi": -170,
+        "networks": [
+          {
+            "ssid": "TP-LINK_1403",
+            "channel": 149,
+            "rssi_dbm": -92
+          },
+          {
+            "ssid": "客厅_5G",
+            "channel": 149,
+            "rssi_dbm": -78
+          }
+        ],
+        "avg_rssi": -85.0
+      },
+      "11": {
+        "count": 1,
+        "total_rssi": -82,
+        "networks": [
+          {
+            "ssid": "耘心教育",
+            "channel": 11,
+            "rssi_dbm": -82
+          }
+        ],
+        "avg_rssi": -82.0
+      },
+      "2": {
+        "count": 1,
+        "total_rssi": -80,
+        "networks": [
+          {
+            "ssid": "CMCC-tfgm",
+            "channel": 2,
+            "rssi_dbm": -80
+          }
+        ],
+        "avg_rssi": -80.0
+      },
+      "8": {
+        "count": 2,
+        "total_rssi": -143,
+        "networks": [
+          {
+            "ssid": "Xiaomi_7119",
+            "channel": 8,
+            "rssi_dbm": -75
+          },
+          {
+            "ssid": "905",
+            "channel": 8,
+            "rssi_dbm": -68
+          }
+        ],
+        "avg_rssi": -71.5
+      },
+      "7": {
+        "count": 1,
+        "total_rssi": -69,
+        "networks": [
+          {
+            "ssid": "TP-LINK_706",
+            "channel": 7,
+            "rssi_dbm": -69
+          }
+        ],
+        "avg_rssi": -69.0
+      },
+      "1": {
+        "count": 1,
+        "total_rssi": -60,
+        "networks": [
+          {
+            "ssid": "客厅",
+            "channel": 1,
+            "rssi_dbm": -60
+          }
+        ],
+        "avg_rssi": -60.0
+      },
+      "13": {
+        "count": 1,
+        "total_rssi": -42,
+        "networks": [
+          {
+            "ssid": "ChinaNet-WsMV",
+            "channel": 13,
+            "rssi_dbm": -42
+          }
+        ],
+        "avg_rssi": -42.0
+      },
+      "165": {
+        "count": 1,
+        "total_rssi": -28,
+        "networks": [
+          {
+            "ssid": "TP-LINK_E8C9",
+            "channel": 165,
+            "rssi_dbm": -28
+          }
+        ],
+        "avg_rssi": -28.0
+      }
+    },
+    "optimization_suggestions": [
+      {
+        "type": "信道选择",
+        "priority": "高",
+        "suggestion": "使用推荐信道：11",
+        "reason": "当前网络数量最少，干扰最低"
+      },
+      {
+        "type": "5G优化",
+        "priority": "低",
+        "suggestion": "5G频段可用，干扰较少",
+        "reason": "5G频段信道更多，干扰更少"
+      }
+    ]
+  },
+  {
+    "scan_time": "2026-03-27T22:37:24.400399",
+    "location": {
+      "country": "中国",
+      "region": "安徽",
+      "region_en": "Anhui",
+      "city": "合肥",
+      "city_en": "Hefei",
+      "isp": "Chinanet",
+      "运营商": "Chinanet",
+      "ip": "114.103.224.116",
+      "lat": 31.8696,
+      "lon": 117.293,
+      "district": "庐阳区",
+      "township": "逍遥津街道",
+      "village": "县桥社区"
+    },
+    "current_wifi": {
+      "ssid": "TP-LINK_E8C9",
+      "channel_24g": null,
+      "channel_5g": 165
+    },
+    "network_card": {
+      "网卡完整描述": "Wi-Fi  (0x14E4, 0x4388)",
+      "网卡品牌型号": "Broadcom无线网卡",
+      "max_bandwidth_mbps": 2400,
+      "max_bandwidth_gbps": 2.4,
+      "最大支持带宽": "2.4G",
+      "网卡型号": "Broadcom无线网卡",
+      "WiFi标准": "WiFi 6 (802.11ax)"
+    },
+    "total_networks": 9,
+    "recommended_channels": [
+      149,
+      165
+    ],
+    "network_details": [
+      {
+        "ssid": "CMCC-7usg",
+        "channel": 9,
+        "rssi_dbm": -82
+      },
+      {
+        "ssid": "CU_eEXF",
+        "channel": 3,
+        "rssi_dbm": -79
+      },
+      {
+        "ssid": "客厅_5G",
+        "channel": 149,
+        "rssi_dbm": -77
+      },
+      {
+        "ssid": "TP-LINK_706",
+        "channel": 7,
+        "rssi_dbm": -70
+      },
+      {
+        "ssid": "905",
+        "channel": 8,
+        "rssi_dbm": -67
+      },
+      {
+        "ssid": "客厅",
+        "channel": 1,
+        "rssi_dbm": -62
+      },
+      {
+        "ssid": "@PHICOMM_C0",
+        "channel": 4,
+        "rssi_dbm": -52
+      },
+      {
+        "ssid": "ChinaNet-WsMV",
+        "channel": 13,
+        "rssi_dbm": -43
+      },
+      {
+        "ssid": "TP-LINK_E8C9",
+        "channel": 165,
+        "rssi_dbm": -32
+      }
+    ],
+    "channel_statistics": {
+      "9": {
+        "count": 1,
+        "total_rssi": -82,
+        "networks": [
+          {
+            "ssid": "CMCC-7usg",
+            "channel": 9,
+            "rssi_dbm": -82
+          }
+        ],
+        "avg_rssi": -82.0
+      },
+      "3": {
+        "count": 1,
+        "total_rssi": -79,
+        "networks": [
+          {
+            "ssid": "CU_eEXF",
+            "channel": 3,
+            "rssi_dbm": -79
+          }
+        ],
+        "avg_rssi": -79.0
+      },
+      "149": {
+        "count": 1,
+        "total_rssi": -77,
+        "networks": [
+          {
+            "ssid": "客厅_5G",
+            "channel": 149,
+            "rssi_dbm": -77
+          }
+        ],
+        "avg_rssi": -77.0
+      },
+      "7": {
+        "count": 1,
+        "total_rssi": -70,
+        "networks": [
+          {
+            "ssid": "TP-LINK_706",
+            "channel": 7,
+            "rssi_dbm": -70
+          }
+        ],
+        "avg_rssi": -70.0
+      },
+      "8": {
+        "count": 1,
+        "total_rssi": -67,
+        "networks": [
+          {
+            "ssid": "905",
+            "channel": 8,
+            "rssi_dbm": -67
+          }
+        ],
+        "avg_rssi": -67.0
+      },
+      "1": {
+        "count": 1,
+        "total_rssi": -62,
+        "networks": [
+          {
+            "ssid": "客厅",
+            "channel": 1,
+            "rssi_dbm": -62
+          }
+        ],
+        "avg_rssi": -62.0
+      },
+      "4": {
+        "count": 1,
+        "total_rssi": -52,
+        "networks": [
+          {
+            "ssid": "@PHICOMM_C0",
+            "channel": 4,
+            "rssi_dbm": -52
+          }
+        ],
+        "avg_rssi": -52.0
+      },
+      "13": {
+        "count": 1,
+        "total_rssi": -43,
+        "networks": [
+          {
+            "ssid": "ChinaNet-WsMV",
+            "channel": 13,
+            "rssi_dbm": -43
+          }
+        ],
+        "avg_rssi": -43.0
+      },
+      "165": {
+        "count": 1,
+        "total_rssi": -32,
+        "networks": [
+          {
+            "ssid": "TP-LINK_E8C9",
+            "channel": 165,
+            "rssi_dbm": -32
+          }
+        ],
+        "avg_rssi": -32.0
+      }
+    },
+    "optimization_suggestions": [
+      {
+        "type": "信道选择",
+        "priority": "高",
+        "suggestion": "使用推荐信道：9",
+        "reason": "当前网络数量最少，干扰最低"
+      },
+      {
+        "type": "2.4G频段",
+        "priority": "高",
+        "suggestion": "避免使用重叠信道：3, 7, 8, 9",
+        "reason": "2.4G频段扫描到7个信道，其中不重叠信道信道1(1个网络), 信道6(0个网络), 信道11(0个网络)干扰最小"
+      },
+      {
+        "type": "5G优化",
+        "priority": "低",
+        "suggestion": "5G频段可用，干扰较少",
+        "reason": "5G频段信道更多，干扰更少"
+      }
+    ]
+  },
+  {
+    "scan_time": "2026-03-27T22:46:25.265518",
+    "location": {
+      "country": "中国",
+      "region": "安徽",
+      "region_en": "Anhui",
+      "city": "合肥",
+      "city_en": "Hefei",
+      "isp": "中国电信",
+      "运营商": "中国电信",
+      "ip": "114.103.224.116",
+      "lat": 31.8696,
+      "lon": 117.293,
+      "district": "庐阳区",
+      "township": "逍遥津街道",
+      "village": "县桥社区"
+    },
+    "current_wifi": {
+      "ssid": "TP-LINK_E8C9",
+      "channel_24g": null,
+      "channel_5g": 165
+    },
+    "network_card": {
+      "网卡完整描述": "Wi-Fi  (0x14E4, 0x4388)",
+      "网卡品牌型号": "Broadcom无线网卡",
+      "max_bandwidth_mbps": 2400,
+      "max_bandwidth_gbps": 2.4,
+      "最大支持带宽": "2.4G",
+      "网卡型号": "Broadcom无线网卡",
+      "WiFi标准": "WiFi 6 (802.11ax)"
+    },
+    "total_networks": 22,
+    "recommended_channels": [
+      36,
+      165,
+      149
+    ],
+    "network_details": [
+      {
+        "ssid": "濂ュ厠鏂痏5G",
+        "channel": 149,
+        "rssi_dbm": -96
+      },
+      {
+        "ssid": "HUAWEI-004XF7",
+        "channel": 149,
+        "rssi_dbm": -95
+      },
+      {
+        "ssid": "TP-LINK_706",
+        "channel": 36,
+        "rssi_dbm": -92
+      },
+      {
+        "ssid": "Xiaomi_zq",
+        "channel": 13,
+        "rssi_dbm": -87
+      },
+      {
+        "ssid": "yuanzhang1987",
+        "channel": 11,
+        "rssi_dbm": -81
+      },
+      {
+        "ssid": "CMCC-7usg",
+        "channel": 8,
+        "rssi_dbm": -81
+      },
+      {
+        "ssid": "CMCC-rkf9",
+        "channel": 9,
+        "rssi_dbm": -80
+      },
+      {
+        "ssid": "midea_db_6407",
+        "channel": 6,
+        "rssi_dbm": -80
+      },
+      {
+        "ssid": "TP-LINK_E8C9",
+        "channel": 6,
+        "rssi_dbm": -77
+      },
+      {
+        "ssid": "DIRECT-21-HP Smart Tank 510",
+        "channel": 8,
+        "rssi_dbm": -75
+      },
+      {
+        "ssid": "CU_eEXF",
+        "channel": 3,
+        "rssi_dbm": -75
+      },
+      {
+        "ssid": "Xiaomi_7119",
+        "channel": 8,
+        "rssi_dbm": -74
+      },
+      {
+        "ssid": "CMCC-tfgm",
+        "channel": 2,
+        "rssi_dbm": -73
+      },
+      {
+        "ssid": "瀹㈠巺_5G",
+        "channel": 149,
+        "rssi_dbm": -73
+      },
+      {
+        "ssid": "905",
+        "channel": 6,
+        "rssi_dbm": -70
+      },
+      {
+        "ssid": "905",
+        "channel": 8,
+        "rssi_dbm": -68
+      },
+      {
+        "ssid": "TP-LINK_706",
+        "channel": 7,
+        "rssi_dbm": -66
+      },
+      {
+        "ssid": "瀹㈠巺",
+        "channel": 1,
+        "rssi_dbm": -63
+      },
+      {
+        "ssid": "605",
+        "channel": 4,
+        "rssi_dbm": -61
+      },
+      {
+        "ssid": "@PHICOMM_C0",
+        "channel": 4,
+        "rssi_dbm": -48
+      },
+      {
+        "ssid": "ChinaNet-WsMV",
+        "channel": 13,
+        "rssi_dbm": -41
+      },
+      {
+        "ssid": "TP-LINK_E8C9",
+        "channel": 165,
+        "rssi_dbm": -30
+      }
+    ],
+    "channel_statistics": {
+      "149": {
+        "count": 3,
+        "total_rssi": -264,
+        "networks": [
+          {
+            "ssid": "濂ュ厠鏂痏5G",
+            "channel": 149,
+            "rssi_dbm": -96
+          },
+          {
+            "ssid": "HUAWEI-004XF7",
+            "channel": 149,
+            "rssi_dbm": -95
+          },
+          {
+            "ssid": "瀹㈠巺_5G",
+            "channel": 149,
+            "rssi_dbm": -73
+          }
+        ],
+        "avg_rssi": -88.0
+      },
+      "36": {
+        "count": 1,
+        "total_rssi": -92,
+        "networks": [
+          {
+            "ssid": "TP-LINK_706",
+            "channel": 36,
+            "rssi_dbm": -92
+          }
+        ],
+        "avg_rssi": -92.0
+      },
+      "13": {
+        "count": 2,
+        "total_rssi": -128,
+        "networks": [
+          {
+            "ssid": "Xiaomi_zq",
+            "channel": 13,
+            "rssi_dbm": -87
+          },
+          {
+            "ssid": "ChinaNet-WsMV",
+            "channel": 13,
+            "rssi_dbm": -41
+          }
+        ],
+        "avg_rssi": -64.0
+      },
+      "11": {
+        "count": 1,
+        "total_rssi": -81,
+        "networks": [
+          {
+            "ssid": "yuanzhang1987",
+            "channel": 11,
+            "rssi_dbm": -81
+          }
+        ],
+        "avg_rssi": -81.0
+      },
+      "8": {
+        "count": 4,
+        "total_rssi": -298,
+        "networks": [
+          {
+            "ssid": "CMCC-7usg",
+            "channel": 8,
+            "rssi_dbm": -81
+          },
+          {
+            "ssid": "DIRECT-21-HP Smart Tank 510",
+            "channel": 8,
+            "rssi_dbm": -75
+          },
+          {
+            "ssid": "Xiaomi_7119",
+            "channel": 8,
+            "rssi_dbm": -74
+          },
+          {
+            "ssid": "905",
+            "channel": 8,
+            "rssi_dbm": -68
+          }
+        ],
+        "avg_rssi": -74.5
+      },
+      "9": {
+        "count": 1,
+        "total_rssi": -80,
+        "networks": [
+          {
+            "ssid": "CMCC-rkf9",
+            "channel": 9,
+            "rssi_dbm": -80
+          }
+        ],
+        "avg_rssi": -80.0
+      },
+      "6": {
+        "count": 3,
+        "total_rssi": -227,
+        "networks": [
+          {
+            "ssid": "midea_db_6407",
+            "channel": 6,
+            "rssi_dbm": -80
+          },
+          {
+            "ssid": "TP-LINK_E8C9",
+            "channel": 6,
+            "rssi_dbm": -77
+          },
+          {
+            "ssid": "905",
+            "channel": 6,
+            "rssi_dbm": -70
+          }
+        ],
+        "avg_rssi": -75.7
+      },
+      "3": {
+        "count": 1,
+        "total_rssi": -75,
+        "networks": [
+          {
+            "ssid": "CU_eEXF",
+            "channel": 3,
+            "rssi_dbm": -75
+          }
+        ],
+        "avg_rssi": -75.0
+      },
+      "2": {
+        "count": 1,
+        "total_rssi": -73,
+        "networks": [
+          {
+            "ssid": "CMCC-tfgm",
+            "channel": 2,
+            "rssi_dbm": -73
+          }
+        ],
+        "avg_rssi": -73.0
+      },
+      "7": {
+        "count": 1,
+        "total_rssi": -66,
+        "networks": [
+          {
+            "ssid": "TP-LINK_706",
+            "channel": 7,
+            "rssi_dbm": -66
+          }
+        ],
+        "avg_rssi": -66.0
+      },
+      "1": {
+        "count": 1,
+        "total_rssi": -63,
+        "networks": [
+          {
+            "ssid": "瀹㈠巺",
+            "channel": 1,
+            "rssi_dbm": -63
+          }
+        ],
+        "avg_rssi": -63.0
+      },
+      "4": {
+        "count": 2,
+        "total_rssi": -109,
+        "networks": [
+          {
+            "ssid": "605",
+            "channel": 4,
+            "rssi_dbm": -61
+          },
+          {
+            "ssid": "@PHICOMM_C0",
+            "channel": 4,
+            "rssi_dbm": -48
+          }
+        ],
+        "avg_rssi": -54.5
+      },
+      "165": {
+        "count": 1,
+        "total_rssi": -30,
+        "networks": [
+          {
+            "ssid": "TP-LINK_E8C9",
+            "channel": 165,
+            "rssi_dbm": -30
+          }
+        ],
+        "avg_rssi": -30.0
+      }
+    },
+    "optimization_suggestions": [
+      {
+        "type": "信道选择",
+        "priority": "高",
+        "suggestion": "使用推荐信道：36",
+        "reason": "当前网络数量最少，干扰最低"
+      },
+      {
+        "type": "网络拥挤",
+        "priority": "中",
+        "suggestion": "当前WiFi环境较拥挤，建议切换频段",
+        "reason": "发现 22 个网络"
+      },
+      {
+        "type": "2.4G频段",
+        "priority": "高",
+        "suggestion": "避免使用重叠信道：8, 9, 11, 13",
+        "reason": "2.4G频段扫描到10个信道，其中不重叠信道信道1(1个网络), 信道6(3个网络), 信道11(1个网络)干扰最小"
+      },
+      {
+        "type": "5G优化",
+        "priority": "低",
+        "suggestion": "5G频段可用，干扰较少",
+        "reason": "5G频段信道更多，干扰更少"
+      }
+    ]
+  },
+  {
+    "scan_time": "2026-03-27T22:55:51.529170",
+    "location": {
+      "country": "中国",
+      "region": "安徽",
+      "region_en": "Anhui",
+      "city": "合肥",
+      "city_en": "Hefei",
+      "isp": "中国电信",
+      "运营商": "中国电信",
+      "ip": "114.103.224.116",
+      "lat": 31.8696,
+      "lon": 117.293,
+      "district": "庐阳区",
+      "township": "逍遥津街道",
+      "village": "县桥社区"
+    },
+    "current_wifi": {
+      "ssid": "TP-LINK_E8C9",
+      "channel_24g": null,
+      "channel_5g": 165
+    },
+    "network_card": {
+      "网卡完整描述": "Wi-Fi  (0x14E4, 0x4388)",
+      "网卡品牌型号": "Broadcom无线网卡",
+      "max_bandwidth_mbps": 2400,
+      "max_bandwidth_gbps": 2.4,
+      "最大支持带宽": "2.4G",
+      "网卡型号": "Broadcom无线网卡",
+      "WiFi标准": "WiFi 6 (802.11ax)"
+    },
+    "network_speed": {
+      "下载速度_Mbps": 0.11,
+      "上传速度_Mbps": 0.04,
+      "延迟_ms": 0,
+      "抖动_ms": 0,
+      "丢包率_percent": 0,
+      "测试时间": "2026-03-27T22:52:53.199259",
+      "网络质量": "很慢"
+    },
+    "total_networks": 12,
+    "recommended_channels": [
+      36,
+      149,
+      165
+    ],
+    "network_details": [
+      {
+        "ssid": "TP-LINK_706",
+        "channel": 36,
+        "rssi_dbm": -90
+      },
+      {
+        "ssid": "客厅_5G",
+        "channel": 149,
+        "rssi_dbm": -84
+      },
+      {
+        "ssid": "DIRECT-21-HP Smart Tank 510",
+        "channel": 8,
+        "rssi_dbm": -75
+      },
+      {
+        "ssid": "CU_eEXF",
+        "channel": 3,
+        "rssi_dbm": -74
+      },
+      {
+        "ssid": "Xiaomi_7119",
+        "channel": 8,
+        "rssi_dbm": -74
+      },
+      {
+        "ssid": "TP-LINK_706",
+        "channel": 7,
+        "rssi_dbm": -73
+      },
+      {
+        "ssid": "905",
+        "channel": 6,
+        "rssi_dbm": -73
+      },
+      {
+        "ssid": "客厅",
+        "channel": 1,
+        "rssi_dbm": -63
+      },
+      {
+        "ssid": "605",
+        "channel": 4,
+        "rssi_dbm": -60
+      },
+      {
+        "ssid": "@PHICOMM_C0",
+        "channel": 4,
+        "rssi_dbm": -47
+      },
+      {
+        "ssid": "ChinaNet-WsMV",
+        "channel": 13,
+        "rssi_dbm": -45
+      },
+      {
+        "ssid": "TP-LINK_E8C9",
+        "channel": 165,
+        "rssi_dbm": -33
+      }
+    ],
+    "channel_statistics": {
+      "36": {
+        "count": 1,
+        "total_rssi": -90,
+        "networks": [
+          {
+            "ssid": "TP-LINK_706",
+            "channel": 36,
+            "rssi_dbm": -90
+          }
+        ],
+        "avg_rssi": -90.0
+      },
+      "149": {
+        "count": 1,
+        "total_rssi": -84,
+        "networks": [
+          {
+            "ssid": "客厅_5G",
+            "channel": 149,
+            "rssi_dbm": -84
+          }
+        ],
+        "avg_rssi": -84.0
+      },
+      "8": {
+        "count": 2,
+        "total_rssi": -149,
+        "networks": [
+          {
+            "ssid": "DIRECT-21-HP Smart Tank 510",
+            "channel": 8,
+            "rssi_dbm": -75
+          },
+          {
+            "ssid": "Xiaomi_7119",
+            "channel": 8,
+            "rssi_dbm": -74
+          }
+        ],
+        "avg_rssi": -74.5
+      },
+      "3": {
+        "count": 1,
+        "total_rssi": -74,
+        "networks": [
+          {
+            "ssid": "CU_eEXF",
+            "channel": 3,
+            "rssi_dbm": -74
+          }
+        ],
+        "avg_rssi": -74.0
+      },
+      "7": {
+        "count": 1,
+        "total_rssi": -73,
+        "networks": [
+          {
+            "ssid": "TP-LINK_706",
+            "channel": 7,
+            "rssi_dbm": -73
+          }
+        ],
+        "avg_rssi": -73.0
+      },
+      "6": {
+        "count": 1,
+        "total_rssi": -73,
+        "networks": [
+          {
+            "ssid": "905",
+            "channel": 6,
+            "rssi_dbm": -73
+          }
+        ],
+        "avg_rssi": -73.0
+      },
+      "1": {
+        "count": 1,
+        "total_rssi": -63,
+        "networks": [
+          {
+            "ssid": "客厅",
+            "channel": 1,
+            "rssi_dbm": -63
+          }
+        ],
+        "avg_rssi": -63.0
+      },
+      "4": {
+        "count": 2,
+        "total_rssi": -107,
+        "networks": [
+          {
+            "ssid": "605",
+            "channel": 4,
+            "rssi_dbm": -60
+          },
+          {
+            "ssid": "@PHICOMM_C0",
+            "channel": 4,
+            "rssi_dbm": -47
+          }
+        ],
+        "avg_rssi": -53.5
+      },
+      "13": {
+        "count": 1,
+        "total_rssi": -45,
+        "networks": [
+          {
+            "ssid": "ChinaNet-WsMV",
+            "channel": 13,
+            "rssi_dbm": -45
+          }
+        ],
+        "avg_rssi": -45.0
+      },
+      "165": {
+        "count": 1,
+        "total_rssi": -33,
+        "networks": [
+          {
+            "ssid": "TP-LINK_E8C9",
+            "channel": 165,
+            "rssi_dbm": -33
+          }
+        ],
+        "avg_rssi": -33.0
+      }
+    },
+    "optimization_suggestions": [
+      {
+        "type": "信道选择",
+        "priority": "高",
+        "suggestion": "使用推荐信道：36",
+        "reason": "当前网络数量最少，干扰最低"
+      },
+      {
+        "type": "网络拥挤",
+        "priority": "中",
+        "suggestion": "当前WiFi环境较拥挤，建议切换频段",
+        "reason": "发现 12 个网络"
+      },
+      {
+        "type": "2.4G频段",
+        "priority": "高",
+        "suggestion": "避免使用重叠信道：3, 6, 7, 8",
+        "reason": "2.4G频段扫描到7个信道，其中不重叠信道信道1(1个网络), 信道6(1个网络), 信道11(0个网络)干扰最小"
+      },
+      {
+        "type": "5G优化",
+        "priority": "低",
+        "suggestion": "5G频段可用，干扰较少",
+        "reason": "5G频段信道更多，干扰更少"
+      }
+    ]
+  },
+  {
+    "scan_time": "2026-03-27T23:10:02.915006",
+    "location": {
+      "country": "中国",
+      "region": "安徽",
+      "region_en": "Anhui",
+      "city": "合肥",
+      "city_en": "Hefei",
+      "isp": "中国电信",
+      "运营商": "中国电信",
+      "ip": "114.103.224.116",
+      "lat": 31.8696,
+      "lon": 117.293,
+      "district": "庐阳区",
+      "township": "逍遥津街道",
+      "village": "县桥社区"
+    },
+    "current_wifi": {
+      "ssid": "TP-LINK_E8C9",
+      "channel_24g": null,
+      "channel_5g": 165
+    },
+    "network_card": {
+      "网卡完整描述": "Wi-Fi  (0x14E4, 0x4388)",
+      "网卡品牌型号": "Broadcom无线网卡",
+      "max_bandwidth_mbps": 2400,
+      "max_bandwidth_gbps": 2.4,
+      "最大支持带宽": "2.4G",
+      "网卡型号": "Broadcom无线网卡",
+      "WiFi标准": "WiFi 6 (802.11ax)"
+    },
+    "network_speed": {
+      "下载速度_Mbps": 2400,
+      "上传速度_Mbps": 960.0,
+      "延迟_ms": 0,
+      "抖动_ms": 0,
+      "丢包率_percent": 0,
+      "测试时间": "2026-03-27T23:09:45.880658",
+      "测试模式": "系统命令",
+      "网络质量": "优秀"
+    },
+    "total_networks": 8,
+    "recommended_channels": [
+      149,
+      165
+    ],
+    "network_details": [
+      {
+        "ssid": "客厅_5G",
+        "channel": 149,
+        "rssi_dbm": -83
+      },
+      {
+        "ssid": "1701",
+        "channel": 10,
+        "rssi_dbm": -77
+      },
+      {
+        "ssid": "504",
+        "channel": 1,
+        "rssi_dbm": -74
+      },
+      {
+        "ssid": "Xiaomi_7119",
+        "channel": 8,
+        "rssi_dbm": -74
+      },
+      {
+        "ssid": "HiWiFi_KT",
+        "channel": 6,
+        "rssi_dbm": -71
+      },
+      {
+        "ssid": "TP-LINK_706",
+        "channel": 7,
+        "rssi_dbm": -71
+      },
+      {
+        "ssid": "@PHICOMM_C0",
+        "channel": 4,
+        "rssi_dbm": -47
+      },
+      {
+        "ssid": "TP-LINK_E8C9",
+        "channel": 165,
+        "rssi_dbm": -36
+      }
+    ],
+    "channel_statistics": {
+      "149": {
+        "count": 1,
+        "total_rssi": -83,
+        "networks": [
+          {
+            "ssid": "客厅_5G",
+            "channel": 149,
+            "rssi_dbm": -83
+          }
+        ],
+        "avg_rssi": -83.0
+      },
+      "10": {
+        "count": 1,
+        "total_rssi": -77,
+        "networks": [
+          {
+            "ssid": "1701",
+            "channel": 10,
+            "rssi_dbm": -77
+          }
+        ],
+        "avg_rssi": -77.0
+      },
+      "1": {
+        "count": 1,
+        "total_rssi": -74,
+        "networks": [
+          {
+            "ssid": "504",
+            "channel": 1,
+            "rssi_dbm": -74
+          }
+        ],
+        "avg_rssi": -74.0
+      },
+      "8": {
+        "count": 1,
+        "total_rssi": -74,
+        "networks": [
+          {
+            "ssid": "Xiaomi_7119",
+            "channel": 8,
+            "rssi_dbm": -74
+          }
+        ],
+        "avg_rssi": -74.0
+      },
+      "6": {
+        "count": 1,
+        "total_rssi": -71,
+        "networks": [
+          {
+            "ssid": "HiWiFi_KT",
+            "channel": 6,
+            "rssi_dbm": -71
+          }
+        ],
+        "avg_rssi": -71.0
+      },
+      "7": {
+        "count": 1,
+        "total_rssi": -71,
+        "networks": [
+          {
+            "ssid": "TP-LINK_706",
+            "channel": 7,
+            "rssi_dbm": -71
+          }
+        ],
+        "avg_rssi": -71.0
+      },
+      "4": {
+        "count": 1,
+        "total_rssi": -47,
+        "networks": [
+          {
+            "ssid": "@PHICOMM_C0",
+            "channel": 4,
+            "rssi_dbm": -47
+          }
+        ],
+        "avg_rssi": -47.0
+      },
+      "165": {
+        "count": 1,
+        "total_rssi": -36,
+        "networks": [
+          {
+            "ssid": "TP-LINK_E8C9",
+            "channel": 165,
+            "rssi_dbm": -36
+          }
+        ],
+        "avg_rssi": -36.0
+      }
+    },
+    "optimization_suggestions": [
+      {
+        "type": "信道选择",
+        "priority": "高",
+        "suggestion": "使用推荐信道：149",
+        "reason": "当前网络数量最少，干扰最低"
+      },
+      {
+        "type": "2.4G频段",
+        "priority": "高",
+        "suggestion": "避免使用重叠信道：1, 6, 8, 10",
+        "reason": "2.4G频段扫描到6个信道，其中不重叠信道信道1(1个网络), 信道6(1个网络), 信道11(0个网络)干扰最小"
+      },
+      {
+        "type": "5G优化",
+        "priority": "低",
+        "suggestion": "5G频段可用，干扰较少",
+        "reason": "5G频段信道更多，干扰更少"
+      }
+    ]
+  },
+  {
+    "scan_time": "2026-03-27T23:14:23.956164",
+    "location": {
+      "country": "中国",
+      "region": "安徽",
+      "region_en": "Anhui",
+      "city": "合肥",
+      "city_en": "Hefei",
+      "isp": "中国电信",
+      "运营商": "中国电信",
+      "ip": "114.103.224.116",
+      "lat": 31.8696,
+      "lon": 117.293,
+      "district": "庐阳区",
+      "township": "逍遥津街道",
+      "village": "县桥社区"
+    },
+    "current_wifi": {
+      "ssid": "TP-LINK_E8C9",
+      "channel_24g": null,
+      "channel_5g": 165
+    },
+    "network_card": {
+      "网卡完整描述": "Wi-Fi  (0x14E4, 0x4388)",
+      "网卡品牌型号": "Broadcom无线网卡",
+      "max_bandwidth_mbps": 2400,
+      "max_bandwidth_gbps": 2.4,
+      "最大支持带宽": "2.4G",
+      "网卡型号": "Broadcom无线网卡",
+      "WiFi标准": "WiFi 6 (802.11ax)"
+    },
+    "network_speed": {
+      "下载速度_Mbps": 2400,
+      "上传速度_Mbps": 960.0,
+      "延迟_ms": 0,
+      "抖动_ms": 0,
+      "丢包率_percent": 0,
+      "测试时间": "2026-03-27T23:14:06.872613",
+      "测试模式": "系统命令",
+      "网络质量": "优秀 (WiFi 6)"
+    },
+    "total_networks": 8,
+    "recommended_channels": [
+      165
+    ],
+    "network_details": [
+      {
+        "ssid": "CU_eEXF",
+        "channel": 3,
+        "rssi_dbm": -76
+      },
+      {
+        "ssid": "DIRECT-21-HP Smart Tank 510",
+        "channel": 8,
+        "rssi_dbm": -74
+      },
+      {
+        "ssid": "Xiaomi_7119",
+        "channel": 8,
+        "rssi_dbm": -73
+      },
+      {
+        "ssid": "TP-LINK_706",
+        "channel": 7,
+        "rssi_dbm": -71
+      },
+      {
+        "ssid": "客厅",
+        "channel": 1,
+        "rssi_dbm": -68
+      },
+      {
+        "ssid": "@PHICOMM_C0",
+        "channel": 4,
+        "rssi_dbm": -46
+      },
+      {
+        "ssid": "ChinaNet-WsMV",
+        "channel": 13,
+        "rssi_dbm": -43
+      },
+      {
+        "ssid": "TP-LINK_E8C9",
+        "channel": 165,
+        "rssi_dbm": -33
+      }
+    ],
+    "channel_statistics": {
+      "3": {
+        "count": 1,
+        "total_rssi": -76,
+        "networks": [
+          {
+            "ssid": "CU_eEXF",
+            "channel": 3,
+            "rssi_dbm": -76
+          }
+        ],
+        "avg_rssi": -76.0
+      },
+      "8": {
+        "count": 2,
+        "total_rssi": -147,
+        "networks": [
+          {
+            "ssid": "DIRECT-21-HP Smart Tank 510",
+            "channel": 8,
+            "rssi_dbm": -74
+          },
+          {
+            "ssid": "Xiaomi_7119",
+            "channel": 8,
+            "rssi_dbm": -73
+          }
+        ],
+        "avg_rssi": -73.5
+      },
+      "7": {
+        "count": 1,
+        "total_rssi": -71,
+        "networks": [
+          {
+            "ssid": "TP-LINK_706",
+            "channel": 7,
+            "rssi_dbm": -71
+          }
+        ],
+        "avg_rssi": -71.0
+      },
+      "1": {
+        "count": 1,
+        "total_rssi": -68,
+        "networks": [
+          {
+            "ssid": "客厅",
+            "channel": 1,
+            "rssi_dbm": -68
+          }
+        ],
+        "avg_rssi": -68.0
+      },
+      "4": {
+        "count": 1,
+        "total_rssi": -46,
+        "networks": [
+          {
+            "ssid": "@PHICOMM_C0",
+            "channel": 4,
+            "rssi_dbm": -46
+          }
+        ],
+        "avg_rssi": -46.0
+      },
+      "13": {
+        "count": 1,
+        "total_rssi": -43,
+        "networks": [
+          {
+            "ssid": "ChinaNet-WsMV",
+            "channel": 13,
+            "rssi_dbm": -43
+          }
+        ],
+        "avg_rssi": -43.0
+      },
+      "165": {
+        "count": 1,
+        "total_rssi": -33,
+        "networks": [
+          {
+            "ssid": "TP-LINK_E8C9",
+            "channel": 165,
+            "rssi_dbm": -33
+          }
+        ],
+        "avg_rssi": -33.0
+      }
+    },
+    "optimization_suggestions": [
+      {
+        "type": "信道选择",
+        "priority": "高",
+        "suggestion": "使用推荐信道：3",
+        "reason": "当前网络数量最少，干扰最低"
+      },
+      {
+        "type": "2.4G频段",
+        "priority": "高",
+        "suggestion": "避免使用重叠信道：1, 3, 7, 8",
+        "reason": "2.4G频段扫描到6个信道，其中不重叠信道信道1(1个网络), 信道6(0个网络), 信道11(0个网络)干扰最小"
+      },
+      {
+        "type": "5G优化",
+        "priority": "低",
+        "suggestion": "5G频段可用，干扰较少",
+        "reason": "5G频段信道更多，干扰更少"
+      }
+    ]
+  },
+  {
+    "scan_time": "2026-03-27T23:24:23.339415",
+    "location": {
+      "country": "中国",
+      "region": "安徽",
+      "region_en": "Anhui",
+      "city": "合肥",
+      "city_en": "Hefei",
+      "isp": "中国电信",
+      "运营商": "中国电信",
+      "ip": "114.103.224.116",
+      "lat": 31.8696,
+      "lon": 117.293,
+      "district": "庐阳区",
+      "township": "逍遥津街道",
+      "village": "县桥社区"
+    },
+    "current_wifi": {
+      "ssid": "TP-LINK_E8C9",
+      "channel_24g": null,
+      "channel_5g": 165
+    },
+    "network_card": {
+      "网卡完整描述": "Wi-Fi  (0x14E4, 0x4388)",
+      "网卡品牌型号": "Broadcom无线网卡",
+      "max_bandwidth_mbps": 2400,
+      "max_bandwidth_gbps": 2.4,
+      "最大支持带宽": "2.4G",
+      "网卡型号": "Broadcom无线网卡",
+      "WiFi标准": "WiFi 6 (802.11ax)"
+    },
+    "network_speed": {
+      "下载速度_Mbps": 2400,
+      "上传速度_Mbps": 960.0,
+      "延迟_ms": 0,
+      "抖动_ms": 0,
+      "丢包率_percent": 0,
+      "测试时间": "2026-03-27T23:24:06.258278",
+      "测试模式": "系统命令",
+      "网络质量": "优秀 (WiFi 6)"
+    },
+    "video_recommendations": {
+      "抖音": {
+        "平台名称": "抖音",
+        "平台类型": "短视频",
+        "实际网速_Mbps": 720.0,
+        "测试模式": "系统命令",
+        "推荐分辨率": {
+          "分辨率": "4K",
+          "描述": "4K超清 (3840x2160)",
+          "所需带宽_Mbps": 25,
+          "推荐指数": 0.6,
+          "是否推荐": true
+        },
+        "可用分辨率": [
+          {
+            "分辨率": "4K",
+            "描述": "4K超清 (3840x2160)",
+            "所需带宽_Mbps": 25,
+            "推荐指数": 0.6,
+            "是否推荐": true
+          },
+          {
+            "分辨率": "1080P",
+            "描述": "1080P高清 (1920x1080)",
+            "所需带宽_Mbps": 8,
+            "推荐指数": 0.6,
+            "是否推荐": true
+          },
+          {
+            "分辨率": "720P",
+            "描述": "720P标清 (1280x720)",
+            "所需带宽_Mbps": 4,
+            "推荐指数": 0.6,
+            "是否推荐": true
+          },
+          {
+            "分辨率": "480P",
+            "描述": "480P流畅 (854x480)",
+            "所需带宽_Mbps": 2,
+            "推荐指数": 0.6,
+            "是否推荐": true
+          },
+          {
+            "分辨率": "360P",
+            "描述": "360P省流 (640x360)",
+            "所需带宽_Mbps": 1,
+            "推荐指数": 0.6,
+            "是否推荐": true
+          }
+        ]
+      },
+      "虎牙": {
+        "平台名称": "虎牙",
+        "平台类型": "直播平台",
+        "实际网速_Mbps": 720.0,
+        "测试模式": "系统命令",
+        "推荐分辨率": {
+          "分辨率": "4K",
+          "描述": "4K超清直播 (3840x2160)",
+          "所需带宽_Mbps": 30,
+          "推荐指数": 0.6,
+          "是否推荐": true
+        },
+        "可用分辨率": [
+          {
+            "分辨率": "4K",
+            "描述": "4K超清直播 (3840x2160)",
+            "所需带宽_Mbps": 30,
+            "推荐指数": 0.6,
+            "是否推荐": true
+          },
+          {
+            "分辨率": "1080P",
+            "描述": "1080P高清直播 (1920x1080)",
+            "所需带宽_Mbps": 10,
+            "推荐指数": 0.6,
+            "是否推荐": true
+          },
+          {
+            "分辨率": "720P",
+            "描述": "720P标清直播 (1280x720)",
+            "所需带宽_Mbps": 5,
+            "推荐指数": 0.6,
+            "是否推荐": true
+          },
+          {
+            "分辨率": "480P",
+            "描述": "480P流畅直播 (854x480)",
+            "所需带宽_Mbps": 2.5,
+            "推荐指数": 0.6,
+            "是否推荐": true
+          },
+          {
+            "分辨率": "360P",
+            "描述": "360P省流直播 (640x360)",
+            "所需带宽_Mbps": 1.2,
+            "推荐指数": 0.6,
+            "是否推荐": true
+          }
+        ]
+      },
+      "优酷": {
+        "平台名称": "优酷",
+        "平台类型": "长视频",
+        "实际网速_Mbps": 720.0,
+        "测试模式": "系统命令",
+        "推荐分辨率": {
+          "分辨率": "4K",
+          "描述": "4K HDR (3840x2160)",
+          "所需带宽_Mbps": 40,
+          "推荐指数": 0.6,
+          "是否推荐": true
+        },
+        "可用分辨率": [
+          {
+            "分辨率": "4K",
+            "描述": "4K HDR (3840x2160)",
+            "所需带宽_Mbps": 40,
+            "推荐指数": 0.6,
+            "是否推荐": true
+          },
+          {
+            "分辨率": "1080P",
+            "描述": "1080P高清 (1920x1080)",
+            "所需带宽_Mbps": 15,
+            "推荐指数": 0.6,
+            "是否推荐": true
+          },
+          {
+            "分辨率": "720P",
+            "描述": "720P标清 (1280x720)",
+            "所需带宽_Mbps": 6,
+            "推荐指数": 0.6,
+            "是否推荐": true
+          },
+          {
+            "分辨率": "480P",
+            "描述": "480P流畅 (854x480)",
+            "所需带宽_Mbps": 3,
+            "推荐指数": 0.6,
+            "是否推荐": true
+          },
+          {
+            "分辨率": "360P",
+            "描述": "360P省流 (640x360)",
+            "所需带宽_Mbps": 1.5,
+            "推荐指数": 0.6,
+            "是否推荐": true
+          }
+        ]
+      },
+      "腾讯视频": {
+        "平台名称": "腾讯视频",
+        "平台类型": "长视频",
+        "实际网速_Mbps": 720.0,
+        "测试模式": "系统命令",
+        "推荐分辨率": {
+          "分辨率": "4K",
+          "描述": "4K超清 (3840x2160)",
+          "所需带宽_Mbps": 35,
+          "推荐指数": 0.6,
+          "是否推荐": true
+        },
+        "可用分辨率": [
+          {
+            "分辨率": "4K",
+            "描述": "4K超清 (3840x2160)",
+            "所需带宽_Mbps": 35,
+            "推荐指数": 0.6,
+            "是否推荐": true
+          },
+          {
+            "分辨率": "1080P",
+            "描述": "1080P高清 (1920x1080)",
+            "所需带宽_Mbps": 12,
+            "推荐指数": 0.6,
+            "是否推荐": true
+          },
+          {
+            "分辨率": "720P",
+            "描述": "720P标清 (1280x720)",
+            "所需带宽_Mbps": 5,
+            "推荐指数": 0.6,
+            "是否推荐": true
+          },
+          {
+            "分辨率": "480P",
+            "描述": "480P流畅 (854x480)",
+            "所需带宽_Mbps": 2.5,
+            "推荐指数": 0.6,
+            "是否推荐": true
+          },
+          {
+            "分辨率": "360P",
+            "描述": "360P省流 (640x360)",
+            "所需带宽_Mbps": 1.2,
+            "推荐指数": 0.6,
+            "是否推荐": true
+          }
+        ]
+      },
+      "爱奇艺": {
+        "平台名称": "爱奇艺",
+        "平台类型": "长视频",
+        "实际网速_Mbps": 720.0,
+        "测试模式": "系统命令",
+        "推荐分辨率": {
+          "分辨率": "4K",
+          "描述": "4K HDR (3840x2160)",
+          "所需带宽_Mbps": 38,
+          "推荐指数": 0.6,
+          "是否推荐": true
+        },
+        "可用分辨率": [
+          {
+            "分辨率": "4K",
+            "描述": "4K HDR (3840x2160)",
+            "所需带宽_Mbps": 38,
+            "推荐指数": 0.6,
+            "是否推荐": true
+          },
+          {
+            "分辨率": "1080P",
+            "描述": "1080P高清 (1920x1080)",
+            "所需带宽_Mbps": 14,
+            "推荐指数": 0.6,
+            "是否推荐": true
+          },
+          {
+            "分辨率": "720P",
+            "描述": "720P标清 (1280x720)",
+            "所需带宽_Mbps": 5.5,
+            "推荐指数": 0.6,
+            "是否推荐": true
+          },
+          {
+            "分辨率": "480P",
+            "描述": "480P流畅 (854x480)",
+            "所需带宽_Mbps": 2.8,
+            "推荐指数": 0.6,
+            "是否推荐": true
+          },
+          {
+            "分辨率": "360P",
+            "描述": "360P省流 (640x360)",
+            "所需带宽_Mbps": 1.3,
+            "推荐指数": 0.6,
+            "是否推荐": true
+          }
+        ]
+      },
+      "B站": {
+        "平台名称": "B站",
+        "平台类型": "综合视频",
+        "实际网速_Mbps": 720.0,
+        "测试模式": "系统命令",
+        "推荐分辨率": {
+          "分辨率": "4K",
+          "描述": "4K超清 (3840x2160)",
+          "所需带宽_Mbps": 32,
+          "推荐指数": 0.6,
+          "是否推荐": true
+        },
+        "可用分辨率": [
+          {
+            "分辨率": "4K",
+            "描述": "4K超清 (3840x2160)",
+            "所需带宽_Mbps": 32,
+            "推荐指数": 0.6,
+            "是否推荐": true
+          },
+          {
+            "分辨率": "1080P60",
+            "描述": "1080P60帧 (1920x1080)",
+            "所需带宽_Mbps": 18,
+            "推荐指数": 0.6,
+            "是否推荐": true
+          },
+          {
+            "分辨率": "1080P",
+            "描述": "1080P高清 (1920x1080)",
+            "所需带宽_Mbps": 10,
+            "推荐指数": 0.6,
+            "是否推荐": true
+          },
+          {
+            "分辨率": "720P",
+            "描述": "720P标清 (1280x720)",
+            "所需带宽_Mbps": 5,
+            "推荐指数": 0.6,
+            "是否推荐": true
+          },
+          {
+            "分辨率": "480P",
+            "描述": "480P流畅 (854x480)",
+            "所需带宽_Mbps": 2.5,
+            "推荐指数": 0.6,
+            "是否推荐": true
+          },
+          {
+            "分辨率": "360P",
+            "描述": "360P省流 (640x360)",
+            "所需带宽_Mbps": 1.2,
+            "推荐指数": 0.6,
+            "是否推荐": true
+          }
+        ]
+      },
+      "快手": {
+        "平台名称": "快手",
+        "平台类型": "短视频",
+        "实际网速_Mbps": 720.0,
+        "测试模式": "系统命令",
+        "推荐分辨率": {
+          "分辨率": "1080P",
+          "描述": "1080P高清 (1920x1080)",
+          "所需带宽_Mbps": 7,
+          "推荐指数": 0.6,
+          "是否推荐": true
+        },
+        "可用分辨率": [
+          {
+            "分辨率": "1080P",
+            "描述": "1080P高清 (1920x1080)",
+            "所需带宽_Mbps": 7,
+            "推荐指数": 0.6,
+            "是否推荐": true
+          },
+          {
+            "分辨率": "720P",
+            "描述": "720P标清 (1280x720)",
+            "所需带宽_Mbps": 3.5,
+            "推荐指数": 0.6,
+            "是否推荐": true
+          },
+          {
+            "分辨率": "480P",
+            "描述": "480P流畅 (854x480)",
+            "所需带宽_Mbps": 1.8,
+            "推荐指数": 0.6,
+            "是否推荐": true
+          },
+          {
+            "分辨率": "360P",
+            "描述": "360P省流 (640x360)",
+            "所需带宽_Mbps": 0.9,
+            "推荐指数": 0.6,
+            "是否推荐": true
+          }
+        ]
+      }
+    },
+    "total_networks": 8,
+    "recommended_channels": [
+      149,
+      165
+    ],
+    "network_details": [
+      {
+        "ssid": "客厅_5G",
+        "channel": 149,
+        "rssi_dbm": -86
+      },
+      {
+        "ssid": "508",
+        "channel": 13,
+        "rssi_dbm": -84
+      },
+      {
+        "ssid": "CMCC-yne5",
+        "channel": 2,
+        "rssi_dbm": -82
+      },
+      {
+        "ssid": "midea_db_6407",
+        "channel": 6,
+        "rssi_dbm": -79
+      },
+      {
+        "ssid": "CU_eEXF",
+        "channel": 3,
+        "rssi_dbm": -73
+      },
+      {
+        "ssid": "客厅",
+        "channel": 1,
+        "rssi_dbm": -73
+      },
+      {
+        "ssid": "ChinaNet-WsMV",
+        "channel": 13,
+        "rssi_dbm": -43
+      },
+      {
+        "ssid": "TP-LINK_E8C9",
+        "channel": 165,
+        "rssi_dbm": -40
+      }
+    ],
+    "channel_statistics": {
+      "149": {
+        "count": 1,
+        "total_rssi": -86,
+        "networks": [
+          {
+            "ssid": "客厅_5G",
+            "channel": 149,
+            "rssi_dbm": -86
+          }
+        ],
+        "avg_rssi": -86.0
+      },
+      "13": {
+        "count": 2,
+        "total_rssi": -127,
+        "networks": [
+          {
+            "ssid": "508",
+            "channel": 13,
+            "rssi_dbm": -84
+          },
+          {
+            "ssid": "ChinaNet-WsMV",
+            "channel": 13,
+            "rssi_dbm": -43
+          }
+        ],
+        "avg_rssi": -63.5
+      },
+      "2": {
+        "count": 1,
+        "total_rssi": -82,
+        "networks": [
+          {
+            "ssid": "CMCC-yne5",
+            "channel": 2,
+            "rssi_dbm": -82
+          }
+        ],
+        "avg_rssi": -82.0
+      },
+      "6": {
+        "count": 1,
+        "total_rssi": -79,
+        "networks": [
+          {
+            "ssid": "midea_db_6407",
+            "channel": 6,
+            "rssi_dbm": -79
+          }
+        ],
+        "avg_rssi": -79.0
+      },
+      "3": {
+        "count": 1,
+        "total_rssi": -73,
+        "networks": [
+          {
+            "ssid": "CU_eEXF",
+            "channel": 3,
+            "rssi_dbm": -73
+          }
+        ],
+        "avg_rssi": -73.0
+      },
+      "1": {
+        "count": 1,
+        "total_rssi": -73,
+        "networks": [
+          {
+            "ssid": "客厅",
+            "channel": 1,
+            "rssi_dbm": -73
+          }
+        ],
+        "avg_rssi": -73.0
+      },
+      "165": {
+        "count": 1,
+        "total_rssi": -40,
+        "networks": [
+          {
+            "ssid": "TP-LINK_E8C9",
+            "channel": 165,
+            "rssi_dbm": -40
+          }
+        ],
+        "avg_rssi": -40.0
+      }
+    },
+    "optimization_suggestions": [
+      {
+        "type": "信道选择",
+        "priority": "高",
+        "suggestion": "使用推荐信道：149",
+        "reason": "当前网络数量最少，干扰最低"
+      },
+      {
+        "type": "2.4G频段",
+        "priority": "高",
+        "suggestion": "避免使用重叠信道：2, 3, 6, 13",
+        "reason": "2.4G频段扫描到5个信道，其中不重叠信道信道1(1个网络), 信道6(1个网络), 信道11(0个网络)干扰最小"
+      },
+      {
+        "type": "5G优化",
+        "priority": "低",
+        "suggestion": "5G频段可用，干扰较少",
+        "reason": "5G频段信道更多，干扰更少"
+      }
+    ]
+  }
+]

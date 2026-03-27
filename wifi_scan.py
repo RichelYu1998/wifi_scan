@@ -1,4 +1,3 @@
-import subprocess
 import re
 import argparse
 import os
@@ -11,6 +10,39 @@ import urllib.request
 import threading
 from collections import defaultdict
 from geopy.geocoders import Nominatim
+
+try:
+    from cross_platform_utils import CrossPlatformUtils, get_cross_platform_utils
+except ImportError:
+    # 如果cross_platform_utils不可用，创建简化版本
+    class CrossPlatformUtils:
+        def __init__(self, debug_mode=False):
+            self.debug_mode = debug_mode
+            self.platform = platform.system()
+        
+        def run_command(self, command, timeout=10):
+            import subprocess
+            try:
+                result = subprocess.run(
+                    command, 
+                    stdout=subprocess.PIPE, 
+                    stderr=subprocess.PIPE,
+                    text=True, 
+                    encoding='utf-8',
+                    errors='replace',
+                    timeout=timeout
+                )
+                return result.stdout if result.returncode == 0 else ""
+            except:
+                return ""
+
+try:
+    from hardware_info import HardwareInfo
+    from network_speed_tester import NetworkSpeedTester
+    from video_resolution_recommender import VideoResolutionRecommender
+    EXTERNAL_MODULES_AVAILABLE = True
+except ImportError:
+    EXTERNAL_MODULES_AVAILABLE = False
 
 
 class EscapeManager:
@@ -323,10 +355,13 @@ class EscapeManager:
 
 
 class WiFiChannelScanner:
-    def __init__(self):
+    def __init__(self, cross_platform_utils=None):
         self.scan_results = []
         self.channel_stats = {}
-        self.platform = platform.system()
+        if cross_platform_utils is None:
+            cross_platform_utils = get_cross_platform_utils()
+        self.cross_platform_utils = cross_platform_utils
+        self.platform = self.cross_platform_utils.platform
         self.log_dir = "wifi_logs"
         self.escape_manager = EscapeManager()  # 初始化转义管理器
 
@@ -357,40 +392,8 @@ class WiFiChannelScanner:
         }
 
     def run_command(self, command):
-        """执行命令（智能编码检测版）"""
-        try:
-            # 智能编码检测：优先使用UTF-8，失败时回退到GBK
-            encodings_to_try = ['utf-8', 'gbk', 'cp936']
-            
-            for encoding in encodings_to_try:
-                try:
-                    result = subprocess.run(
-                        command,
-                        stdout=subprocess.PIPE,
-                        stderr=subprocess.PIPE,
-                        text=True,
-                        encoding=encoding,
-                        errors="replace",
-                        timeout=30  # 增加超时限制
-                    )
-                    
-                    # 检查输出是否包含乱码
-                    if not self._contains_garbled_text(result.stdout):
-                        return result.stdout
-                    
-                    # 如果包含乱码，尝试下一个编码
-                except (UnicodeDecodeError, UnicodeEncodeError):
-                    continue
-                except subprocess.TimeoutExpired:
-                    return "错误: 命令执行超时"
-                except Exception:
-                    continue
-            
-            # 如果所有编码都失败，使用最后一个编码的结果
-            return result.stdout if 'result' in locals() else "错误: 无法执行命令"
-            
-        except Exception as e:
-            return f"错误: {str(e)}"
+        """执行命令（使用统一的跨平台工具类）"""
+        return self.cross_platform_utils.run_command(command)
     
     def _contains_garbled_text(self, text):
         """检测文本是否包含乱码"""
@@ -418,18 +421,7 @@ class WiFiChannelScanner:
     
     def run_command_utf8(self, command):
         """执行命令（使用UTF-8编码）"""
-        try:
-            result = subprocess.run(
-                command,
-                stdout=subprocess.PIPE,
-                stderr=subprocess.PIPE,
-                text=True,
-                encoding="utf-8",  # 使用UTF-8编码
-                errors="replace"
-            )
-            return result.stdout
-        except Exception as e:
-            return f"错误: {str(e)}"
+        return self.cross_platform_utils.run_command(command)
 
     def get_current_wifi_info(self):
         """获取当前连接的WiFi信息"""
@@ -475,6 +467,9 @@ class WiFiChannelScanner:
                             wifi_info['band'] = '未知'
                     except (ValueError, TypeError):
                         wifi_info['band'] = '未知'
+                
+                # 在macOS下添加网卡详细信息
+                wifi_info = self._enhance_macos_network_card_info(wifi_info)
                 
                 return wifi_info
             except Exception:
@@ -674,6 +669,267 @@ class WiFiChannelScanner:
                 return None
         else:
             return None
+
+    def _enhance_macos_network_card_info(self, wifi_info):
+        """增强macOS下的网卡信息，添加详细的网卡描述、品牌型号、带宽等信息"""
+        try:
+            # 使用system_profiler获取详细的网卡信息
+            command = ["system_profiler", "SPNetworkDataType"]
+            output = self.run_command(command)
+            
+            # 获取网卡驱动信息来判断网卡类型
+            driver_output = ""
+            pci_vendor_id = ""
+            pci_device_id = ""
+            
+            try:
+                driver_output = self.run_command(["ioreg", "-l", "-w0", "-c", "IO80211Interface"])
+            except:
+                pass
+            
+            # 尝试获取PCI设备ID
+            try:
+                pci_output = self.run_command(["ioreg", "-l", "-r", "-w0", "-c", "IOPCIDevice"])
+                if pci_output:
+                    # 查找vendor-id和device-id
+                    import re
+                    # 查找IOPCIMatch中的vendor ID
+                    pci_match = re.search(r'"IOPCIMatch"[^"]*"0x([0-9a-fA-F]+)&0x[0-9a-fA-F]+"', pci_output)
+                    if pci_match:
+                        pci_vendor_id = f"0x{pci_match.group(1).upper()}"
+                    
+                    # 查找device-id（格式可能是 <34440000> 或 "0x4434"）
+                    # 我们需要找到Broadcom网卡对应的device-id
+                    device_match = re.search(r'"device-id"\s*=\s*<([0-9a-fA-F]+)>', pci_output)
+                    if device_match:
+                        device_hex = device_match.group(1)
+                        # 将十六进制字符串转换为正确的格式（小端序转换）
+                        if len(device_hex) >= 8:
+                            # 取前8个字符并反转字节顺序（小端序 -> 大端序）
+                            # 例如: 34440000 -> 00 00 44 34 -> 0x4434
+                            reversed_hex = device_hex[6:8] + device_hex[4:6] + device_hex[2:4] + device_hex[0:2]
+                            pci_device_id = f"0x{reversed_hex.upper()}"
+                        elif len(device_hex) >= 7:
+                            # 处理7个字符的情况（如0c100000）
+                            # 补全到8个字符：00c10000 -> 00 00 c1 00 -> 0x00c1
+                            padded_hex = device_hex.zfill(8)
+                            reversed_hex = padded_hex[6:8] + padded_hex[4:6] + padded_hex[2:4] + padded_hex[0:2]
+                            pci_device_id = f"0x{reversed_hex.upper()}"
+                    
+                    # 如果没有找到<...>格式，尝试查找"0x..."格式
+                    if not pci_device_id:
+                        device_match = re.search(r'"device-id"\s*=\s*"([^"]+)"', pci_output)
+                        if device_match:
+                            device_id = device_match.group(1)
+                            device_hex_match = re.search(r'0x([0-9a-fA-F]+)', device_id)
+                            if device_hex_match:
+                                pci_device_id = f"0x{device_hex_match.group(1).upper()}"
+            except Exception as e:
+                self.escape_manager.debug_log(f"获取PCI设备ID失败: {e}")
+            
+            # 判断网卡类型和最大带宽
+            max_bandwidth_mbps = 866  # 默认值
+            wifi_standard = "WiFi 5 (802.11ac)"
+            
+            # 根据驱动信息判断网卡类型
+            if driver_output:
+                if "brcm" in driver_output.lower() or "broadcom" in driver_output.lower():
+                    # Broadcom网卡
+                    if "ax" in driver_output.lower() or "wifi 6" in driver_output.lower():
+                        max_bandwidth_mbps = 2400
+                        wifi_standard = "WiFi 6 (802.11ax)"
+                    elif "ac" in driver_output.lower() or "wifi 5" in driver_output.lower():
+                        max_bandwidth_mbps = 1733
+                        wifi_standard = "WiFi 5 (802.11ac)"
+                    elif "n" in driver_output.lower():
+                        max_bandwidth_mbps = 450
+                        wifi_standard = "WiFi 4 (802.11n)"
+                elif "ath" in driver_output.lower() or "qualcomm" in driver_output.lower():
+                    # Atheros/Qualcomm网卡
+                    if "ax" in driver_output.lower():
+                        max_bandwidth_mbps = 2400
+                        wifi_standard = "WiFi 6 (802.11ax)"
+                    elif "ac" in driver_output.lower():
+                        max_bandwidth_mbps = 1733
+                        wifi_standard = "WiFi 5 (802.11ac)"
+                    elif "n" in driver_output.lower():
+                        max_bandwidth_mbps = 450
+                        wifi_standard = "WiFi 4 (802.11n)"
+                elif "intel" in driver_output.lower():
+                    # Intel网卡
+                    if "ax" in driver_output.lower():
+                        max_bandwidth_mbps = 2400
+                        wifi_standard = "WiFi 6 (802.11ax)"
+                    elif "ac" in driver_output.lower():
+                        max_bandwidth_mbps = 1733
+                        wifi_standard = "WiFi 5 (802.11ac)"
+                    elif "n" in driver_output.lower():
+                        max_bandwidth_mbps = 450
+                        wifi_standard = "WiFi 4 (802.11n)"
+            
+            # 根据当前连接的maxRate进一步验证
+            if 'maxRate' in wifi_info:
+                try:
+                    current_rate = int(wifi_info['maxRate'])
+                    # 如果当前连接速率接近最大带宽，则使用更大的带宽值
+                    if current_rate >= 200:
+                        max_bandwidth_mbps = max(max_bandwidth_mbps, 2400)
+                        wifi_standard = "WiFi 6 (802.11ax)"
+                    elif current_rate >= 150:
+                        max_bandwidth_mbps = max(max_bandwidth_mbps, 1733)
+                        wifi_standard = "WiFi 5 (802.11ac)"
+                except (ValueError, TypeError):
+                    pass
+            
+            if output:
+                lines = output.split('\n')
+                current_interface = None
+                hardware_port = None
+                
+                for line in lines:
+                    line = line.strip()
+                    
+                    # 查找WiFi接口
+                    if 'Wi-Fi' in line or 'AirPort' in line:
+                        current_interface = 'WiFi'
+                        continue
+                    
+                    if current_interface == 'WiFi':
+                        # 查找Hardware Port信息
+                        if 'Hardware Port' in line:
+                            if ':' in line:
+                                key, value = line.split(':', 1)
+                                key = key.strip()
+                                value = value.strip()
+                                if 'Hardware Port' in key:
+                                    hardware_port = value
+                        
+                        # 查找Hardware信息（但排除Hardware Address）
+                        elif 'Hardware:' in line and 'MAC Address' not in line:
+                            if ':' in line:
+                                key, value = line.split(':', 1)
+                                key = key.strip()
+                                value = value.strip()
+                                if 'Hardware:' in key:
+                                    wifi_info['网卡完整描述'] = value
+                                    
+                        # 查找BSD设备名
+                        if 'BSD Device Name' in line and ':' in line:
+                            key, value = line.split(':', 1)
+                            if 'en0' in value:
+                                # 找到了主WiFi接口
+                                pass
+            
+            # 如果没有找到hardware_port，设置为默认值
+            if not hardware_port:
+                hardware_port = 'Wi-Fi'
+            
+            # 根据硬件信息设置网卡描述
+            if '网卡完整描述' not in wifi_info:
+                if hardware_port == 'Wi-Fi':
+                    # 如果有PCI设备ID，使用更详细的描述
+                    if pci_vendor_id and pci_device_id:
+                        wifi_info['网卡完整描述'] = f"Wi-Fi  ({pci_vendor_id}, {pci_device_id})"
+                    else:
+                        wifi_info['网卡完整描述'] = "Apple AirPort Extreme Wireless Network Adapter"
+                else:
+                    wifi_info['网卡完整描述'] = "Apple 无线网卡"
+            else:
+                # 如果已经设置了网卡描述，检查是否需要更新为PCI设备ID
+                if pci_vendor_id and pci_device_id:
+                    # 如果当前描述是通用描述，更新为包含PCI设备ID的详细描述
+                    current_desc = wifi_info['网卡完整描述']
+                    if current_desc == 'AirPort' or current_desc == 'Apple 无线网卡' or current_desc == 'Apple AirPort Extreme Wireless Network Adapter':
+                        wifi_info['网卡完整描述'] = f"Wi-Fi  ({pci_vendor_id}, {pci_device_id})"
+                elif wifi_info['网卡完整描述'] == 'AirPort':
+                    wifi_info['网卡完整描述'] = "Apple AirPort Extreme Wireless Network Adapter"
+            
+            # 设置带宽和WiFi标准
+            wifi_info['max_bandwidth_mbps'] = max_bandwidth_mbps
+            wifi_info['WiFi标准'] = wifi_standard
+            
+            if max_bandwidth_mbps >= 1000:
+                wifi_info['最大支持带宽'] = f"{max_bandwidth_mbps}M"
+                wifi_info['max_bandwidth_gbps'] = round(max_bandwidth_mbps / 1000, 1)
+            else:
+                wifi_info['最大支持带宽'] = f"{max_bandwidth_mbps}M"
+                wifi_info['max_bandwidth_gbps'] = round(max_bandwidth_mbps / 1000, 2)
+            
+            # 推断网卡品牌型号
+            if '网卡完整描述' in wifi_info:
+                description = wifi_info['网卡完整描述']
+                brand_model = self._detect_network_card_brand_model(description)
+                if brand_model:
+                    wifi_info['网卡品牌型号'] = brand_model
+                    wifi_info['网卡型号'] = brand_model
+                else:
+                    # 根据驱动信息推断品牌型号
+                    if driver_output:
+                        if "brcm" in driver_output.lower() or "broadcom" in driver_output.lower():
+                            wifi_info['网卡品牌型号'] = "Broadcom无线网卡"
+                            wifi_info['网卡型号'] = "Broadcom无线网卡"
+                        elif "ath" in driver_output.lower() or "qualcomm" in driver_output.lower():
+                            wifi_info['网卡品牌型号'] = "Qualcomm Atheros无线网卡"
+                            wifi_info['网卡型号'] = "Qualcomm Atheros无线网卡"
+                        elif "intel" in driver_output.lower():
+                            wifi_info['网卡品牌型号'] = "Intel无线网卡"
+                            wifi_info['网卡型号'] = "Intel无线网卡"
+                        else:
+                            # 如果是Apple设备，使用Apple品牌
+                            if 'Apple' in description or 'AirPort' in description:
+                                wifi_info['网卡品牌型号'] = "Apple AirPort Extreme"
+                                wifi_info['网卡型号'] = "Apple AirPort Extreme"
+                            else:
+                                wifi_info['网卡品牌型号'] = "Apple AirPort Extreme"
+                                wifi_info['网卡型号'] = "Apple AirPort Extreme"
+                    else:
+                        # 如果是Apple设备，使用Apple品牌
+                        if 'Apple' in description or 'AirPort' in description:
+                            wifi_info['网卡品牌型号'] = "Apple AirPort Extreme"
+                            wifi_info['网卡型号'] = "Apple AirPort Extreme"
+                        else:
+                            wifi_info['网卡品牌型号'] = "Apple AirPort Extreme"
+                            wifi_info['网卡型号'] = "Apple AirPort Extreme"
+            else:
+                # 如果没有网卡描述，使用默认信息
+                wifi_info['网卡完整描述'] = "Apple AirPort Extreme Wireless Network Adapter"
+                wifi_info['网卡品牌型号'] = "Apple AirPort Extreme"
+                wifi_info['网卡型号'] = "Apple AirPort Extreme"
+                wifi_info['WiFi标准'] = "WiFi 5 (802.11ac)"
+                wifi_info['max_bandwidth_mbps'] = 866
+                wifi_info['最大支持带宽'] = "866M"
+                wifi_info['max_bandwidth_gbps'] = 0.87
+            
+            # 确保所有必要字段都存在
+            required_fields = ['网卡完整描述', '网卡品牌型号', '网卡型号', 'max_bandwidth_mbps', '最大支持带宽', 'WiFi标准']
+            for field in required_fields:
+                if field not in wifi_info:
+                    if field == 'WiFi标准':
+                        wifi_info[field] = 'WiFi 5 (802.11ac)'
+                    elif field == 'max_bandwidth_mbps':
+                        wifi_info[field] = 866
+                    elif field == '最大支持带宽':
+                        wifi_info[field] = '866M'
+                    elif field == '网卡品牌型号':
+                        wifi_info[field] = 'Apple AirPort Extreme'
+                    elif field == '网卡型号':
+                        wifi_info[field] = 'Apple AirPort Extreme'
+                    elif field == '网卡完整描述':
+                        wifi_info[field] = 'Apple AirPort Extreme Wireless Network Adapter'
+            
+            return wifi_info
+            
+        except Exception as e:
+            self.escape_manager.debug_log(f"增强macOS网卡信息失败: {e}")
+            # 返回默认信息
+            wifi_info['网卡完整描述'] = "Apple AirPort Extreme Wireless Network Adapter"
+            wifi_info['网卡品牌型号'] = "Apple AirPort Extreme"
+            wifi_info['网卡型号'] = "Apple AirPort Extreme"
+            wifi_info['WiFi标准'] = "WiFi 5 (802.11ac)"
+            wifi_info['max_bandwidth_mbps'] = 866
+            wifi_info['最大支持带宽'] = "866M"
+            wifi_info['max_bandwidth_gbps'] = 0.87
+            return wifi_info
 
     def _detect_network_card_brand_model(self, description):
         """
@@ -2106,6 +2362,22 @@ class WiFiChannelScanner:
             elif description:
                 network_card_info['网卡完整描述'] = description
             
+            # 如果已经有增强的网卡信息，直接使用
+            if '网卡完整描述' in current_wifi:
+                network_card_info['网卡完整描述'] = current_wifi['网卡完整描述']
+            if '网卡品牌型号' in current_wifi:
+                network_card_info['网卡品牌型号'] = current_wifi['网卡品牌型号']
+            if '网卡型号' in current_wifi:
+                network_card_info['网卡型号'] = current_wifi['网卡型号']
+            if 'max_bandwidth_mbps' in current_wifi:
+                network_card_info['max_bandwidth_mbps'] = current_wifi['max_bandwidth_mbps']
+            if '最大支持带宽' in current_wifi:
+                network_card_info['最大支持带宽'] = current_wifi['最大支持带宽']
+            if 'WiFi标准' in current_wifi:
+                network_card_info['WiFi标准'] = current_wifi['WiFi标准']
+            if 'max_bandwidth_gbps' in current_wifi:
+                network_card_info['max_bandwidth_gbps'] = current_wifi['max_bandwidth_gbps']
+            
             # 尝试获取具体的网卡品牌型号（如果还没有获取到）
             if '网卡品牌型号' not in network_card_info:
                 brand_model = self._detect_network_card_brand_model(description)
@@ -2115,7 +2387,7 @@ class WiFiChannelScanner:
                 else:
                     self.escape_manager.debug_log(f"无法检测到具体品牌型号，描述: {description}")
                     # 如果无法检测到具体品牌型号，使用芯片信息推断品牌型号
-                    if 'realtek' in description.lower():
+                    if description and 'realtek' in description.lower():
                         if '8811cu' in description.lower() or '8811' in description.lower():
                             network_card_info['网卡品牌型号'] = "腾达U12 (基于Realtek 8811CU)"
                         else:
