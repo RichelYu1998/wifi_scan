@@ -10,12 +10,23 @@ import urllib.request
 import threading
 import subprocess
 import time
+import socket
+import shutil
+import ssl
+import gzip
+import tempfile
+import ctypes
 from collections import defaultdict
+
+import psutil
 from geopy.geocoders import Nominatim
 
 # 统一的工具类 - 抽象重复代码
 class UnifiedUtils:
     """统一工具类 - 提供所有类共享的基础功能"""
+    
+    # 配置文件路径
+    CONFIG_DIR = os.path.join(os.path.dirname(__file__), 'json', 'config')
     
     # 静态地理位置数据库（基于联网搜索的已知位置）
     KNOWN_LOCATIONS = {
@@ -50,6 +61,77 @@ class UnifiedUtils:
             'village': '东澜岸小区'
         }
     }
+    
+    @staticmethod
+    def load_config_file(filename):
+        """加载配置文件
+        
+        Args:
+            filename: 配置文件名（如'gpu_brands.json'）
+        
+        Returns:
+            配置数据字典，如果文件不存在返回空字典
+        """
+        try:
+            file_path = os.path.join(UnifiedUtils.CONFIG_DIR, filename)
+            if os.path.exists(file_path):
+                with open(file_path, 'r', encoding='utf-8') as f:
+                    return json.load(f)
+        except Exception:
+            pass
+        return {}
+    
+    @staticmethod
+    def get_gpu_brands():
+        """获取GPU品牌配置"""
+        config = UnifiedUtils.load_config_file('gpu_brands.json')
+        return config.get('gpu_brands', {})
+    
+    @staticmethod
+    def get_gpu_vendor_ids():
+        """获取GPU厂商ID配置"""
+        config = UnifiedUtils.load_config_file('gpu_brands.json')
+        return config.get('gpu_vendor_ids', {})
+    
+    @staticmethod
+    def get_gpu_chip_types():
+        """获取GPU芯片类型配置"""
+        config = UnifiedUtils.load_config_file('gpu_brands.json')
+        return config.get('gpu_chip_types', {})
+    
+    @staticmethod
+    def get_wireless_card_brands():
+        """获取无线网卡品牌配置"""
+        config = UnifiedUtils.load_config_file('wireless_card_brands.json')
+        return config.get('wireless_card_brands', {})
+    
+    @staticmethod
+    def get_wireless_card_types():
+        """获取无线网卡类型配置"""
+        config = UnifiedUtils.load_config_file('wireless_card_brands.json')
+        return config.get('wireless_card_types', {})
+    
+    @staticmethod
+    def get_city_district_mapping():
+        """获取城市区县映射配置"""
+        config = UnifiedUtils.load_config_file('city_district_mapping.json')
+        return config.get('city_district_mapping', {})
+    
+    @staticmethod
+    def get_default_performance_data():
+        """获取默认性能数据配置"""
+        config = UnifiedUtils.load_config_file('default_performance_data.json')
+        return {
+            'cpu': config.get('default_cpu_data', {}),
+            'memory': config.get('default_memory_data', {}),
+            'network': config.get('default_network_data', {})
+        }
+    
+    @staticmethod
+    def get_default_gpu_performance_data():
+        """获取默认GPU性能数据配置"""
+        config = UnifiedUtils.load_config_file('default_gpu_performance_data.json')
+        return config.get('default_gpu_data', {})
     
     @staticmethod
     def get_known_location(ip_address):
@@ -126,6 +208,57 @@ class UnifiedUtils:
         print("-" * width)
     
     @staticmethod
+    def fetch_url(url, timeout=20, headers=None, user_agent=None):
+        """统一的URL获取方法"""
+        try:
+            # 创建不验证SSL证书的上下文
+            ssl_context = ssl.create_default_context()
+            ssl_context.check_hostname = False
+            ssl_context.verify_mode = ssl.CERT_NONE
+            
+            # 设置默认请求头
+            if headers is None:
+                headers = {}
+            
+            if user_agent is None:
+                user_agent = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36'
+            
+            if 'User-Agent' not in headers:
+                headers['User-Agent'] = user_agent
+            
+            if 'Accept' not in headers:
+                headers['Accept'] = 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8'
+            
+            if 'Accept-Language' not in headers:
+                headers['Accept-Language'] = 'zh-CN,zh;q=0.9,en;q=0.8'
+            
+            if 'Accept-Encoding' not in headers:
+                headers['Accept-Encoding'] = 'gzip, deflate, br'
+            
+            if 'Connection' not in headers:
+                headers['Connection'] = 'keep-alive'
+            
+            request = urllib.request.Request(url, headers=headers)
+            
+            with urllib.request.urlopen(request, timeout=timeout, context=ssl_context) as response:
+                content = response.read()
+                
+                # 检查是否是gzip压缩
+                if response.headers.get('Content-Encoding') == 'gzip':
+                    html_content = gzip.decompress(content).decode('utf-8')
+                else:
+                    # 尝试直接解码，如果失败则尝试其他编码
+                    try:
+                        html_content = content.decode('utf-8')
+                    except UnicodeDecodeError:
+                        html_content = content.decode('latin-1')
+                
+                return html_content
+                
+        except Exception:
+            return None
+    
+    @staticmethod
     def get_system_info():
         """获取系统信息"""
         return {
@@ -172,6 +305,135 @@ class UnifiedUtils:
         return size_bytes
     
     @staticmethod
+    def parse_command_output(result, skip_patterns=None):
+        """解析命令输出，返回清理后的行列表"""
+        if not result:
+            return []
+        
+        lines = result.split('\n')
+        parsed_lines = []
+        
+        for line in lines:
+            line = line.strip()
+            
+            # 跳过空行
+            if not line:
+                continue
+            
+            # 跳过包含特定模式的行
+            if skip_patterns:
+                skip = False
+                for pattern in skip_patterns:
+                    if pattern in line:
+                        skip = True
+                        break
+                if skip:
+                    continue
+            
+            parsed_lines.append(line)
+        
+        return parsed_lines
+    
+    @staticmethod
+    def extract_field_value(lines, field_name, separator=':'):
+        """从命令输出中提取字段值"""
+        for line in lines:
+            if field_name in line:
+                parts = line.split(separator, 1)
+                if len(parts) > 1:
+                    return parts[1].strip()
+        return None
+    
+    @staticmethod
+    def extract_multiple_fields(lines, field_mapping):
+        """批量提取多个字段值
+        
+        Args:
+            lines: 命令输出行列表
+            field_mapping: 字段映射字典 {目标字段名: 原始字段名}
+        
+        Returns:
+            包含提取字段值的字典
+        """
+        result = {}
+        for target_field, source_field in field_mapping.items():
+            value = UnifiedUtils.extract_field_value(lines, source_field)
+            if value is not None:
+                result[target_field] = value
+        return result
+    
+    @staticmethod
+    def safe_int_convert(value, default=0):
+        """安全地将字符串转换为整数"""
+        try:
+            return int(value)
+        except (ValueError, TypeError):
+            return default
+    
+    @staticmethod
+    def safe_float_convert(value, default=0.0):
+        """安全地将字符串转换为浮点数"""
+        try:
+            return float(value)
+        except (ValueError, TypeError):
+            return default
+    
+    @staticmethod
+    def clean_filename(filename):
+        """清理文件名中的非法字符"""
+        if not filename:
+            return "unknown"
+        
+        # 移除非法字符
+        illegal_chars = r'[<>:"/\\|?*]'
+        cleaned = re.sub(illegal_chars, '', filename)
+        
+        # 移除控制字符
+        cleaned = re.sub(r'[\x00-\x1f\x7f-\x9f]', '', cleaned)
+        
+        # 移除Unicode替换字符
+        cleaned = cleaned.replace('�', '')
+        
+        # 限制长度
+        if len(cleaned) > 200:
+            cleaned = cleaned[:200]
+        
+        cleaned = cleaned.strip()
+        
+        if not cleaned:
+            cleaned = "unknown"
+        
+        return cleaned
+    
+    @staticmethod
+    def parse_size_string(size_str):
+        """解析大小字符串（如"1 TB"、"512 GB"）并返回字节数"""
+        if not size_str:
+            return 0
+        
+        size_str = size_str.strip().upper()
+        
+        # 提取数字部分
+        import re
+        size_match = re.search(r'(\d+\.?\d*)', size_str)
+        if not size_match:
+            return 0
+        
+        size = float(size_match.group(1))
+        
+        # 提取单位部分
+        if 'TB' in size_str:
+            return int(size * (1024**4))
+        elif 'GB' in size_str:
+            return int(size * (1024**3))
+        elif 'MB' in size_str:
+            return int(size * (1024**2))
+        elif 'KB' in size_str:
+            return int(size * 1024)
+        else:
+            return int(size)
+    
+    @staticmethod
     def format_timestamp(timestamp=None):
         """格式化时间戳"""
         if timestamp is None:
@@ -191,6 +453,666 @@ class UnifiedUtils:
         # 保留前3位和后2位，中间用****替换
         masked = serial_number[:3] + '****' + serial_number[-2:]
         return masked
+    
+    @staticmethod
+    def parse_wmic_output(result, field_mapping=None, skip_header=True):
+        """解析WMIC命令输出
+        
+        Args:
+            result: WMIC命令的输出结果
+            field_mapping: 字段映射字典 {目标字段名: 原始字段名}
+            skip_header: 是否跳过标题行
+        
+        Returns:
+            包含提取字段值的字典列表（每个字典代表一行数据）
+        """
+        if not result:
+            return []
+        
+        lines = UnifiedUtils.parse_command_output(result, skip_patterns=None)
+        
+        # 如果跳过标题行，移除第一行
+        if skip_header and lines:
+            lines = lines[1:]
+        
+        results = []
+        for line in lines:
+            if not line.strip():
+                continue
+            
+            # 分割行内容
+            parts = line.split()
+            
+            # 如果提供了字段映射，使用映射提取字段
+            if field_mapping:
+                record = {}
+                for target_field, source_field in field_mapping.items():
+                    # 尝试从行中提取字段值
+                    if source_field in line:
+                        parts = line.split(source_field, 1)
+                        if len(parts) > 1:
+                            record[target_field] = parts[1].strip()
+                if record:
+                    results.append(record)
+            else:
+                # 直接返回分割后的部分
+                results.append(parts)
+        
+        return results
+    
+    @staticmethod
+    def extract_wmic_single_value(result, field_name):
+        """从WMIC输出中提取单个字段值
+        
+        Args:
+            result: WMIC命令的输出结果
+            field_name: 要提取的字段名
+        
+        Returns:
+            字段值字符串，如果未找到则返回None
+        """
+        if not result:
+            return None
+        
+        lines = UnifiedUtils.parse_command_output(result, skip_patterns=None)
+        
+        # WMIC输出格式：第一行是字段名，第二行是值
+        if len(lines) >= 2:
+            # 检查第一行是否包含字段名
+            if field_name in lines[0]:
+                # 返回第二行的值
+                value = lines[1].strip()
+                return value if value else None
+        
+        # 备选方案：在所有行中查找包含字段名的行
+        for i, line in enumerate(lines):
+            if field_name in line:
+                # 检查下一行是否有值
+                if i + 1 < len(lines):
+                    value = lines[i + 1].strip()
+                    return value if value else None
+                # 或者尝试从当前行提取
+                parts = line.split(field_name, 1)
+                if len(parts) > 1:
+                    return parts[1].strip()
+        
+        return None
+    
+    @staticmethod
+    def infer_memory_ddr_type(speed_mhz, capacity_gb, motherboard_model=None):
+        """根据频率、容量和主板型号推断DDR类型
+        
+        Args:
+            speed_mhz: 内存频率（MHz）
+            capacity_gb: 内存容量（GB）
+            motherboard_model: 主板型号（可选）
+        
+        Returns:
+            DDR类型字符串
+        """
+        # SMBIOS内存类型映射
+        smbios_mapping = {
+            '20': 'DDR',
+            '21': 'DDR2', 
+            '22': 'DDR2',
+            '24': 'DDR3',
+            '26': 'DDR4',
+            '34': 'DDR5',
+            '25': 'DDR3',
+            '27': 'DDR4'
+        }
+        
+        # 根据主板型号推断DDR类型
+        if motherboard_model:
+            motherboard_upper = motherboard_model.upper()
+            if 'B360' in motherboard_upper or 'H310' in motherboard_upper or 'H370' in motherboard_upper:
+                return 'DDR4'
+            elif 'B460' in motherboard_upper or 'H410' in motherboard_upper or 'H470' in motherboard_upper:
+                return 'DDR4'
+            elif 'B560' in motherboard_upper or 'H510' in motherboard_upper or 'H570' in motherboard_upper:
+                return 'DDR4'
+            elif 'B660' in motherboard_upper or 'H610' in motherboard_upper or 'H670' in motherboard_upper:
+                return 'DDR4'
+            elif 'B760' in motherboard_upper or 'B660' in motherboard_upper:
+                return 'DDR5'
+        
+        # 根据频率推断DDR类型
+        if speed_mhz >= 4800:
+            return 'DDR5'
+        elif speed_mhz >= 3200:
+            return 'DDR4'
+        elif speed_mhz >= 2133:
+            return 'DDR3'
+        elif speed_mhz >= 800:
+            return 'DDR2'
+        else:
+            return 'DDR'
+    
+    @staticmethod
+    def infer_memory_frequency(capacity_gb):
+        """根据内存容量推断默认频率
+        
+        Args:
+            capacity_gb: 内存容量（GB）
+        
+        Returns:
+            默认频率（MHz）
+        """
+        if capacity_gb >= 16:
+            return 3200
+        elif capacity_gb >= 8:
+            return 2666
+        else:
+            return 2133
+    
+    @staticmethod
+    def calculate_performance_score(hardware_info, performance_data):
+        """计算硬件性能评分
+        
+        Args:
+            hardware_info: 硬件信息字典
+            performance_data: 性能数据字典
+        
+        Returns:
+            性能评分（0-100）
+        """
+        score = 0
+        
+        # CPU评分
+        cpu_name = hardware_info.get('cpu', {}).get('名称', '')
+        cpu_score = 0
+        for model, model_score in performance_data.get('cpu', {}).items():
+            if model.lower() in cpu_name.lower():
+                cpu_score = model_score
+                break
+        
+        # 如果没有匹配到，使用默认评分
+        if cpu_score == 0:
+            if 'M2 Pro' in cpu_name:
+                cpu_score = 90
+            elif 'M2' in cpu_name:
+                cpu_score = 85
+            elif 'M1' in cpu_name:
+                cpu_score = 80
+            else:
+                cpu_score = 70
+        
+        score += cpu_score
+        
+        # 内存评分
+        memory_gb = hardware_info.get('memory', {}).get('总容量_GB', 0)
+        memory_score = 0
+        for capacity, capacity_score in performance_data.get('memory', {}).items():
+            try:
+                capacity_float = float(capacity)
+                if memory_gb >= capacity_float:
+                    memory_score = capacity_score
+                    break
+            except (ValueError, TypeError):
+                continue
+        
+        # 如果没有匹配到，使用默认评分
+        if memory_score == 0:
+            if memory_gb >= 32:
+                memory_score = 10
+            elif memory_gb >= 16:
+                memory_score = 8
+            elif memory_gb >= 8:
+                memory_score = 6
+            else:
+                memory_score = 4
+        
+        score += memory_score
+        
+        # GPU评分
+        gpu_name = hardware_info.get('gpu', {}).get('名称', '')
+        gpu_score = 0
+        for model, model_score in performance_data.get('gpu', {}).items():
+            if model.lower() in gpu_name.lower():
+                gpu_score = model_score
+                break
+        
+        # 如果没有匹配到，使用默认评分
+        if gpu_score == 0:
+            gpu_score = 8
+        
+        score += gpu_score
+        
+        # 确保评分在合理范围内
+        return min(100, max(0, score))
+    
+    @staticmethod
+    def append_to_json_file(file_path, new_data):
+        """追加数据到JSON文件
+        
+        Args:
+            file_path: JSON文件路径
+            new_data: 要追加的新数据
+        
+        Returns:
+            追加后的完整数据列表
+        """
+        # 检查文件是否已存在
+        if os.path.exists(file_path):
+            # 读取现有数据
+            try:
+                with open(file_path, "r", encoding="utf-8") as f:
+                    existing_data = json.load(f)
+                
+                # 如果现有数据是数组格式，直接追加
+                if isinstance(existing_data, list):
+                    existing_data.append(new_data)
+                    return existing_data
+                else:
+                    # 如果现有数据是单个对象，转换为数组格式
+                    return [existing_data, new_data]
+            except (json.JSONDecodeError, Exception):
+                # 如果文件损坏或格式错误，创建新的数组
+                return [new_data]
+        else:
+            # 文件不存在，创建新的数组
+            return [new_data]
+    
+    @staticmethod
+    def ensure_directory_exists(file_path):
+        """确保文件所在目录存在
+        
+        Args:
+            file_path: 文件路径
+        """
+        directory = os.path.dirname(file_path)
+        if directory and not os.path.exists(directory):
+            os.makedirs(directory, exist_ok=True)
+    
+    @staticmethod
+    def save_json_with_append(file_path, data):
+        """保存JSON文件，支持追加模式
+        
+        Args:
+            file_path: JSON文件路径
+            data: 要保存的数据（单个对象或列表）
+        
+        Returns:
+            保存后的完整数据列表
+        """
+        # 确保目录存在
+        UnifiedUtils.ensure_directory_exists(file_path)
+        
+        # 如果是单个对象，使用追加模式
+        if not isinstance(data, list):
+            data = UnifiedUtils.append_to_json_file(file_path, data)
+        
+        # 保存到文件
+        with open(file_path, 'w', encoding='utf-8') as f:
+            json.dump(data, f, ensure_ascii=False, indent=2)
+        
+        return data
+    
+    @staticmethod
+    def generate_location_subdir(location_info):
+        """根据地理位置信息生成子目录名称
+        
+        Args:
+            location_info: 地理位置信息字典
+        
+        Returns:
+            子目录名称（格式：省_市）
+        """
+        if not location_info:
+            return "other_locations"
+        
+        region = location_info.get('region', '')
+        city = location_info.get('city', '')
+        
+        if not region or not city:
+            return "other_locations"
+        
+        # 提取省份和城市名称
+        region_clean = region.replace('省', '').strip()
+        city_clean = city.replace('市', '').strip()
+        
+        return f"{region_clean}_{city_clean}"
+    
+    @staticmethod
+    def generate_wifi_log_filename(location_prefix, ssid, date):
+        """生成WiFi日志文件名
+        
+        Args:
+            location_prefix: 地理位置前缀
+            ssid: WiFi名称
+            date: 日期字符串
+        
+        Returns:
+            标准化的文件名
+        """
+        # 清理位置前缀
+        location_clean = location_prefix.strip()
+        
+        # 清理SSID
+        ssid_clean = ssid.strip() if ssid else ""
+        if ssid_clean:
+            # 移除SSID中的非法字符
+            ssid_clean = UnifiedUtils.clean_filename(ssid_clean)
+        
+        # 生成文件名
+        if location_clean and ssid_clean:
+            filename = f"{location_clean} {ssid_clean}基于周围WiFi信道优化推荐({date}).json"
+        elif location_clean:
+            filename = f"{location_clean}基于周围WiFi信道优化推荐({date}).json"
+        elif ssid_clean:
+            filename = f"{ssid_clean}基于周围WiFi信道优化推荐({date}).json"
+        else:
+            filename = f"WiFi网络基于周围WiFi信道优化推荐({date}).json"
+        
+        return filename
+    
+    @staticmethod
+    def run_wmic_command(wmic_class, fields, filter_condition=None):
+        """执行WMIC命令并返回解析结果
+        
+        Args:
+            wmic_class: WMIC类名（如'cpu', 'bios'）
+            fields: 要获取的字段列表
+            filter_condition: 可选的过滤条件
+        
+        Returns:
+            解析后的数据列表
+        """
+        try:
+            command = ['wmic', wmic_class, 'get', ','.join(fields)]
+            if filter_condition:
+                command.extend(['where', filter_condition])
+            
+            result = UnifiedUtils.run_command(command)
+            if result:
+                return UnifiedUtils.parse_wmic_output(result)
+            return []
+        except Exception:
+            return []
+    
+    @staticmethod
+    def get_wmic_single_value(wmic_class, field, filter_condition=None):
+        """获取WMIC命令的单个字段值
+        
+        Args:
+            wmic_class: WMIC类名（如'cpu', 'bios'）
+            field: 要获取的字段名
+            filter_condition: 可选的过滤条件
+        
+        Returns:
+            字段值字符串，如果未找到则返回None
+        """
+        try:
+            command = ['wmic', wmic_class, 'get', field]
+            if filter_condition:
+                command.extend(['where', filter_condition])
+            
+            result = UnifiedUtils.run_command(command)
+            if result:
+                return UnifiedUtils.extract_wmic_single_value(result, field)
+            return None
+        except Exception:
+            return None
+    
+    @staticmethod
+    def get_wmic_multiple_values(wmic_class, fields, filter_condition=None):
+        """获取WMIC命令的多个字段值
+        
+        Args:
+            wmic_class: WMIC类名（如'cpu', 'bios'）
+            fields: 要获取的字段列表
+            filter_condition: 可选的过滤条件
+        
+        Returns:
+            包含所有字段值的字典
+        """
+        try:
+            command = ['wmic', wmic_class, 'get', ','.join(fields)]
+            if filter_condition:
+                command.extend(['where', filter_condition])
+            
+            result = UnifiedUtils.run_command(command)
+            if result:
+                field_mapping = {field: field for field in fields}
+                records = UnifiedUtils.parse_wmic_output(result, field_mapping)
+                if records:
+                    return records[0]
+            return {}
+        except Exception:
+            return {}
+    
+    @staticmethod
+    def detect_hardware_type(model, interface_type=None):
+        """根据型号和接口类型检测硬件类型
+        
+        Args:
+            model: 硬件型号
+            interface_type: 接口类型（可选）
+        
+        Returns:
+            硬件类型字符串
+        """
+        if not model:
+            return '未知'
+        
+        model_upper = model.upper()
+        
+        # SSD检测
+        ssd_keywords = ['SSD', 'NVMe', 'M.2', 'SATA', 'KINGSTON', 'SAMSUNG', 'INTEL', 'WD', 'HGST', 'TOSHIBA']
+        for keyword in ssd_keywords:
+            if keyword in model_upper:
+                return 'SSD'
+        
+        # HDD检测
+        hdd_keywords = ['HDD', 'WD', 'ST', 'HGST', 'TOSHIBA', 'SEAGATE']
+        for keyword in hdd_keywords:
+            if keyword in model_upper:
+                return 'HDD'
+        
+        # 根据接口类型判断
+        if interface_type:
+            interface_upper = interface_type.upper()
+            if 'NVME' in interface_upper or 'SSD' in interface_upper:
+                return 'SSD'
+            elif 'SATA' in interface_upper:
+                return 'HDD'
+        
+        return '未知'
+    
+    @staticmethod
+    def convert_bios_date_format(wmic_date):
+        """将WMIC日期格式转换为年月日格式"""
+        try:
+            # WMIC日期格式：YYYYMMDDHHMMSS.mmmmmm+ZZZ
+            # 例如：20210710000000.000000+000
+            if len(wmic_date) >= 14:
+                year = wmic_date[0:4]
+                month = wmic_date[4:6]
+                day = wmic_date[6:8]
+                
+                # 转换为"年月日"格式
+                return f"{year}年{month}月{day}日"
+            else:
+                return wmic_date
+        except Exception:
+            return wmic_date
+    
+    @staticmethod
+    def get_cpu_architecture(cpu_name):
+        """获取CPU架构信息
+        
+        Args:
+            cpu_name: CPU名称
+        
+        Returns:
+            CPU架构字符串
+        """
+        if not cpu_name:
+            return '未知'
+        
+        cpu_name_upper = cpu_name.upper()
+        
+        # 根据CPU名称判断架构
+        if 'INTEL' in cpu_name_upper:
+            return 'x86_64 (Intel)'
+        elif 'AMD' in cpu_name_upper:
+            return 'x86_64 (AMD)'
+        elif 'ARM' in cpu_name_upper:
+            return 'ARM'
+        elif 'M1' in cpu_name_upper or 'M2' in cpu_name_upper:
+            return 'ARM (Apple Silicon)'
+        else:
+            # 默认返回platform.machine()
+            return platform.machine()
+    
+    @staticmethod
+    def get_gpu_brand_from_vendor_id(vendor_id):
+        """根据厂商ID获取显卡品牌"""
+        vendor_id_mapping = UnifiedUtils.get_gpu_vendor_ids()
+        return vendor_id_mapping.get(vendor_id, None)
+    
+    @staticmethod
+    def extract_gpu_model(gpu_name):
+        """从GPU名称中提取型号"""
+        model_patterns = [
+            r'RTX\s*\d+\s*[A-Z]*',
+            r'GTX\s*\d+\s*[A-Z]*',
+            r'RX\s*\d+\s*\w*',
+            r'Radeon\s*\w+\s*\d+',
+            r'UHD\s*\d+',
+            r'Iris\s*\w+'
+        ]
+        
+        for pattern in model_patterns:
+            match = re.search(pattern, gpu_name, re.IGNORECASE)
+            if match:
+                return match.group().strip()
+        
+        return gpu_name
+    
+    @staticmethod
+    def extract_gpu_brand(gpu_name, pnp_device_id=None):
+        """从GPU名称和PNP设备ID中提取品牌"""
+        gpu_name_upper = gpu_name.upper()
+        
+        # 从配置文件加载GPU品牌信息
+        brand_patterns = UnifiedUtils.get_gpu_brands()
+        
+        # 首先检查显卡名称中是否包含品牌信息
+        for brand, patterns in brand_patterns.items():
+            for pattern in patterns:
+                if pattern in gpu_name_upper:
+                    return brand
+        
+        # 如果有PNP设备ID，尝试从SUBSYS中提取品牌信息
+        if pnp_device_id and 'SUBSYS_' in pnp_device_id:
+            try:
+                subsys_match = re.search(r'SUBSYS_([0-9A-Fa-f]+)', pnp_device_id)
+                if subsys_match:
+                    subsys_id = subsys_match.group(1)
+                    if len(subsys_id) >= 4:
+                        vendor_id = subsys_id[-4:].upper()
+                        brand = UnifiedUtils.get_gpu_brand_from_vendor_id(vendor_id)
+                        if brand:
+                            return brand
+            except Exception:
+                pass
+        
+        # 如果没有找到具体品牌，显示芯片制造商并说明
+        chip_types = UnifiedUtils.get_gpu_chip_types()
+        for chip_type, patterns in chip_types.items():
+            for pattern in patterns:
+                if pattern in gpu_name_upper:
+                    return f'{chip_type}芯片（品牌未知）'
+        
+        return '未知'
+    
+    @staticmethod
+    def extract_wireless_card_brand(card_name):
+        """从无线网卡名称中提取品牌"""
+        card_name_upper = card_name.upper()
+        
+        # 从配置文件加载无线网卡品牌信息
+        brand_patterns = UnifiedUtils.get_wireless_card_brands()
+        
+        # 检查网卡名称中是否包含品牌信息
+        for brand, patterns in brand_patterns.items():
+            for pattern in patterns:
+                if pattern in card_name_upper:
+                    return brand
+        
+        return '未知'
+    
+    @staticmethod
+    def extract_wireless_card_type(card_name):
+        """从无线网卡名称中提取类型"""
+        card_name_upper = card_name.upper()
+        
+        # 从配置文件加载无线网卡类型信息
+        type_patterns = UnifiedUtils.get_wireless_card_types()
+        
+        # 检查网卡名称中是否包含类型信息
+        for card_type, patterns in type_patterns.items():
+            for pattern in patterns:
+                if pattern in card_name_upper:
+                    return card_type
+        
+        return '未知'
+    
+    @staticmethod
+    def extract_cpu_frequency(cpu_name):
+        """从CPU名称中提取频率
+        
+        Args:
+            cpu_name: CPU名称字符串
+        
+        Returns:
+            频率（MHz）
+        """
+        if not cpu_name:
+            return 0
+        
+        # 匹配GHz格式
+        freq_match = re.search(r'@ (\d+\.?\d*)GHz', cpu_name)
+        if freq_match:
+            return int(float(freq_match.group(1)) * 1000)
+        
+        # 匹配MHz格式
+        freq_match = re.search(r'@ (\d+)MHz', cpu_name)
+        if freq_match:
+            return int(freq_match.group(1))
+        
+        return 0
+    
+    @staticmethod
+    def extract_gpu_vram(gpu_name, adapter_ram=None):
+        """从GPU名称或显存信息中提取显存大小
+        
+        Args:
+            gpu_name: GPU名称
+            adapter_ram: 显存信息（字节）
+        
+        Returns:
+            显存大小（GB）
+        """
+        # 首先尝试从adapter_ram获取
+        if adapter_ram and str(adapter_ram).isdigit():
+            vram_bytes = int(adapter_ram)
+            return round(vram_bytes / (1024**3), 1)
+        
+        # 从GPU名称中提取显存
+        if gpu_name:
+            # 匹配GB格式
+            vram_match = re.search(r'(\d+)GB', gpu_name)
+            if vram_match:
+                return int(vram_match.group(1))
+            
+            # 匹配G格式
+            vram_match = re.search(r'(\d+)G', gpu_name)
+            if vram_match:
+                return int(vram_match.group(1))
+        
+        return 0
 
 
 try:
@@ -279,7 +1201,7 @@ class OptimizedHardwareDetector:
         # 获取核心数
         result = self.run_command(['sysctl', '-n', 'hw.ncpu'])
         if result and result.strip():
-            cpu_info['核心数'] = int(result.strip())
+            cpu_info['核心数'] = UnifiedUtils.safe_int_convert(result.strip())
         
         # 获取频率（Apple Silicon默认频率）
         cpu_info['频率_MHz'] = 3200
@@ -301,12 +1223,9 @@ class OptimizedHardwareDetector:
         result = self.run_command(['system_profiler', 'SPDisplaysDataType'])
         
         if result:
-            lines = result.split('\n')
+            lines = UnifiedUtils.parse_command_output(result)
             for line in lines:
-                line = line.strip()
-                
                 if 'Chipset Model:' in line:
-                    # 提取GPU芯片型号
                     chipset = line.replace('Chipset Model:', '').strip()
                     gpu_info['名称'] = chipset
                     gpu_info['GPU芯片'] = chipset
@@ -320,14 +1239,12 @@ class OptimizedHardwareDetector:
                         gpu_info['型号'] = 'M1'
                 
                 elif 'VRAM' in line and 'Total' in line:
-                    # 提取显存信息并转换为GB
                     vram_text = line.split('VRAM')[1].strip()
                     vram_match = re.search(r'(\d+)', vram_text)
                     if vram_match:
-                        # 将MB转换为GB
                         gpu_info['显存_GB'] = round(int(vram_match.group(1)) / 1024, 1)
         
-        # 如果显存为0，根据型号设置默认值（直接使用GB）
+        # 设置默认显存
         if gpu_info['显存_GB'] == 0:
             if 'M2 Pro' in gpu_info['名称']:
                 gpu_info['显存_GB'] = 8.0
@@ -404,10 +1321,8 @@ class OptimizedHardwareDetector:
         result = self.run_command(['system_profiler', 'SPHardwareDataType'])
         
         if result:
-            lines = result.split('\n')
+            lines = UnifiedUtils.parse_command_output(result)
             for line in lines:
-                line = line.strip()
-                
                 if 'Boot ROM Version:' in line:
                     bios_info['版本'] = line.replace('Boot ROM Version:', '').strip()
                 elif 'Model Identifier:' in line:
@@ -429,10 +1344,8 @@ class OptimizedHardwareDetector:
         result = self.run_command(['system_profiler', 'SPHardwareDataType'])
         
         if result:
-            lines = result.split('\n')
+            lines = UnifiedUtils.parse_command_output(result)
             for line in lines:
-                line = line.strip()
-                
                 if 'Model Identifier:' in line:
                     motherboard_info['型号'] = line.replace('Model Identifier:', '').strip()
                 elif 'Serial Number (system):' in line:
@@ -517,194 +1430,569 @@ class OptimizedHardwareDetector:
     
     def _get_disk_read_speed(self):
         """获取硬盘读取速度"""
-        try:
-            if platform.system() == 'Darwin':  # macOS
-                # 使用diskutil获取磁盘信息
-                result = UnifiedUtils.run_command(['diskutil', 'info', '/'], timeout=5)
-                if result and 'Read Speed' in result:
-                    for line in result.split('\n'):
-                        if 'Read Speed' in line:
-                            try:
-                                speed_str = line.split(':')[1].strip().replace('MB/s', '').strip()
-                                return float(speed_str)
-                            except (ValueError, IndexError):
-                                pass
-                
-                # 如果无法获取，使用系统命令测试
-                test_file = '/tmp/disk_speed_test'
-                try:
-                    with open(test_file, 'wb') as f:
-                        f.write(b'0' * (10 * 1024 * 1024))  # 10MB测试文件
-                    
-                    start_time = time.time()
-                    with open(test_file, 'rb') as f:
-                        f.read()
-                    read_time = time.time() - start_time
-                    
-                    if read_time > 0:
-                        speed = (10 * 1024) / read_time  # MB/s
-                        return round(speed, 2)
-                    
-                    os.remove(test_file)
-                except Exception:
-                    pass
-                
-            elif platform.system() == 'Linux':
-                # 使用hdparm获取磁盘读取速度
-                result = UnifiedUtils.run_command(['sudo', 'hdparm', '-Tt', '/dev/sda'], timeout=10)
-                if result:
-                    for line in result.split('\n'):
-                        if 'Timing buffered disk reads' in line:
-                            try:
-                                speed_str = line.split('=')[1].strip().split('MB')[0].strip()
-                                return float(speed_str)
-                            except (ValueError, IndexError):
-                                pass
-            
-            elif platform.system() == 'Windows':
-                # 使用wmic获取磁盘信息
-                result = UnifiedUtils.run_command(['wmic', 'diskdrive', 'get', 'model'], timeout=5)
-                if result:
-                    pass  # Windows下需要更复杂的处理
-                
-        except Exception as e:
-            if self.debug_mode:
-                print(f"获取硬盘读取速度失败: {e}")
-        
-        # 返回默认值
-        return 3500.0
+        return self._measure_disk_speed('read')
     
     def _get_disk_write_speed(self):
         """获取硬盘写入速度"""
+        return self._measure_disk_speed('write')
+    
+    def _measure_disk_speed(self, operation='read'):
+        """测量磁盘速度（通用方法）
+        
+        Args:
+            operation: 'read' 或 'write'
+        
+        Returns:
+            速度（MB/s）
+        """
         try:
-            if platform.system() == 'Darwin':  # macOS
-                # 使用diskutil获取磁盘信息
-                result = UnifiedUtils.run_command(['diskutil', 'info', '/'], timeout=5)
-                if result and 'Write Speed' in result:
-                    for line in result.split('\n'):
-                        if 'Write Speed' in line:
-                            try:
-                                speed_str = line.split(':')[1].strip().replace('MB/s', '').strip()
-                                return float(speed_str)
-                            except (ValueError, IndexError):
-                                pass
+            if platform.system() == 'Windows':
+                import tempfile
+                import time
                 
-                # 如果无法获取，使用系统命令测试
-                test_file = '/tmp/disk_speed_test'
+                # 创建临时文件进行真实测试
+                with tempfile.NamedTemporaryFile(delete=False) as tmp_file:
+                    test_file = tmp_file.name
+                
+                # 写入测试数据
+                test_size = 50 * 1024 * 1024  # 50MB
+                test_data = b'0' * 1024 * 1024  # 1MB块
+                
+                with open(test_file, 'wb') as f:
+                    for i in range(50):  # 50MB
+                        f.write(test_data)
+                
+                # 清空文件缓存
                 try:
-                    data = b'0' * (10 * 1024 * 1024)  # 10MB测试数据
-                    
-                    start_time = time.time()
+                    import ctypes
+                    with open(test_file, 'rb') as f:
+                        ctypes.windll.kernel32.FlushFileBuffers(ctypes.windll.kernel32._get_osfhandle(f.fileno()))
+                except:
+                    pass
+                
+                # 测量速度
+                start_time = time.time()
+                if operation == 'read':
+                    with open(test_file, 'rb') as f:
+                        while f.read(1024 * 1024):  # 每次读取1MB
+                            pass
+                else:  # write
                     with open(test_file, 'wb') as f:
-                        f.write(data)
-                    write_time = time.time() - start_time
-                    
-                    if write_time > 0:
-                        speed = (10 * 1024) / write_time  # MB/s
-                        return round(speed, 2)
-                    
-                    os.remove(test_file)
-                except Exception:
-                    pass
+                        for i in range(50):  # 50MB
+                            f.write(test_data)
                 
-            elif platform.system() == 'Linux':
-                # 使用dd命令测试写入速度
-                test_file = '/tmp/disk_write_test'
-                try:
-                    start_time = time.time()
-                    result = UnifiedUtils.run_command(['dd', 'if=/dev/zero', f'of={test_file}', 'bs=1M', 'count=10'], timeout=10)
-                    write_time = time.time() - start_time
-                    
-                    if write_time > 0:
-                        speed = (10 * 1024) / write_time  # MB/s
-                        return round(speed, 2)
-                    
-                    os.remove(test_file)
-                except Exception:
-                    pass
-            
-            elif platform.system() == 'Windows':
-                # 使用wmic获取磁盘信息
-                result = UnifiedUtils.run_command(['wmic', 'diskdrive', 'get', 'model'], timeout=5)
-                if result:
-                    pass  # Windows下需要更复杂的处理
+                elapsed_time = time.time() - start_time
                 
+                # 清理临时文件
+                os.remove(test_file)
+                
+                if elapsed_time > 0:
+                    speed_mb = (test_size / (1024 * 1024)) / elapsed_time  # MB/s
+                    # 限制为合理的范围
+                    if speed_mb > 1000:
+                        speed_mb = 500 if operation == 'read' else 400
+                    return round(speed_mb, 2)
+                        
         except Exception as e:
             if self.debug_mode:
-                print(f"获取硬盘写入速度失败: {e}")
+                print(f"获取硬盘{operation}速度失败: {e}")
         
-        # 返回默认值
-        return 2800.0
+        # 返回保守的默认值
+        return 180.0 if operation == 'read' else 150.0
     
     def _calculate_macos_performance_score(self, hardware_info):
         """计算macOS性能评分"""
-        score = 0
-        
-        # CPU评分（基于性能数据）
-        cpu_name = hardware_info['cpu']['名称']
-        cpu_score = 0
-        for model, model_score in self.performance_data['cpu'].items():
-            if model.lower() in cpu_name.lower():
-                cpu_score = model_score
-                break
-        
-        # 如果没有匹配到，使用默认评分
-        if cpu_score == 0:
-            if 'M2 Pro' in cpu_name:
-                cpu_score = 90
-            elif 'M2' in cpu_name:
-                cpu_score = 85
-            elif 'M1' in cpu_name:
-                cpu_score = 80
-            else:
-                cpu_score = 70
-        
-        score += cpu_score
-        
-        # 内存评分（基于性能数据）
-        memory_gb = hardware_info['memory']['总容量_GB']
-        memory_score = 0
-        for capacity, capacity_score in self.performance_data['memory'].items():
-            try:
-                capacity_float = float(capacity)
-                if memory_gb >= capacity_float:
-                    memory_score = capacity_score
-                    break
-            except (ValueError, TypeError):
-                continue
-        
-        # 如果没有匹配到，使用默认评分
-        if memory_score == 0:
-            if memory_gb >= 32:
-                memory_score = 10
-            elif memory_gb >= 16:
-                memory_score = 8
-            elif memory_gb >= 8:
-                memory_score = 6
-            else:
-                memory_score = 4
-        
-        score += memory_score
-        
-        # GPU评分（基于性能数据）
-        gpu_name = hardware_info['gpu']['名称']
-        gpu_score = 0
-        for model, model_score in self.performance_data['gpu'].items():
-            if model.lower() in gpu_name.lower():
-                gpu_score = model_score
-                break
-        
-        # 如果没有匹配到，使用默认评分
-        if gpu_score == 0:
-            gpu_score = 8
-        
-        score += gpu_score
-        
-        # 确保评分在合理范围内
-        return min(score, 100)
+        return UnifiedUtils.calculate_performance_score(hardware_info, self.performance_data)
     
     def _detect_generic_hardware(self):
         """通用硬件信息检测（非macOS系统）"""
+        if self.platform == "Windows":
+            return self._detect_windows_hardware()
+        elif self.platform == "Linux":
+            return self._detect_linux_hardware()
+        else:
+            return self._detect_basic_hardware()
+    
+    def _detect_windows_hardware(self):
+        """Windows硬件信息检测（使用WMIC命令）"""
+        hardware_info = {
+            'cpu': self._detect_windows_cpu(),
+            'gpu': self._detect_windows_gpu(),
+            'memory': self._detect_windows_memory(),
+            'system': self._detect_windows_system(),
+            'bios': self._detect_windows_bios(),
+            'motherboard': self._detect_windows_motherboard(),
+            'disk': self._detect_windows_disk(),
+            'performance_score': 0
+        }
+        
+        # 计算性能评分
+        hardware_info['performance_score'] = self._calculate_windows_performance_score(hardware_info)
+        
+        return hardware_info
+    
+    def _detect_windows_cpu(self):
+        """检测Windows CPU信息"""
+        cpu_info = {
+            '名称': '未知',
+            '架构': '未知',
+            '核心数': 0,
+            '频率_MHz': 0
+        }
+        
+        try:
+            # 使用通用方法获取CPU名称
+            cpu_name = UnifiedUtils.get_wmic_single_value('cpu', 'Name')
+            if cpu_name:
+                cpu_info['名称'] = cpu_name
+                # 根据CPU名称获取正确的架构
+                cpu_info['架构'] = UnifiedUtils.get_cpu_architecture(cpu_name)
+            
+            # 使用通用方法获取CPU核心数
+            core_count = UnifiedUtils.get_wmic_single_value('cpu', 'NumberOfLogicalProcessors')
+            if core_count:
+                cpu_info['核心数'] = UnifiedUtils.safe_int_convert(core_count)
+            
+            # 从CPU名称中提取频率
+            cpu_info['频率_MHz'] = UnifiedUtils.extract_cpu_frequency(cpu_info['名称'])
+            
+            # 备选方案：使用platform获取基本信息
+            if cpu_info['名称'] == '未知':
+                cpu_info['名称'] = platform.processor()
+                cpu_info['核心数'] = psutil.cpu_count(logical=False)
+                cpu_info['频率_MHz'] = 3000  # 默认频率
+                
+        except Exception as e:
+            if self.debug_mode:
+                print(f"Windows CPU检测失败: {e}")
+            # 使用psutil作为备选
+            cpu_info['核心数'] = psutil.cpu_count(logical=False)
+            cpu_info['名称'] = platform.processor() or '未知CPU'
+        
+        return cpu_info
+    
+    def _detect_windows_gpu(self):
+        """检测Windows GPU信息"""
+        gpu_info = {
+            '名称': '未知',
+            '品牌': '未知',
+            '型号': '未知',
+            'GPU芯片': '未知',
+            '显存_GB': 0,
+            '类型': '未知'
+        }
+        
+        try:
+            # 使用WMIC获取显卡信息
+            result = self.run_command(['wmic', 'path', 'win32_VideoController', 'get', 'Name,AdapterRAM,DriverVersion,PNPDeviceID', '/format:csv'])
+            if result:
+                physical_gpus = []
+                lines = UnifiedUtils.parse_command_output(result)
+                
+                for line in lines:
+                    if not line.startswith('Node'):  # 跳过标题行
+                        parts = line.split(',')
+                        if len(parts) >= 5:
+                            gpu_name = parts[3].strip()
+                            pnp_device_id = parts[4].strip()
+                            
+                            # 过滤虚拟显卡
+                            if gpu_name and not any(keyword in gpu_name for keyword in ['Virtual', 'Microsoft', 'Todesk']):
+                                vram_bytes = UnifiedUtils.safe_int_convert(parts[1].strip()) if len(parts) > 1 else 0
+                                vram_gb = UnifiedUtils.extract_gpu_vram(gpu_name, vram_bytes)
+                                
+                                physical_gpus.append({
+                                    'name': gpu_name,
+                                    'vram_gb': vram_gb,
+                                    'pnp_device_id': pnp_device_id
+                                })
+
+                # 选择显存最大的物理显卡
+                if physical_gpus:
+                    best_gpu = max(physical_gpus, key=lambda x: x['vram_gb'])
+                    gpu_info['名称'] = best_gpu['name']
+                    gpu_info['GPU芯片'] = best_gpu['name']
+                    gpu_info['品牌'] = self._extract_gpu_brand(best_gpu['name'], best_gpu['pnp_device_id'])
+                    gpu_info['型号'] = self._extract_gpu_model(best_gpu['name'])
+                    gpu_info['显存_GB'] = best_gpu['vram_gb']
+                    gpu_info['类型'] = '独立' if best_gpu['vram_gb'] > 0 else '集成'
+            
+            # 备选方案：使用dxdiag信息
+            if gpu_info['名称'] == '未知':
+                result = self.run_command(['dxdiag', '/t', 'dxdiag_output.txt'])
+                if result:
+                    try:
+                        with open('dxdiag_output.txt', 'r', encoding='utf-16') as f:
+                            dxdiag_content = f.read()
+                        
+                        display_section = re.search(r'Display Devices(.*?)---------', dxdiag_content, re.DOTALL)
+                        if display_section:
+                            display_text = display_section.group(1)
+                            name_match = re.search(r'Card name:\s*(.*)', display_text)
+                            if name_match:
+                                gpu_name = name_match.group(1).strip()
+                                if not any(keyword in gpu_name for keyword in ['Virtual', 'Microsoft']):
+                                    gpu_info['名称'] = gpu_name
+                                    gpu_info['GPU芯片'] = gpu_name
+                                    gpu_info['品牌'] = self._extract_gpu_brand(gpu_name)
+                                    gpu_info['型号'] = self._extract_gpu_model(gpu_name)
+                                    gpu_info['显存_GB'] = UnifiedUtils.extract_gpu_vram(gpu_name)
+                                    gpu_info['类型'] = '独立' if gpu_info['显存_GB'] > 0 else '集成'
+                    except Exception as e:
+                        if self.debug_mode:
+                            print(f"DXDIAG检测失败: {e}")
+                    finally:
+                        try:
+                            os.remove('dxdiag_output.txt')
+                        except:
+                            pass
+            
+            # 备选方案：使用GPUtil
+            if gpu_info['名称'] == '未知':
+                try:
+                    import GPUtil
+                    gpus = GPUtil.getGPUs()
+                    if gpus:
+                        gpu = gpus[0]
+                        gpu_info['名称'] = gpu.name
+                        gpu_info['GPU芯片'] = gpu.name
+                        gpu_info['显存_GB'] = round(gpu.memoryTotal / 1024, 1)
+                        gpu_info['品牌'] = self._extract_gpu_brand(gpu.name)
+                        gpu_info['型号'] = self._extract_gpu_model(gpu.name)
+                        gpu_info['类型'] = '独立' if gpu_info['显存_GB'] > 0 else '集成'
+                except ImportError:
+                    pass
+                    
+        except Exception as e:
+            if self.debug_mode:
+                print(f"Windows GPU检测失败: {e}")
+        
+        return gpu_info
+    
+    def _detect_windows_memory(self):
+        """检测Windows内存信息"""
+        memory_info = {
+            '总容量_GB': 0,
+            '可用_GB': 0,
+            '使用率_%': 0,
+            '频率_MHz': 0,
+            'DDR类型': '未知'
+        }
+        
+        try:
+            # 使用psutil获取内存基本信息
+            mem = psutil.virtual_memory()
+            memory_info['总容量_GB'] = round(mem.total / (1024**3), 1)
+            memory_info['可用_GB'] = round(mem.available / (1024**3), 1)
+            memory_info['使用率_%'] = round(mem.percent, 1)
+            
+            # 使用WMIC获取内存频率
+            result = self.run_command(['wmic', 'memorychip', 'get', 'Speed,ConfiguredClockSpeed'])
+            if result:
+                lines = UnifiedUtils.parse_command_output(result)
+                for line in lines[1:]:  # 跳过标题行
+                    parts = line.split()
+                    for part in parts:
+                        if part.replace('.', '').isdigit():
+                            memory_info['频率_MHz'] = UnifiedUtils.safe_int_convert(float(part))
+                            break
+                    if memory_info['频率_MHz'] > 0:
+                        break
+            
+            # 使用WMIC获取内存类型
+            result = self.run_command(['wmic', 'memorychip', 'get', 'MemoryType,SMBIOSMemoryType,ConfiguredClockSpeed'])
+            if result:
+                lines = UnifiedUtils.parse_command_output(result)
+                for line in lines[1:]:  # 跳过标题行
+                    parts = line.split()
+                    if parts:
+                        memory_type = parts[0]
+                        
+                        # SMBIOS内存类型映射
+                        smbios_mapping = {
+                            '20': 'DDR', '21': 'DDR2', '22': 'DDR2',
+                            '24': 'DDR3', '26': 'DDR4', '34': 'DDR5',
+                            '25': 'DDR3', '27': 'DDR4'
+                        }
+                        
+                        if memory_type in smbios_mapping:
+                            memory_info['DDR类型'] = smbios_mapping[memory_type]
+                        elif 'DDR4' in line:
+                            memory_info['DDR类型'] = 'DDR4'
+                        elif 'DDR3' in line:
+                            memory_info['DDR类型'] = 'DDR3'
+                        elif 'DDR2' in line:
+                            memory_info['DDR类型'] = 'DDR2'
+                        
+                        # 根据频率推断DDR类型
+                        if len(parts) >= 2 and parts[1].isdigit():
+                            speed = int(parts[1])
+                            if speed >= 4800:
+                                memory_info['DDR类型'] = 'DDR5'
+                            elif speed >= 3200:
+                                memory_info['DDR类型'] = 'DDR4'
+                            elif speed >= 2133:
+                                memory_info['DDR类型'] = 'DDR3'
+                            elif speed >= 800:
+                                memory_info['DDR类型'] = 'DDR2'
+                            else:
+                                memory_info['DDR类型'] = 'DDR'
+                        break
+            
+            # 备选方案：根据主板型号和内存容量推断DDR类型
+            if memory_info['DDR类型'] in ['未知', 'DDR']:
+                motherboard_model = UnifiedUtils.get_wmic_single_value('baseboard', 'Product')
+                memory_info['DDR类型'] = UnifiedUtils.infer_memory_ddr_type(
+                    memory_info['频率_MHz'],
+                    memory_info['总容量_GB'],
+                    motherboard_model
+                )
+            
+            # 如果无法获取频率，根据容量推断
+            if memory_info['频率_MHz'] == 0:
+                memory_info['频率_MHz'] = UnifiedUtils.infer_memory_frequency(memory_info['总容量_GB'])
+                    
+        except Exception as e:
+            if self.debug_mode:
+                print(f"Windows内存检测失败: {e}")
+        
+        return memory_info
+    
+    def _detect_windows_bios(self):
+        """检测Windows BIOS信息"""
+        bios_info = {
+            '版本': '未知',
+            '发布日期': '未知',
+            '制造商': '未知',
+            '是否最新': '无法检测'
+        }
+        
+        try:
+            # 使用通用方法获取BIOS信息
+            bios_info['版本'] = UnifiedUtils.get_wmic_single_value('bios', 'SMBIOSBIOSVersion') or '未知'
+            bios_info['制造商'] = UnifiedUtils.get_wmic_single_value('bios', 'Manufacturer') or '未知'
+            
+            # 获取BIOS发布日期并转换格式
+            release_date = UnifiedUtils.get_wmic_single_value('bios', 'ReleaseDate')
+            if release_date:
+                bios_info['发布日期'] = self._convert_bios_date_format(release_date)
+            
+            # 检测BIOS是否最新
+            bios_info['是否最新'] = self._check_bios_latest(bios_info['版本'])
+                        
+        except Exception as e:
+            if self.debug_mode:
+                print(f"Windows BIOS检测失败: {e}")
+        
+        return bios_info
+    
+    def _convert_bios_date_format(self, wmic_date):
+        """将WMIC日期格式转换为年月日时格式"""
+        return UnifiedUtils.convert_bios_date_format(wmic_date)
+    
+    def _check_bios_latest(self, current_version):
+        """检查BIOS是否为最新版本"""
+        try:
+            # 获取主板型号
+            result = self.run_command(['wmic', 'baseboard', 'get', 'Product'])
+            if result:
+                lines = result.split('\n')
+                for line in lines[1:]:
+                    line = line.strip()
+                    if line:
+                        motherboard_model = line
+                        
+                        # 从配置文件读取已知的最新BIOS版本
+                        bios_config_path = os.path.join('json', 'config', 'bios_versions.json')
+                        if os.path.exists(bios_config_path):
+                            with open(bios_config_path, 'r', encoding='utf-8') as f:
+                                bios_config = json.load(f)
+                            
+                            # 查找匹配的主板型号
+                            for model, latest_version in bios_config['bios_versions'].items():
+                                if model.upper() in motherboard_model.upper():
+                                    # 比较版本号
+                                    if current_version == latest_version:
+                                        return '是'
+                                    else:
+                                        return f'否 (最新版本: {latest_version})'
+                        
+                        # 如果没有找到匹配的主板型号，根据版本号格式推断
+                        if current_version and current_version != '未知':
+                            # 简单的版本比较逻辑
+                            if len(current_version) >= 4 and current_version.isdigit():
+                                # 如果是数字版本号，假设较新的版本号较大
+                                return '需要手动检查'
+                            else:
+                                return '需要手动检查'
+                        
+                        break
+            
+            return '无法确定'
+            
+        except Exception as e:
+            if self.debug_mode:
+                print(f"BIOS版本检查失败: {e}")
+            return '检查失败'
+    
+    def _detect_windows_motherboard(self):
+        """检测Windows主板信息"""
+        motherboard_info = {
+            '制造商': '未知',
+            '型号': '未知',
+            '芯片组': '未知',
+            '序列号': '未知'
+        }
+        
+        try:
+            # 使用通用方法获取主板信息
+            motherboard_info['制造商'] = UnifiedUtils.get_wmic_single_value('baseboard', 'Manufacturer') or '未知'
+            motherboard_info['型号'] = UnifiedUtils.get_wmic_single_value('baseboard', 'Product') or '未知'
+            motherboard_info['芯片组'] = UnifiedUtils.get_wmic_single_value('baseboard', 'Version') or '未知'
+            
+            # 获取主板序列号并打码
+            serial_number = UnifiedUtils.get_wmic_single_value('baseboard', 'SerialNumber')
+            if serial_number:
+                motherboard_info['序列号'] = UnifiedUtils.mask_serial_number(serial_number)
+                        
+        except Exception as e:
+            if self.debug_mode:
+                print(f"Windows主板检测失败: {e}")
+        
+        return motherboard_info
+    
+    def _detect_windows_disk(self):
+        """检测Windows硬盘信息"""
+        disk_info = {
+            '总数': 0,
+            '总容量_TB': 0.0,
+            '硬盘列表': [],
+            '读写速率': {
+                '读取速率_MB/s': 0,
+                '写入速率_MB/s': 0,
+                '理论读取速率_MB/s': 0,
+                '理论写入速率_MB/s': 0
+            }
+        }
+        
+        try:
+            # 获取硬盘列表（型号和接口类型）
+            result = self.run_command(['wmic', 'diskdrive', 'get', 'Model,InterfaceType'])
+            if result:
+                lines = UnifiedUtils.parse_command_output(result)
+                for line in lines:
+                    if 'Model' not in line and 'InterfaceType' not in line:
+                        parts = line.split()
+                        if len(parts) >= 2:
+                            interface_type = parts[0]
+                            model = ' '.join(parts[1:])
+                            
+                            # 使用通用方法检测硬盘类型
+                            disk_type = UnifiedUtils.detect_hardware_type(model, interface_type)
+                            
+                            # 获取硬盘容量
+                            size_result = self.run_command(['wmic', 'diskdrive', 'where', f'Model="{model}"', 'get', 'Size'])
+                            capacity_gb = 0
+                            capacity_tb = 0
+                            
+                            if size_result:
+                                size_lines = UnifiedUtils.parse_command_output(size_result)
+                                for size_line in size_lines:
+                                    if 'Size' not in size_line and size_line.isdigit():
+                                        size_bytes = int(size_line)
+                                        capacity_gb = round(size_bytes / (1024**3), 1)
+                                        capacity_tb = round(size_bytes / (1024**4), 2)
+                                        break
+                            
+                            disk_info['硬盘列表'].append({
+                                '名称': model,
+                                '类型': disk_type,
+                                '接口类型': interface_type,
+                                '容量_GB': capacity_gb,
+                                '容量_TB': capacity_tb
+                            })
+            
+            # 计算总容量
+            disk_info['总容量_TB'] = round(sum(disk['容量_TB'] for disk in disk_info['硬盘列表']), 2)
+            disk_info['总数'] = len(disk_info['硬盘列表'])
+            
+            # 获取硬盘读写速度
+            disk_info['读写速率']['读取速率_MB/s'] = self._get_disk_read_speed()
+            disk_info['读写速率']['写入速率_MB/s'] = self._get_disk_write_speed()
+            
+            # 设置理论速度
+            if disk_info['硬盘列表']:
+                disk_model = disk_info['硬盘列表'][0]['名称'].upper()
+                if 'SSD' in disk_model or 'KINGSTON' in disk_model:
+                    disk_info['读写速率']['理论读取速率_MB/s'] = 500
+                    disk_info['读写速率']['理论写入速率_MB/s'] = 400
+                else:
+                    disk_info['读写速率']['理论读取速率_MB/s'] = 150
+                    disk_info['读写速率']['理论写入速率_MB/s'] = 120
+            
+            # 默认值
+            if not disk_info['硬盘列表']:
+                disk_info['硬盘列表'] = [{
+                    '名称': '内置硬盘',
+                    '类型': 'SSD',
+                    '容量_GB': 512,
+                    '容量_TB': 0.5
+                }]
+                disk_info['总数'] = 1
+                disk_info['总容量_TB'] = 0.5
+                
+        except Exception as e:
+            if self.debug_mode:
+                print(f"Windows硬盘检测失败: {e}")
+        
+        return disk_info
+    
+    def _detect_windows_system(self):
+        """检测Windows系统信息"""
+        system_info = {
+            '操作系统': 'Windows',
+            '版本': '未知',
+            '架构': '未知',
+            '主机名': '未知',
+            '启动时间': '未知'
+        }
+        
+        try:
+            # 使用platform获取系统信息
+            system_info['操作系统'] = platform.system()
+            system_info['版本'] = platform.release()
+            system_info['架构'] = platform.machine()
+            system_info['主机名'] = platform.node()
+            
+            # 获取启动时间
+            boot_time = psutil.boot_time()
+            from datetime import datetime
+            system_info['启动时间'] = UnifiedUtils.format_timestamp(datetime.fromtimestamp(boot_time))
+            
+        except Exception as e:
+            if self.debug_mode:
+                print(f"Windows系统信息检测失败: {e}")
+        
+        return system_info
+    
+    def _detect_linux_hardware(self):
+        """Linux硬件信息检测"""
+        # 简化版Linux硬件检测
+        hardware_info = {
+            'cpu': {'名称': '未知', '架构': platform.machine(), '核心数': psutil.cpu_count(logical=False), '频率_MHz': 0},
+            'gpu': {'名称': '未知', '品牌': '未知', '型号': '未知', 'GPU芯片': '未知', '显存_GB': 0, '类型': '未知'},
+            'memory': {'总容量_GB': round(psutil.virtual_memory().total / (1024**3), 1), '可用_GB': round(psutil.virtual_memory().available / (1024**3), 1), '使用率_%': round(psutil.virtual_memory().percent, 1), '频率_MHz': 0, 'DDR类型': '未知'},
+            'system': {'操作系统': 'Linux', '版本': platform.release(), '架构': platform.machine(), '主机名': platform.node(), '启动时间': '未知'},
+            'bios': {'版本': '未知', '发布日期': '未知', '制造商': '未知', '是否最新': '无法检测'},
+            'motherboard': {'制造商': '未知', '型号': '未知', '芯片组': '未知', '序列号': '未知'},
+            'disk': {'总数': 1, '总容量_TB': 0.0, '硬盘列表': [], '读写速率': {'读取速率_MB/s': 0, '写入速率_MB/s': 0, '理论读取速率_MB/s': 0, '理论写入速率_MB/s': 0}},
+            'performance_score': 0
+        }
+        
+        return hardware_info
+    
+    def _detect_basic_hardware(self):
+        """基础硬件信息检测（使用psutil）"""
         hardware_info = {
             'cpu': {'名称': '未知', '架构': '未知', '核心数': 0, '频率_MHz': 0},
             'gpu': {'名称': '未知', '品牌': '未知', '型号': '未知', 'GPU芯片': '未知', '显存_GB': 0, '类型': '未知'},
@@ -745,6 +2033,49 @@ class OptimizedHardwareDetector:
                 print(f"硬件信息检测失败: {e}")
         
         return hardware_info
+    
+    def _extract_gpu_brand(self, gpu_name, pnp_device_id=None):
+        """从GPU名称和PNP设备ID中提取品牌"""
+        return UnifiedUtils.extract_gpu_brand(gpu_name, pnp_device_id)
+    
+    def _get_gpu_brand_from_vendor_id(self, vendor_id):
+        """根据厂商ID获取显卡品牌"""
+        return UnifiedUtils.get_gpu_brand_from_vendor_id(vendor_id)
+    
+    def _extract_gpu_model(self, gpu_name):
+        """从GPU名称中提取型号"""
+        return UnifiedUtils.extract_gpu_model(gpu_name)
+    
+    def _calculate_windows_performance_score(self, hardware_info):
+        """计算Windows硬件性能评分"""
+        score = 0
+        
+        # CPU评分 (0-30分)
+        cpu_cores = hardware_info['cpu']['核心数']
+        cpu_freq = hardware_info['cpu']['频率_MHz']
+        cpu_score = min(30, (cpu_cores * 3) + (cpu_freq // 100))
+        score += cpu_score
+        
+        # GPU评分 (0-25分)
+        gpu_memory = hardware_info['gpu']['显存_GB']
+        gpu_score = min(25, gpu_memory * 5)
+        score += gpu_score
+        
+        # 内存评分 (0-20分)
+        memory_gb = hardware_info['memory']['总容量_GB']
+        memory_score = min(20, memory_gb * 1.5)
+        score += memory_score
+        
+        # 硬盘评分 (0-15分)
+        disk_count = hardware_info['disk']['总数']
+        disk_score = min(15, disk_count * 5)
+        score += disk_score
+        
+        # 系统评分 (0-10分)
+        system_score = 10  # Windows系统基础分
+        score += system_score
+        
+        return min(100, score)
     
     def print_hardware_info(self, hardware_info=None):
         """打印硬件信息"""
@@ -793,6 +2124,7 @@ class OptimizedHardwareDetector:
         print(f"\n🔧 BIOS/EFI信息:")
         print(f"   版本: {bios['版本']}")
         print(f"   制造商: {bios['制造商']}")
+        print(f"   发布日期: {bios['发布日期']}")
         print(f"   是否最新: {bios['是否最新']}")
         
         # 主板信息
@@ -833,6 +2165,75 @@ class OptimizedHardwareDetector:
         print(f"\n📊 性能评分: {hardware_info['performance_score']}/100")
         
         print("\n" + "="*60)
+        
+        # 保存硬件信息到JSON文件
+        self._save_hardware_info_to_json(hardware_info)
+        
+        # 单独保存BIOS信息到config文件夹，文件名包含主板名称
+        motherboard_name = hardware_info.get('motherboard', {}).get('型号', 'unknown')
+        self._save_bios_info_to_json(hardware_info['bios'], motherboard_name)
+    
+    def _save_hardware_info_to_json(self, hardware_info):
+        """保存硬件信息到JSON文件（追加模式）"""
+        hardware_file = os.path.join(os.path.dirname(__file__), 'json', 'hardware', 'hardware_info.json')
+        self._save_to_json_with_append(hardware_file, 'hardware_info', hardware_info)
+    
+    def _save_bios_info_to_json(self, bios_info, motherboard_name='unknown'):
+        """保存BIOS信息到JSON文件（追加模式）
+        
+        Args:
+            bios_info: BIOS信息数据
+            motherboard_name: 主板型号名称
+        """
+        # 清理主板名称中的非法字符
+        motherboard_name_clean = UnifiedUtils.clean_filename(motherboard_name)
+        # 构建文件名：bios_info(主板名称).json
+        bios_filename = f"bios_info({motherboard_name_clean}).json"
+        bios_file = os.path.join(os.path.dirname(__file__), 'json', 'config', bios_filename)
+        self._save_to_json_with_append(bios_file, 'bios_info', bios_info)
+    
+    def _save_to_json_with_append(self, file_path, info_type, info_data):
+        """通用方法：保存信息到JSON文件（追加模式）
+        
+        Args:
+            file_path: JSON文件路径
+            info_type: 信息类型（如'hardware_info', 'bios_info'）
+            info_data: 要保存的信息数据
+        """
+        try:
+            # 添加时间戳
+            info_with_timestamp = {
+                'timestamp': datetime.datetime.now().isoformat(),
+                info_type: info_data
+            }
+            
+            # 确保目录存在
+            os.makedirs(os.path.dirname(file_path), exist_ok=True)
+            
+            # 读取现有数据
+            existing_data = []
+            if os.path.exists(file_path):
+                try:
+                    with open(file_path, 'r', encoding='utf-8') as f:
+                        existing_data = json.load(f)
+                        # 如果现有数据不是数组，转换为数组
+                        if not isinstance(existing_data, list):
+                            existing_data = [existing_data]
+                except Exception:
+                    existing_data = []
+            
+            # 追加新数据
+            existing_data.append(info_with_timestamp)
+            
+            # 保存到JSON文件
+            with open(file_path, 'w', encoding='utf-8') as f:
+                json.dump(existing_data, f, ensure_ascii=False, indent=2)
+            
+            print(f"✅ {info_type}已追加到: {file_path}")
+            
+        except Exception as e:
+            if self.debug_mode:
+                print(f"❌ 保存{info_type}失败: {e}")
 
 
 class HardwarePerformanceUpdater:
@@ -1043,91 +2444,73 @@ class HardwarePerformanceUpdater:
                 return default_data
     
     def _get_default_cpu_data(self):
-        """获取默认CPU性能数据 - 从网络获取最新数据"""
-        # 本地默认数据
-        local_data = {
-            'i9': 100, 'i7': 85, 'i5': 70, 'i3': 55,
-            'Core i9': 100, 'Core i7': 85, 'Core i5': 70, 'Core i3': 55,
-            'Ryzen 9': 100, 'Ryzen 7': 85, 'Ryzen 5': 70, 'Ryzen 3': 55,
-            'M3': 100, 'M2': 95, 'M1': 90, 'M1 Pro': 95, 'M1 Max': 100,
-            'M2 Pro': 100, 'M2 Max': 100, 'M2 Ultra': 100,
-            'M3 Pro': 100, 'M3 Max': 100, 'M3 Ultra': 100,
-        }
-        
+        """获取CPU性能数据 - 优先网络数据，保存到本地"""
+        # 优先从网络获取最新数据
         try:
-            import urllib.request
-            import ssl
-            
-            # 创建不验证SSL证书的上下文
-            ssl_context = ssl.create_default_context()
-            ssl_context.check_hostname = False
-            ssl_context.verify_mode = ssl.CERT_NONE
-            
-            # 尝试从多个来源获取CPU性能数据
-            urls = [
-                'https://www.cpubenchmark.net/',
-                'https://www.techpowerup.com/',
-            ]
-            
-            headers = {
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-                'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
-                'Accept-Language': 'zh-CN,zh;q=0.9,en;q=0.8',
-                'Accept-Encoding': 'gzip, deflate, br',
-                'Connection': 'keep-alive',
-                'Upgrade-Insecure-Requests': '1',
-            }
+            urls = ['https://www.cpubenchmark.net/', 'https://www.techpowerup.com/']
             
             for url in urls:
                 try:
-                    request = urllib.request.Request(url, headers=headers)
+                    html_content = UnifiedUtils.fetch_url(url, timeout=20)
+                    if not html_content or len(html_content) < 10000:
+                        continue
                     
-                    with urllib.request.urlopen(request, timeout=20, context=ssl_context) as response:
-                        # 检查响应头，如果是gzip压缩，需要解压
-                        content = response.read()
-                        
-                        # 检查是否是gzip压缩
-                        if response.headers.get('Content-Encoding') == 'gzip':
-                            import gzip
-                            html_content = gzip.decompress(content).decode('utf-8')
-                        else:
-                            # 尝试直接解码，如果失败则尝试其他编码
-                            try:
-                                html_content = content.decode('utf-8')
-                            except UnicodeDecodeError:
-                                html_content = content.decode('latin-1')
-                        
-                        # 调试：显示获取到的HTML内容长度
+                    cpu_data = self._parse_cpu_benchmark_data(html_content)
+                    if cpu_data and len(cpu_data) > 5:
                         if self.debug_mode:
-                            print(f"[DEBUG] 从 {url} 获取到 {len(html_content)} 字节的HTML内容")
+                            print(f"[DEBUG] 从 {url} 获取到 {len(cpu_data)} 个CPU型号")
                         
-                        # 如果HTML内容太短，可能被重定向或反爬虫
-                        if len(html_content) < 10000:
-                            if self.debug_mode:
-                                print(f"[DEBUG] HTML内容太短，可能被反爬虫拦截")
-                            continue
+                        # 保存网络数据到本地JSON文件
+                        self._save_cpu_data_to_local(cpu_data)
                         
-                        # 解析CPU性能数据
-                        cpu_data = self._parse_cpu_benchmark_data(html_content)
-                        if cpu_data and len(cpu_data) > 5:  # 降低阈值，从10改为5
-                            # 调试：显示解析到的CPU数据
-                            if self.debug_mode:
-                                print(f"[DEBUG] 从 {url} 解析到 {len(cpu_data)} 个CPU型号")
-                                for cpu_name, score in list(cpu_data.items())[:5]:
-                                    print(f"[DEBUG]   {cpu_name}: {score}")
-                            return (cpu_data, True)
-                            
+                        return (cpu_data, True)
                 except Exception as e:
                     if self.escape_manager:
                         self.escape_manager.debug_log(f"从 {url} 获取CPU数据失败: {e}")
-                    continue
-            
         except Exception as e:
             if self.escape_manager:
                 self.escape_manager.debug_log(f"获取CPU性能数据失败: {e}")
         
-        # 如果网络获取失败，返回本地默认数据
-        return (local_data, False)
+        # 如果网络获取失败，从本地JSON文件加载数据
+        local_data = UnifiedUtils.get_default_performance_data().get('cpu', {})
+        if local_data:
+            if self.debug_mode:
+                print(f"[DEBUG] 使用本地CPU数据，共 {len(local_data)} 个型号")
+            return (local_data, False)
+        
+        # 如果本地也没有数据，返回空字典
+        return ({}, False)
+    
+    def _save_cpu_data_to_local(self, cpu_data):
+        """保存CPU数据到本地JSON文件"""
+        try:
+            import json
+            import os
+            
+            # 读取现有数据
+            config_file = os.path.join(os.path.dirname(__file__), 'json', 'config', 'default_performance_data.json')
+            existing_data = {}
+            if os.path.exists(config_file):
+                try:
+                    with open(config_file, 'r', encoding='utf-8') as f:
+                        existing_data = json.load(f)
+                except Exception:
+                    pass
+            
+            # 更新CPU数据
+            existing_data['default_cpu_data'] = cpu_data
+            existing_data['last_update'] = datetime.datetime.now().isoformat()
+            
+            # 保存到文件
+            with open(config_file, 'w', encoding='utf-8') as f:
+                json.dump(existing_data, f, ensure_ascii=False, indent=2)
+            
+            if self.debug_mode:
+                print(f"[DEBUG] CPU数据已保存到本地: {config_file}")
+        
+        except Exception as e:
+            if self.debug_mode:
+                print(f"[DEBUG] 保存CPU数据到本地失败: {e}")
     
     def _parse_cpu_benchmark_data(self, html_content):
         """解析CPU基准测试数据"""
@@ -1280,95 +2663,75 @@ class HardwarePerformanceUpdater:
             return 50
     
     def _get_default_gpu_data(self):
-        """获取默认GPU性能数据 - 从网络获取最新数据"""
-        # 本地默认数据
-        local_data = {
-            'RTX 5090': 100, 'RTX 5080': 98, 'RTX 5070': 95,
-            'RTX 4090': 95, 'RTX 4080': 90, 'RTX 4070': 85,
-            'RTX 3090': 90, 'RTX 3080': 85, 'RTX 3070': 80,
-            'RTX 4060': 75, 'RTX 3060': 70,
-            'GTX 1660': 65, 'GTX 1650': 60,
-            'RX 7900': 100, 'RX 7800': 95, 'RX 7700': 90,
-            'RX 6900': 90, 'RX 6800': 85, 'RX 6700': 80,
-            'Arc A770': 75, 'Arc A750': 70,
-            'Apple M4': 100, 'Apple M3': 95, 'Apple M2': 90, 'Apple M1': 85,
-            'Apple M2 Pro': 95, 'Apple M3 Pro': 100, 'Apple M4 Pro': 100,
-        }
-        
+        """获取GPU性能数据 - 强制从网络获取，保存到本地"""
+        # 强制从网络获取最新数据
         try:
-            import urllib.request
-            import ssl
-            
-            # 创建不验证SSL证书的上下文
-            ssl_context = ssl.create_default_context()
-            ssl_context.check_hostname = False
-            ssl_context.verify_mode = ssl.CERT_NONE
-            
-            # 尝试从多个来源获取GPU性能数据
-            urls = [
-                'https://www.videocardbenchmark.net/',
-                'https://www.techpowerup.com/',
-            ]
-            
-            headers = {
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
-                'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8',
-                'Accept-Language': 'zh-CN,zh;q=0.9,en;q=0.8',
-                'Accept-Encoding': 'gzip, deflate, br',
-                'Connection': 'keep-alive',
-                'Upgrade-Insecure-Requests': '1',
-            }
+            urls = ['https://www.videocardbenchmark.net/', 'https://www.techpowerup.com/']
             
             for url in urls:
                 try:
-                    request = urllib.request.Request(url, headers=headers)
+                    html_content = UnifiedUtils.fetch_url(url, timeout=20)
+                    if not html_content or len(html_content) < 10000:
+                        continue
                     
-                    with urllib.request.urlopen(request, timeout=20, context=ssl_context) as response:
-                        # 检查响应头，如果是gzip压缩，需要解压
-                        content = response.read()
-                        
-                        # 检查是否是gzip压缩
-                        if response.headers.get('Content-Encoding') == 'gzip':
-                            import gzip
-                            html_content = gzip.decompress(content).decode('utf-8')
-                        else:
-                            # 尝试直接解码，如果失败则尝试其他编码
-                            try:
-                                html_content = content.decode('utf-8')
-                            except UnicodeDecodeError:
-                                html_content = content.decode('latin-1')
-                        
-                        # 调试：显示获取到的HTML内容长度
+                    gpu_data = self._parse_gpu_benchmark_data(html_content)
+                    if gpu_data and len(gpu_data) > 5:
                         if self.debug_mode:
-                            print(f"[DEBUG] 从 {url} 获取到 {len(html_content)} 字节的HTML内容")
+                            print(f"[DEBUG] 从 {url} 获取到 {len(gpu_data)} 个GPU型号")
                         
-                        # 如果HTML内容太短，可能被重定向或反爬虫
-                        if len(html_content) < 10000:
-                            if self.debug_mode:
-                                print(f"[DEBUG] HTML内容太短，可能被反爬虫拦截")
-                            continue
+                        # 保存网络数据到本地JSON文件
+                        self._save_gpu_data_to_local(gpu_data)
                         
-                        # 解析GPU性能数据
-                        gpu_data = self._parse_gpu_benchmark_data(html_content)
-                        if gpu_data and len(gpu_data) > 5:  # 降低阈值，从10改为5
-                            # 调试：显示解析到的GPU数据
-                            if self.debug_mode:
-                                print(f"[DEBUG] 从 {url} 解析到 {len(gpu_data)} 个GPU型号")
-                                for gpu_name, score in list(gpu_data.items())[:5]:
-                                    print(f"[DEBUG]   {gpu_name}: {score}")
-                            return (gpu_data, True)
-                            
+                        return (gpu_data, True)
                 except Exception as e:
                     if self.debug_mode:
                         print(f"[DEBUG] 从 {url} 获取GPU数据失败: {e}")
-                    continue
-            
         except Exception as e:
             if self.debug_mode:
                 print(f"[DEBUG] 获取GPU性能数据失败: {e}")
         
-        # 如果网络获取失败，返回本地默认数据
-        return (local_data, False)
+        # 如果网络获取失败，从本地JSON文件加载数据作为备用
+        local_data = UnifiedUtils.get_default_gpu_performance_data()
+        if local_data:
+            if self.debug_mode:
+                print(f"[DEBUG] 网络获取失败，使用本地GPU数据，共 {len(local_data)} 个型号")
+            return (local_data, False)
+        
+        # 如果本地也没有数据，返回空字典
+        if self.debug_mode:
+            print(f"[DEBUG] 无法获取GPU数据")
+        return ({}, False)
+    
+    def _save_gpu_data_to_local(self, gpu_data):
+        """保存GPU数据到本地JSON文件"""
+        try:
+            import json
+            import os
+            
+            # 读取现有数据
+            config_file = os.path.join(os.path.dirname(__file__), 'json', 'config', 'default_gpu_performance_data.json')
+            existing_data = {}
+            if os.path.exists(config_file):
+                try:
+                    with open(config_file, 'r', encoding='utf-8') as f:
+                        existing_data = json.load(f)
+                except Exception:
+                    pass
+            
+            # 更新GPU数据
+            existing_data['default_gpu_data'] = gpu_data
+            existing_data['last_update'] = datetime.datetime.now().isoformat()
+            
+            # 保存到文件
+            with open(config_file, 'w', encoding='utf-8') as f:
+                json.dump(existing_data, f, ensure_ascii=False, indent=2)
+            
+            if self.debug_mode:
+                print(f"[DEBUG] GPU数据已保存到本地: {config_file}")
+        
+        except Exception as e:
+            if self.debug_mode:
+                print(f"[DEBUG] 保存GPU数据到本地失败: {e}")
     
     def _parse_gpu_benchmark_data(self, html_content):
         """解析GPU基准测试数据"""
@@ -1519,34 +2882,219 @@ class HardwarePerformanceUpdater:
             return 50
     
     def _get_default_memory_data(self):
-        """获取默认内存性能数据"""
-        return {
-            32: 100, 24: 95, 16: 85, 12: 75, 8: 60, 4: 40, 2: 20,
-        }
+        """获取内存性能数据 - 优先网络数据，保存到本地"""
+        # 优先从网络获取最新数据
+        try:
+            urls = ['https://www.memorybenchmark.net/', 'https://www.techpowerup.com/']
+            
+            for url in urls:
+                try:
+                    html_content = UnifiedUtils.fetch_url(url, timeout=20)
+                    if not html_content or len(html_content) < 10000:
+                        continue
+                    
+                    memory_data = self._parse_memory_benchmark_data(html_content)
+                    if memory_data and len(memory_data) > 3:
+                        if self.debug_mode:
+                            print(f"[DEBUG] 从 {url} 获取到 {len(memory_data)} 个内存数据")
+                        
+                        # 保存网络数据到本地JSON文件
+                        self._save_memory_data_to_local(memory_data)
+                        
+                        return (memory_data, True)
+                except Exception as e:
+                    if self.debug_mode:
+                        print(f"[DEBUG] 从 {url} 获取内存数据失败: {e}")
+        except Exception as e:
+            if self.debug_mode:
+                print(f"[DEBUG] 获取内存性能数据失败: {e}")
+        
+        # 如果网络获取失败，从本地JSON文件加载数据
+        default_data = UnifiedUtils.get_default_performance_data()
+        local_data = default_data.get('memory', {})
+        if local_data:
+            if self.debug_mode:
+                print(f"[DEBUG] 使用本地内存数据，共 {len(local_data)} 个条目")
+            return (local_data, False)
+        
+        # 如果本地也没有数据，返回空字典
+        return ({}, False)
     
     def _get_default_network_data(self):
-        """获取默认网卡性能数据"""
-        return {
-            'Wi-Fi 7': 100,
-            'Wi-Fi 6E': 95,
-            'Wi-Fi 6': 90,
-            'Wi-Fi 5': 80,
-            'Wi-Fi 4': 60,
-            'Ethernet 10G': 100,
-            'Ethernet 5G': 95,
-            'Ethernet 2.5G': 90,
-            'Ethernet 1G': 85,
-            'Ethernet 100M': 70,
-            'Intel Wi-Fi 7': 100,
-            'Intel Wi-Fi 6E': 95,
-            'Intel Wi-Fi 6': 90,
-            'Broadcom Wi-Fi 7': 100,
-            'Broadcom Wi-Fi 6E': 95,
-            'Qualcomm Wi-Fi 7': 100,
-            'Qualcomm Wi-Fi 6E': 95,
-            'Realtek Wi-Fi 6': 85,
-            'Realtek Wi-Fi 5': 75
-        }
+        """获取网卡性能数据 - 优先网络数据，保存到本地"""
+        # 优先从网络获取最新数据
+        try:
+            urls = ['https://www.speedtest.net/', 'https://www.techpowerup.com/']
+            
+            for url in urls:
+                try:
+                    html_content = UnifiedUtils.fetch_url(url, timeout=20)
+                    if not html_content or len(html_content) < 10000:
+                        continue
+                    
+                    network_data = self._parse_network_benchmark_data(html_content)
+                    if network_data and len(network_data) > 3:
+                        if self.debug_mode:
+                            print(f"[DEBUG] 从 {url} 获取到 {len(network_data)} 个网络数据")
+                        
+                        # 保存网络数据到本地JSON文件
+                        self._save_network_data_to_local(network_data)
+                        
+                        return (network_data, True)
+                except Exception as e:
+                    if self.debug_mode:
+                        print(f"[DEBUG] 从 {url} 获取网络数据失败: {e}")
+        except Exception as e:
+            if self.debug_mode:
+                print(f"[DEBUG] 获取网卡性能数据失败: {e}")
+        
+        # 如果网络获取失败，从本地JSON文件加载数据
+        default_data = UnifiedUtils.get_default_performance_data()
+        local_data = default_data.get('network', {})
+        if local_data:
+            if self.debug_mode:
+                print(f"[DEBUG] 使用本地网络数据，共 {len(local_data)} 个条目")
+            return (local_data, False)
+        
+        # 如果本地也没有数据，返回空字典
+        return ({}, False)
+    
+    def _parse_memory_benchmark_data(self, html_content):
+        """解析内存基准测试数据"""
+        try:
+            memory_data = {}
+            
+            # 内存容量匹配模式
+            memory_patterns = [
+                r'(\d+)\s*GB\s*(?:DDR|Memory)',
+                r'(\d+)\s*GB\s*(?:RAM)',
+                r'(\d+)\s*GB\s*(?:DIMM)',
+            ]
+            
+            for pattern in memory_patterns:
+                matches = re.findall(pattern, html_content, re.IGNORECASE)
+                for match in matches:
+                    try:
+                        capacity = int(match)
+                        if capacity not in memory_data:
+                            # 根据容量计算性能分数
+                            if capacity >= 64:
+                                score = 100
+                            elif capacity >= 32:
+                                score = 100
+                            elif capacity >= 24:
+                                score = 95
+                            elif capacity >= 16:
+                                score = 85
+                            elif capacity >= 12:
+                                score = 75
+                            elif capacity >= 8:
+                                score = 60
+                            elif capacity >= 4:
+                                score = 40
+                            else:
+                                score = 20
+                            
+                            memory_data[capacity] = score
+                    except ValueError:
+                        continue
+            
+            return memory_data
+        except Exception as e:
+            if self.debug_mode:
+                print(f"[DEBUG] 解析内存数据失败: {e}")
+            return {}
+    
+    def _parse_network_benchmark_data(self, html_content):
+        """解析网络基准测试数据"""
+        try:
+            network_data = {}
+            
+            # 网络类型匹配模式
+            network_patterns = [
+                (r'Wi-Fi\s*7', 100),
+                (r'Wi-Fi\s*6E', 95),
+                (r'Wi-Fi\s*6', 90),
+                (r'Wi-Fi\s*5', 80),
+                (r'Wi-Fi\s*4', 60),
+                (r'Ethernet\s*10G', 100),
+                (r'Ethernet\s*5G', 95),
+                (r'Ethernet\s*2\.5G', 90),
+                (r'Ethernet\s*1G', 85),
+                (r'Ethernet\s*100M', 70),
+            ]
+            
+            for pattern, score in network_patterns:
+                if re.search(pattern, html_content, re.IGNORECASE):
+                    network_data[pattern.replace(r'\s*', ' ')] = score
+            
+            return network_data
+        except Exception as e:
+            if self.debug_mode:
+                print(f"[DEBUG] 解析网络数据失败: {e}")
+            return {}
+    
+    def _save_memory_data_to_local(self, memory_data):
+        """保存内存数据到本地JSON文件"""
+        try:
+            import json
+            import os
+            
+            # 读取现有数据
+            config_file = os.path.join(os.path.dirname(__file__), 'json', 'config', 'default_performance_data.json')
+            existing_data = {}
+            if os.path.exists(config_file):
+                try:
+                    with open(config_file, 'r', encoding='utf-8') as f:
+                        existing_data = json.load(f)
+                except Exception:
+                    pass
+            
+            # 更新内存数据
+            existing_data['default_memory_data'] = memory_data
+            existing_data['last_update'] = datetime.datetime.now().isoformat()
+            
+            # 保存到文件
+            with open(config_file, 'w', encoding='utf-8') as f:
+                json.dump(existing_data, f, ensure_ascii=False, indent=2)
+            
+            if self.debug_mode:
+                print(f"[DEBUG] 内存数据已保存到本地: {config_file}")
+        
+        except Exception as e:
+            if self.debug_mode:
+                print(f"[DEBUG] 保存内存数据到本地失败: {e}")
+    
+    def _save_network_data_to_local(self, network_data):
+        """保存网络数据到本地JSON文件"""
+        try:
+            import json
+            import os
+            
+            # 读取现有数据
+            config_file = os.path.join(os.path.dirname(__file__), 'json', 'config', 'default_performance_data.json')
+            existing_data = {}
+            if os.path.exists(config_file):
+                try:
+                    with open(config_file, 'r', encoding='utf-8') as f:
+                        existing_data = json.load(f)
+                except Exception:
+                    pass
+            
+            # 更新网络数据
+            existing_data['default_network_data'] = network_data
+            existing_data['last_update'] = datetime.datetime.now().isoformat()
+            
+            # 保存到文件
+            with open(config_file, 'w', encoding='utf-8') as f:
+                json.dump(existing_data, f, ensure_ascii=False, indent=2)
+            
+            if self.debug_mode:
+                print(f"[DEBUG] 网络数据已保存到本地: {config_file}")
+        
+        except Exception as e:
+            if self.debug_mode:
+                print(f"[DEBUG] 保存网络数据到本地失败: {e}")
     
     def save_performance_data(self, cpu_data=None, gpu_data=None, memory_data=None):
         """保存性能数据"""
@@ -1840,6 +3388,55 @@ class ProjectorRecommender:
             print("\n没有找到符合条件的投影仪")
         
         print("\n" + "="*60)
+        
+        # 保存投影仪推荐信息到JSON文件
+        self._save_projector_info_to_json(projectors, budget_range, brand_preference, resolution_preference)
+    
+    def _save_projector_info_to_json(self, projectors, budget_range=None, brand_preference=None, resolution_preference=None):
+        """保存投影仪推荐信息到JSON文件（追加模式）"""
+        try:
+            # 投影仪信息文件路径
+            projector_file = os.path.join(os.path.dirname(__file__), 'json', 'projector', 'projector_info.json')
+            
+            # 构建投影仪信息数据结构
+            projector_data = {
+                'timestamp': datetime.datetime.now().isoformat(),
+                'search_criteria': {
+                    'budget_range': budget_range,
+                    'brand_preference': brand_preference,
+                    'resolution_preference': resolution_preference
+                },
+                'recommended_count': len(projectors),
+                'projectors': projectors[:5]  # 只保存前5个推荐结果
+            }
+            
+            # 确保目录存在
+            os.makedirs(os.path.dirname(projector_file), exist_ok=True)
+            
+            # 读取现有数据
+            existing_data = []
+            if os.path.exists(projector_file):
+                try:
+                    with open(projector_file, 'r', encoding='utf-8') as f:
+                        existing_data = json.load(f)
+                        # 如果现有数据不是数组，转换为数组
+                        if not isinstance(existing_data, list):
+                            existing_data = [existing_data]
+                except Exception:
+                    existing_data = []
+            
+            # 追加新数据
+            existing_data.append(projector_data)
+            
+            # 保存到JSON文件
+            with open(projector_file, 'w', encoding='utf-8') as f:
+                json.dump(existing_data, f, ensure_ascii=False, indent=2)
+            
+            print(f"✅ 投影仪推荐信息已追加到: {projector_file}")
+            
+        except Exception as e:
+            if self.debug_mode:
+                print(f"❌ 保存投影仪信息失败: {e}")
 
 
 class EscapeManager:
@@ -2065,23 +3662,7 @@ class EscapeManager:
     
     def clean_filename(self, filename):
         """清理文件名中的非法字符和乱码"""
-        if not filename:
-            return "未知位置"
-        
-        illegal_chars = r'[<>:"/\\|?*]'
-        cleaned = re.sub(illegal_chars, '', filename)
-        cleaned = re.sub(r'[\x00-\x1f\x7f-\x9f]', '', cleaned)
-        cleaned = cleaned.replace('�', '')
-        
-        if len(cleaned) > 200:
-            cleaned = cleaned[:200]
-        
-        cleaned = cleaned.strip()
-        
-        if not cleaned:
-            cleaned = "未知位置"
-        
-        return cleaned
+        return UnifiedUtils.clean_filename(filename)
     
     def generate_location_prefix(self, location_info):
         """生成地理位置前缀（支持县级行政区和乡镇）"""
@@ -2169,6 +3750,19 @@ class WiFiChannelScanner:
 
         if not os.path.exists(self.log_dir):
             os.makedirs(self.log_dir)
+        
+        # 文件存储路径配置
+        self.json_base_path = os.path.join(os.path.dirname(__file__), 'json')
+        self.config_path = os.path.join(self.json_base_path, 'config')
+        self.hardware_path = os.path.join(self.json_base_path, 'hardware')
+        self.network_path = os.path.join(self.json_base_path, 'network')
+        self.projector_path = os.path.join(self.json_base_path, 'projector')
+        
+        # 确保所有目录存在
+        os.makedirs(self.config_path, exist_ok=True)
+        os.makedirs(self.hardware_path, exist_ok=True)
+        os.makedirs(self.network_path, exist_ok=True)
+        os.makedirs(self.projector_path, exist_ok=True)
     
     def _safe_print(self, message):
         """安全打印函数，确保中文正确显示"""
@@ -2177,6 +3771,79 @@ class WiFiChannelScanner:
     def get_platform_info(self):
         """获取平台信息"""
         return UnifiedUtils.get_system_info()
+    
+    def _save_hardware_info(self, hardware_info):
+        """保存硬件信息到JSON文件"""
+        self._save_info_to_json(self.hardware_path, 'hardware_info.json', 'hardware_info', hardware_info)
+    
+    def _save_bios_info(self, bios_info):
+        """保存BIOS信息到JSON文件"""
+        self._save_info_to_json(self.config_path, 'bios_info.json', 'bios_info', bios_info)
+    
+    def _save_network_info(self, network_info, location=None):
+        """保存网络信息到JSON文件（按省_市分类）"""
+        if not location:
+            location = "未知_未知"
+        
+        location_path = os.path.join(self.network_path, location)
+        os.makedirs(location_path, exist_ok=True)
+        network_file = os.path.join(location_path, 'network_info.json')
+        
+        network_info_with_timestamp = {
+            'timestamp': datetime.datetime.now().isoformat(),
+            'location': location,
+            'network_info': network_info
+        }
+        
+        self._save_info_to_json(network_file, None, 'network_info', network_info_with_timestamp, False)
+    
+    def _save_projector_info(self, projector_info):
+        """保存投影仪信息到JSON文件"""
+        projector_file = os.path.join(self.projector_path, 'projector_info.json')
+        projector_info_with_timestamp = {
+            'timestamp': datetime.datetime.now().isoformat(),
+            'projector_info': projector_info
+        }
+        self._save_info_to_json(projector_file, None, 'projector_info', projector_info_with_timestamp, False)
+    
+    def _save_info_to_json(self, file_path, filename, info_type, info_data, add_timestamp=True):
+        """通用方法：保存信息到JSON文件
+        
+        Args:
+            file_path: 文件路径或目录路径
+            filename: 文件名（如果file_path是目录）
+            info_type: 信息类型
+            info_data: 要保存的信息数据
+            add_timestamp: 是否添加时间戳
+        """
+        try:
+            # 如果提供了文件名，构建完整路径
+            if filename:
+                full_path = os.path.join(file_path, filename)
+            else:
+                full_path = file_path
+            
+            # 添加时间戳
+            if add_timestamp:
+                info_with_timestamp = {
+                    'timestamp': datetime.datetime.now().isoformat(),
+                    info_type: info_data
+                }
+            else:
+                info_with_timestamp = info_data
+            
+            # 确保目录存在
+            os.makedirs(os.path.dirname(full_path), exist_ok=True)
+            
+            # 保存到JSON文件
+            with open(full_path, 'w', encoding='utf-8') as f:
+                json.dump(info_with_timestamp, f, ensure_ascii=False, indent=2)
+            
+            self._safe_print(f"✅ {info_type}已保存到: {full_path}")
+            
+        except Exception as e:
+            if self.debug_mode:
+                self._safe_print(f"❌ 保存{info_type}失败: {e}")
 
     def run_command(self, command):
         """执行命令（使用统一的跨平台工具类）"""
@@ -2940,10 +4607,6 @@ class WiFiChannelScanner:
             str: 具体的品牌型号信息，如果无法识别则返回None
         """
         try:
-            import urllib.request
-            import ssl
-            import re
-            
             # 创建不验证SSL证书的上下文
             ssl_context = ssl.create_default_context()
             ssl_context.check_hostname = False
@@ -3150,82 +4813,13 @@ class WiFiChannelScanner:
     def _get_district_info_by_city(self, city, region):
         """根据城市和省份推断行政区信息"""
         try:
-            # 根据城市和省份推断一些常见的区/街道信息
-            district_info = {}
+            # 从配置文件加载城市区县映射
+            city_district_mapping = UnifiedUtils.get_city_district_mapping()
             
-            # 合肥市的常见区/街道
-            if city == '合肥' and region == '安徽':
-                district_info['district'] = '庐阳区'
-                district_info['township'] = '逍遥津街道'
-                district_info['village'] = '县桥社区'
-            
-            # 北京市的常见区/街道
-            elif city == '北京' and region == '北京':
-                district_info['district'] = '朝阳区'
-                district_info['township'] = '三里屯街道'
-                district_info['village'] = '幸福社区'
-            
-            # 上海市的常见区/街道
-            elif city == '上海' and region == '上海':
-                district_info['district'] = '黄浦区'
-                district_info['township'] = '南京东路街道'
-                district_info['village'] = '外滩社区'
-            
-            # 深圳市的常见区/街道
-            elif city == '深圳' and region == '广东':
-                district_info['district'] = '福田区'
-                district_info['township'] = '华强北街道'
-                district_info['village'] = '赛格广场社区'
-            
-            # 广州市的常见区/街道
-            elif city == '广州' and region == '广东':
-                district_info['district'] = '天河区'
-                district_info['township'] = '珠江新城街道'
-                district_info['village'] = '花城社区'
-            
-            # 杭州市的常见区/街道
-            elif city == '杭州' and region == '浙江':
-                district_info['district'] = '西湖区'
-                district_info['township'] = '北山街道'
-                district_info['village'] = '宝石社区'
-            
-            # 南京市的常见区/街道
-            elif city == '南京' and region == '江苏':
-                district_info['district'] = '玄武区'
-                district_info['township'] = '新街口街道'
-                district_info['village'] = '成贤街社区'
-            
-            # 武汉市的常见区/街道
-            elif city == '武汉' and region == '湖北':
-                district_info['district'] = '武昌区'
-                district_info['township'] = '水果湖街道'
-                district_info['village'] = '东湖路社区'
-            
-            # 成都市的常见区/街道
-            elif city == '成都' and region == '四川':
-                district_info['district'] = '锦江区'
-                district_info['township'] = '春熙路街道'
-                district_info['village'] = '总府路社区'
-            
-            # 西安市的常见区/街道
-            elif city == '西安' and region == '陕西':
-                district_info['district'] = '碑林区'
-                district_info['township'] = '南院门街道'
-                district_info['village'] = '德福巷社区'
-            
-            # 苏州市的常见县级市/街道（测试县级市命名规范）
-            elif city == '苏州' and region == '江苏':
-                district_info['district'] = '昆山市'
-                district_info['township'] = '玉山镇'
-                district_info['village'] = '玉龙社区'
-            
-            # 淮南市的常见县/镇（测试县命名规范）
-            elif city == '淮南' and region == '安徽':
-                district_info['district'] = '寿县'
-                district_info['township'] = '炎刘镇'
-                district_info['village'] = '炎刘街道'
-            
-            if district_info:
+            # 查找匹配的城市
+            key = f"{city}_{region}"
+            if key in city_district_mapping:
+                district_info = city_district_mapping[key]
                 self.escape_manager.debug_log("根据城市推断行政区信息", district_info)
                 return district_info
             
@@ -4367,8 +5961,6 @@ class WiFiChannelScanner:
 
     def _generate_log_filename_and_dir(self, location_prefix, ssid, date):
         """生成日志文件名和子目录，支持省市分类结构"""
-        import re
-        
         # 清理位置前缀（保留中文格式）
         location_clean = location_prefix.strip()
         
@@ -4430,8 +6022,6 @@ class WiFiChannelScanner:
 
     def _get_location_subdir(self, location_prefix):
         """根据地理位置信息生成子目录名称"""
-        import re
-        
         if not location_prefix or not location_prefix.strip():
             return "other_locations"
         
@@ -4538,7 +6128,75 @@ class WiFiChannelScanner:
         log_path = self._save_log_fast(networks, channel_stats, suggestions, location_info, recommended)
         print(f"📊 快速扫描完成: {log_path}")
         
+        # 保存网络信息到JSON文件
+        self._save_network_info_to_json(networks, channel_stats, suggestions, location_info, recommended)
+        
         return log_path
+    
+    def _save_network_info_to_json(self, networks, channel_stats, suggestions, location_info, recommended):
+        """保存网络信息到JSON文件（按省_市分类，追加模式）"""
+        try:
+            # 获取地理位置信息
+            location = self._get_location_for_storage(location_info)
+            
+            # 创建位置目录
+            location_path = os.path.join(self.json_base_path, 'network', location)
+            os.makedirs(location_path, exist_ok=True)
+            
+            # 网络信息文件路径
+            network_file = os.path.join(location_path, 'network_info.json')
+            
+            # 构建网络信息数据结构
+            network_data = {
+                'timestamp': datetime.datetime.now().isoformat(),
+                'location': location,
+                'location_info': location_info,
+                'network_count': len(networks),
+                'networks': networks[:10],  # 只保存前10个网络信息
+                'channel_stats': channel_stats,
+                'recommended_channels': recommended,
+                'suggestions': suggestions
+            }
+            
+            # 读取现有数据
+            existing_data = []
+            if os.path.exists(network_file):
+                try:
+                    with open(network_file, 'r', encoding='utf-8') as f:
+                        existing_data = json.load(f)
+                        # 如果现有数据不是数组，转换为数组
+                        if not isinstance(existing_data, list):
+                            existing_data = [existing_data]
+                except Exception:
+                    existing_data = []
+            
+            # 追加新数据
+            existing_data.append(network_data)
+            
+            # 保存到JSON文件
+            with open(network_file, 'w', encoding='utf-8') as f:
+                json.dump(existing_data, f, ensure_ascii=False, indent=2)
+            
+            self._safe_print(f"✅ 网络信息已追加到: {network_file}")
+            
+        except Exception as e:
+            if self.debug_mode:
+                self._safe_print(f"❌ 保存网络信息失败: {e}")
+    
+    def _get_location_for_storage(self, location_info):
+        """根据位置信息获取存储目录名称"""
+        if not location_info:
+            return "未知_未知"
+        
+        # 提取省和市信息
+        province = location_info.get('region', '未知')
+        city = location_info.get('city', '未知')
+        
+        # 清理特殊字符
+        province = province.replace('/', '_').replace('\\', '_').replace(':', '')
+        city = city.replace('/', '_').replace('\\', '_').replace(':', '')
+        
+        return f"{province}_{city}"
 
 
 class JSONFileManager:
@@ -4819,8 +6477,6 @@ class JSONFileManager:
     
     def get_subdirectory_for_log(self, filename):
         """根据日志文件名提取省市区信息作为子目录"""
-        import re
-        
         # 提取省市信息的正则表达式
         # 格式：安徽省合肥市庐阳区逍遥津街道 TP-LINK_E8C9基于周围WiFi信道优化推荐(20260328).json
         
@@ -4838,10 +6494,6 @@ class JSONFileManager:
     
     def organize_files(self):
         """重新组织所有JSON文件到标准目录结构"""
-        import os
-        import shutil
-        import json as json_module
-        
         print("\n" + "=" * 60)
         print("          JSON文件分类整理")
         print("=" * 60)
@@ -4947,6 +6599,59 @@ class JSONFileManager:
                 print(f"   命名规则: {rules['naming_pattern']}")
         
         print("\n" + "=" * 60)
+    
+    def fix_all_date_formats(self):
+        """修复所有JSON文件中的日期格式（年月日时 -> 年月日）"""
+        import os
+        import re
+        
+        print("\n" + "=" * 60)
+        print("          修复JSON文件日期格式")
+        print("=" * 60)
+        
+        # 定义日期格式正则表达式
+        date_pattern = re.compile(r'(\d{4})年(\d{2})月(\d{2})日(\d{2})时')
+        
+        # 统计信息
+        total_files = 0
+        fixed_files = 0
+        total_fixes = 0
+        
+        # 遍历所有JSON文件
+        for root, dirs, files in os.walk(self.base_dir):
+            for file in files:
+                if file.endswith('.json'):
+                    file_path = os.path.join(root, file)
+                    total_files += 1
+                    
+                    try:
+                        # 读取JSON文件
+                        with open(file_path, 'r', encoding='utf-8') as f:
+                            content = f.read()
+                        
+                        # 检查是否包含需要修复的日期格式
+                        matches = date_pattern.findall(content)
+                        if matches:
+                            # 修复日期格式
+                            fixed_content = date_pattern.sub(r'\1年\2月\3日', content)
+                            
+                            # 写回文件
+                            with open(file_path, 'w', encoding='utf-8') as f:
+                                f.write(fixed_content)
+                            
+                            fixed_files += 1
+                            total_fixes += len(matches)
+                            print(f"✅ 修复文件: {file_path} ({len(matches)} 处)")
+                    
+                    except Exception as e:
+                        print(f"❌ 处理文件失败: {file_path} - {e}")
+        
+        print("\n" + "=" * 60)
+        print(f"📊 修复统计:")
+        print(f"   总文件数: {total_files}")
+        print(f"   修复文件数: {fixed_files}")
+        print(f"   总修复处数: {total_fixes}")
+        print("=" * 60)
 
 
 def main():
@@ -4968,11 +6673,12 @@ def main():
     parser.add_argument('--json-stats', action='store_true', help='显示JSON文件统计信息')
     parser.add_argument('--organize-json', action='store_true', help='重新组织JSON文件到标准目录结构')
     parser.add_argument('--show-json-rules', action='store_true', help='显示JSON文件分类规则')
+    parser.add_argument('--fix-date-format', action='store_true', help='修复所有JSON文件中的日期格式（年月日时 -> 年月日）')
 
     args = parser.parse_args()
     
     # JSON文件管理功能
-    if args.json_stats or args.organize_json or args.show_json_rules:
+    if args.json_stats or args.organize_json or args.show_json_rules or args.fix_date_format:
         json_manager = JSONFileManager("json")
         
         if args.json_stats:
@@ -4993,6 +6699,10 @@ def main():
         elif args.show_json_rules:
             # 显示分类规则
             json_manager.print_classification_summary()
+        
+        elif args.fix_date_format:
+            # 修复所有JSON文件中的日期格式
+            json_manager.fix_all_date_formats()
         
         return
 

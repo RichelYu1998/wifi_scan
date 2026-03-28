@@ -1,0 +1,74 @@
+[
+  {
+    "scan_time": "2026-03-29T14:05:15.537851",
+    "location": {
+      "country": "中国",
+      "region": "安徽",
+      "region_en": "Anhui",
+      "city": "合肥",
+      "city_en": "Hefei",
+      "isp": "中国移动",
+      "运营商": "中国移动",
+      "ip": "112.32.64.110",
+      "lat": 31.8696,
+      "lon": 117.293,
+      "district": "庐阳区",
+      "township": "逍遥津街道",
+      "village": "县桥社区"
+    },
+    "current_wifi": {
+      "ssid": "小旭二手手机",
+      "channel_24g": null,
+      "channel_5g": 44
+    },
+    "network_card": {
+      "网卡完整描述": "Realtek 8811CU Wireless LAN 802.11ac USB NIC",
+      "网卡品牌型号": "腾达U12 (基于Realtek 8811CU)",
+      "max_bandwidth_mbps": 433,
+      "最大支持带宽": "433M",
+      "网卡型号": "腾达U12 (基于Realtek 8811CU)",
+      "WiFi标准": "WiFi 5 (802.11ac)"
+    },
+    "total_networks": 1,
+    "recommended_channels": [
+      44
+    ],
+    "network_details": [
+      {
+        "ssid": "小旭二手手机",
+        "channel": 44,
+        "rssi_dbm": -30.0,
+        "bssid": "04:67:61:44:39:4b"
+      }
+    ],
+    "channel_statistics": {
+      "44": {
+        "count": 1,
+        "total_rssi": -30.0,
+        "networks": [
+          {
+            "ssid": "小旭二手手机",
+            "channel": 44,
+            "rssi_dbm": -30.0,
+            "bssid": "04:67:61:44:39:4b"
+          }
+        ],
+        "avg_rssi": -30.0
+      }
+    },
+    "optimization_suggestions": [
+      {
+        "type": "信道选择",
+        "priority": "高",
+        "suggestion": "使用推荐信道：44",
+        "reason": "当前网络数量最少，干扰最低"
+      },
+      {
+        "type": "5G优化",
+        "priority": "低",
+        "suggestion": "5G频段可用，干扰较少",
+        "reason": "5G频段信道更多，干扰更少"
+      }
+    ]
+  }
+]

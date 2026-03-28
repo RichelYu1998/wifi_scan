@@ -1,0 +1,38 @@
+{
+  "default_cpu_data": {
+    "i9": 100, "i7": 85, "i5": 70, "i3": 55,
+    "Core i9": 100, "Core i7": 85, "Core i5": 70, "Core i3": 55,
+    "Ryzen 9": 100, "Ryzen 7": 85, "Ryzen 5": 70, "Ryzen 3": 55,
+    "M3": 100, "M2": 95, "M1": 90, "M1 Pro": 95, "M1 Max": 100,
+    "M2 Pro": 100, "M2 Max": 100, "M2 Ultra": 100,
+    "M3 Pro": 100, "M3 Max": 100, "M3 Ultra": 100,
+    "M4": 100, "M4 Pro": 100, "M4 Max": 100,
+    "Core Ultra 9": 100, "Core Ultra 7": 85, "Core Ultra 5": 70,
+    "Core Ultra 9 200": 100, "Core Ultra 7 200": 85, "Core Ultra 5 200": 70,
+    "Core Ultra 9 300": 100, "Core Ultra 7 300": 85, "Core Ultra 5 300": 70
+  },
+  "default_memory_data": {
+    "32": 100, "24": 95, "16": 85, "12": 75, "8": 60, "4": 40, "2": 20
+  },
+  "default_network_data": {
+    "Wi-Fi 7": 100,
+    "Wi-Fi 6E": 95,
+    "Wi-Fi 6": 90,
+    "Wi-Fi 5": 80,
+    "Wi-Fi 4": 60,
+    "Ethernet 10G": 100,
+    "Ethernet 5G": 95,
+    "Ethernet 2.5G": 90,
+    "Ethernet 1G": 85,
+    "Ethernet 100M": 70,
+    "Intel Wi-Fi 7": 100,
+    "Intel Wi-Fi 6E": 95,
+    "Intel Wi-Fi 6": 90,
+    "Broadcom Wi-Fi 7": 100,
+    "Broadcom Wi-Fi 6E": 95,
+    "Qualcomm Wi-Fi 7": 100,
+    "Qualcomm Wi-Fi 6E": 95,
+    "Realtek Wi-Fi 6": 85,
+    "Realtek Wi-Fi 5": 75
+  }
+}
