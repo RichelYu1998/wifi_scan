@@ -1,5 +1,36 @@
 # WiFi扫描与投影仪推荐系统
 
+<div align="center">
+
+![Python](https://img.shields.io/badge/Python-3.7%2B-blue)
+![License](https://img.shields.io/badge/License-MIT-green)
+![Platform](https://img.shields.io/badge/Platform-Windows%20%7C%20Linux%20%7C%20macOS-lightgrey)
+![Status](https://img.shields.io/badge/Status-Active-success)
+![Version](https://img.shields.io/badge/Version-2.2.0-green)
+
+一个功能强大的跨平台工具集，包含WiFi扫描、硬件信息检测、投影仪推荐等功能
+
+[快速开始](#-快速开始) • [功能介绍](#-功能介绍) • [使用文档](#-使用文档) • [贡献指南](#-贡献指南)
+
+</div>
+
+---
+
+## 📋 目录
+
+- [项目简介](#-项目简介)
+- [功能介绍](#-功能介绍)
+- [快速开始](#-快速开始)
+- [安装指南](#-安装指南)
+- [使用文档](#-使用文档)
+- [项目结构](#-项目结构)
+- [测试](#-测试)
+- [贡献指南](#-贡献指南)
+- [常见问题](#-常见问题)
+- [版本历史](#-版本历史)
+- [许可证](#-许可证)
+- [联系方式](#-联系方式)
+
 ## 🎯 项目简介
 
 这是一个功能强大的跨平台工具集，包含WiFi扫描、硬件信息检测、投影仪推荐等功能。所有代码都经过全面测试，确保中文显示正常，无乱码问题。
@@ -324,6 +355,81 @@ source .venv/bin/activate  # Linux/macOS
 - ✅ 日志记录
 - ✅ 配置管理
 
+## 📞 支持
+
+如果遇到问题，请：
+1. 查看文档
+2. 运行测试脚本
+3. 提交 Issue
+
+## 📝 版本历史
+
+### v2.2.0 (2026-03-28)
+#### 新增功能
+- ✨ 添加统一启动器（launcher.py）
+  - 跨平台支持（Windows/Linux/macOS）
+  - 自动环境管理
+  - 9个功能选项，每个都有详细说明
+  - 统一的脚本执行接口
+
+- ✨ 添加HTML生成器（html_generator.py）
+  - 通用HTML页面生成
+  - 组件化设计
+  - 动态样式管理
+  - 购买链接支持（京东、天猫、淘宝、拼多多、官方商城）
+
+- ✨ 添加全面测试脚本（test_comprehensive.py）
+  - 10个测试项目
+  - 编码测试
+  - 模块导入测试
+  - 数据文件测试
+  - 功能测试
+  - 跨平台兼容性测试
+
+- ✨ 添加快速启动脚本（quick_start.py）
+  - 一键执行完整流程
+  - 自动更新数据
+  - 自动生成图表
+  - 自动生成HTML报告
+
+- ✨ 添加跨平台启动脚本
+  - start.bat（Windows）
+  - start.sh（Linux/macOS）
+  - UTF-8编码支持
+
+#### 优化改进
+- 🔧 优化projector_chart_generator.py
+  - 使用HTML生成器模块
+  - 减少约150行重复代码
+  - 提高代码复用性
+
+#### 文档更新
+- 📝 添加launcher.md - 统一启动器文档
+- 📝 添加html_generator.md - HTML生成器文档
+- 📝 添加test_comprehensive.md - 全面测试文档
+- 📝 更新README.md - 添加版本历史和新增功能
+- 📝 更新PROJECTOR_README.md - 投影仪系统文档
+- 📝 添加OPTIMIZATION_SUMMARY.md - 优化总结
+- 📝 添加PROJECT_COMPLETION_SUMMARY.md - 项目完成总结
+- 📝 添加CROSS_PLATFORM_SUMMARY.md - 跨平台脚本总结
+
+#### 测试验证
+- ✅ 所有13个Python模块导入测试通过
+- ✅ 所有5个数据文件测试通过
+- ✅ 所有10个功能测试通过
+- ✅ 中文编码测试通过
+- ✅ 跨平台兼容性测试通过
+
+### v2.1.0 (2026-03-28)
+- 🎉 初始版本
+- ✨ 投影仪推荐功能
+- ✨ 价格对比功能
+- ✨ 图表生成功能
+- ✨ WiFi扫描功能
+- ✨ 硬件信息检测功能
+- ✨ 视频分辨率推荐功能
+- ✨ 网络速度测试功能
+
 ## 📄 许可证
 
 MIT License
@@ -332,16 +438,16 @@ MIT License
 
 欢迎提交 Issue 和 Pull Request！
 
-## 📞 支持
-
-如果遇到问题，请：
-1. 查看文档
-2. 运行测试脚本
-3. 提交 Issue
-
 ---
 
+<div align="center">
+
 **项目状态**: ✅ 完成
+**当前版本**: v2.2.0
 **测试状态**: ✅ 所有测试通过
 **跨平台**: ✅ 支持 Windows/Linux/macOS
 **中文支持**: ✅ 完全支持，无乱码
+
+如果这个项目对您有帮助，请给我们一个 ⭐️
+
+</div>
