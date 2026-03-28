@@ -9,60 +9,18 @@ import time
 import urllib.request
 import platform
 import statistics
-import sys
-import os
 
-sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-
-try:
-    from cross_platform_utils import CrossPlatformUtils, get_cross_platform_utils
-except ImportError:
-    # 如果cross_platform_utils不可用，创建简化版本
-    class CrossPlatformUtils:
-        def __init__(self, debug_mode=False):
-            self.debug_mode = debug_mode
-            self.platform = platform.system()
-        
-        def run_command(self, command, timeout=10):
-            import subprocess
-            try:
-                result = subprocess.run(
-                    command, 
-                    stdout=subprocess.PIPE, 
-                    stderr=subprocess.PIPE,
-                    text=True, 
-                    encoding='utf-8',
-                    errors='replace',
-                    timeout=timeout
-                )
-                return result.stdout if result.returncode == 0 else ""
-            except:
-                return ""
-
-try:
-    from escape_manager import EscapeManager
-except ImportError:
-    class EscapeManager:
-        def __init__(self):
-            self.debug_mode = False
-        
-        def debug_log(self, message, data=None, debug=None):
-            if debug is None:
-                debug = self.debug_mode
-            if debug and data:
-                print(f"调试：{message} {data}")
-            elif debug:
-                print(f"调试：{message}")
+from common_imports import CrossPlatformUtils, get_cross_platform_utils, EscapeManager, get_escape_manager
 
 
 class NetworkSpeedTester:
-    """网络速度测试器 - 测试当前连接WiFi的网速详情"""
+    """网络速度测试器"""
     
-    def __init__(self, escape_manager=None, cross_platform_utils=None):
+    def __init__(self, escape_manager=None, cross_platform_utils=None, debug_mode=False):
         if escape_manager is None:
-            escape_manager = EscapeManager()
+            escape_manager = get_escape_manager(debug_mode)
         if cross_platform_utils is None:
-            cross_platform_utils = get_cross_platform_utils()
+            cross_platform_utils = get_cross_platform_utils(debug_mode)
             
         self.escape_manager = escape_manager
         self.cross_platform_utils = cross_platform_utils

@@ -392,6 +392,142 @@
         "天猫": "https://s.taobao.com/search?q=优派X6",
         "拼多多": "https://mobile.yangkeduo.com/search_result.html?keyword=优派X6"
       }
+    },
+    {
+      "id": 21,
+      "brand": "极石",
+      "model": "V6",
+      "price": 3299,
+      "resolution": "1080P",
+      "brightness": 1500,
+      "contrast": 10000,
+      "lifespan": 30000,
+      "screen_size": "40-180英寸",
+      "throw_distance": "1.2-8米",
+      "features": ["自动梯形校正", "侧投功能", "无线投屏", "蓝牙音响", "智能系统", "HDR支持"],
+      "usage_scenario": "家庭娱乐",
+      "purchase_links": {
+        "京东": "https://search.jd.com/Search?keyword=极石V6",
+        "天猫": "https://s.taobao.com/search?q=极石V6",
+        "拼多多": "https://mobile.yangkeduo.com/search_result.html?keyword=极石V6"
+      }
+    },
+    {
+      "id": 22,
+      "brand": "极石",
+      "model": "V5",
+      "price": 2499,
+      "resolution": "1080P",
+      "brightness": 1200,
+      "contrast": 8000,
+      "lifespan": 30000,
+      "screen_size": "40-150英寸",
+      "throw_distance": "1.2-8米",
+      "features": ["自动梯形校正", "侧投功能", "无线投屏", "蓝牙音响", "智能系统"],
+      "usage_scenario": "入门家用",
+      "purchase_links": {
+        "京东": "https://search.jd.com/Search?keyword=极石V5",
+        "天猫": "https://s.taobao.com/search?q=极石V5",
+        "拼多多": "https://mobile.yangkeduo.com/search_result.html?keyword=极石V5"
+      }
+    },
+    {
+      "id": 23,
+      "brand": "极石",
+      "model": "V8 Pro",
+      "price": 4599,
+      "resolution": "4K",
+      "brightness": 2800,
+      "contrast": 15000,
+      "lifespan": 30000,
+      "screen_size": "40-200英寸",
+      "throw_distance": "1.2-10米",
+      "features": ["4K支持", "HDR支持", "自动梯形校正", "侧投功能", "无线投屏", "智能系统", "激光光源"],
+      "usage_scenario": "高端家用",
+      "purchase_links": {
+        "京东": "https://search.jd.com/Search?keyword=极石V8 Pro",
+        "天猫": "https://s.taobao.com/search?q=极石V8 Pro",
+        "拼多多": "https://mobile.yangkeduo.com/search_result.html?keyword=极石V8 Pro"
+      }
+    },
+    {
+      "id": 24,
+      "brand": "极石",
+      "model": "V7",
+      "price": 3799,
+      "resolution": "1080P",
+      "brightness": 2000,
+      "contrast": 12000,
+      "lifespan": 30000,
+      "screen_size": "40-180英寸",
+      "throw_distance": "1.2-8米",
+      "features": ["自动梯形校正", "侧投功能", "无线投屏", "蓝牙音响", "智能系统", "HDR支持", "高刷新率"],
+      "usage_scenario": "家庭娱乐",
+      "purchase_links": {
+        "京东": "https://search.jd.com/Search?keyword=极石V7",
+        "天猫": "https://s.taobao.com/search?q=极石V7",
+        "拼多多": "https://mobile.yangkeduo.com/search_result.html?keyword=极石V7"
+      }
+    },
+    {
+      "id": 25,
+      "brand": "米家",
+      "model": "MJJJGTYDS04",
+      "price": 3499,
+      "resolution": "1080P",
+      "brightness": 1500,
+      "contrast": 10000,
+      "lifespan": 30000,
+      "screen_size": "40-180英寸",
+      "throw_distance": "1.1-8米",
+      "features": ["自动梯形校正", "侧投功能", "无线投屏", "蓝牙音响", "智能系统", "HDR支持"],
+      "usage_scenario": "家庭娱乐",
+      "purchase_links": {
+        "京东": "https://search.jd.com/Search?keyword=米家MJJJGTYDS04",
+        "天猫": "https://s.taobao.com/search?q=米家MJJJGTYDS04",
+        "拼多多": "https://mobile.yangkeduo.com/search_result.html?keyword=米家MJJJGTYDS04",
+        "小米商城": "https://www.mi.com"
+      }
+    },
+    {
+      "id": 26,
+      "brand": "米家",
+      "model": "MJJJGTYDS05",
+      "price": 2499,
+      "resolution": "1080P",
+      "brightness": 1200,
+      "contrast": 8000,
+      "lifespan": 25000,
+      "screen_size": "40-150英寸",
+      "throw_distance": "1.1-8米",
+      "features": ["自动梯形校正", "侧投功能", "无线投屏", "智能系统"],
+      "usage_scenario": "入门家用",
+      "purchase_links": {
+        "京东": "https://search.jd.com/Search?keyword=米家MJJJGTYDS05",
+        "天猫": "https://s.taobao.com/search?q=米家MJJJGTYDS05",
+        "拼多多": "https://mobile.yangkeduo.com/search_result.html?keyword=米家MJJJGTYDS05",
+        "小米商城": "https://www.mi.com"
+      }
+    },
+    {
+      "id": 27,
+      "brand": "米家",
+      "model": "MJJJGTYDS06",
+      "price": 4299,
+      "resolution": "4K",
+      "brightness": 2400,
+      "contrast": 15000,
+      "lifespan": 30000,
+      "screen_size": "40-200英寸",
+      "throw_distance": "1.2-10米",
+      "features": ["4K支持", "HDR支持", "自动梯形校正", "侧投功能", "无线投屏", "蓝牙音响", "智能系统"],
+      "usage_scenario": "高端家用",
+      "purchase_links": {
+        "京东": "https://search.jd.com/Search?keyword=米家MJJJGTYDS06",
+        "天猫": "https://s.taobao.com/search?q=米家MJJJGTYDS06",
+        "拼多多": "https://mobile.yangkeduo.com/search_result.html?keyword=米家MJJJGTYDS06",
+        "小米商城": "https://www.mi.com"
+      }
     }
   ]
 }
