@@ -4,30 +4,15 @@
 
 ### Windows用户
 
-**推荐方式**（自动检测虚拟环境）：
-```bash
-start.bat
-```
-
-**PowerShell方式**（需要绕过执行策略）：
-```bash
-start_pwsh.bat
-```
-
 **直接运行Python**：
 ```bash
-python integrated_system.py
+python wifi_scan.py
 ```
 
 ### Linux/macOS用户
 
 ```bash
-./start.sh
-```
-
-**或者直接运行**：
-```bash
-python3 integrated_system.py
+python3 wifi_scan.py
 ```
 
 ## 📋 功能说明
@@ -45,6 +30,8 @@ python3 integrated_system.py
 - 显示网络详细信息（信号强度、加密方式、频道、BSSID）
 - 信号质量评估（优秀/良好/一般/差）
 - 加密安全性分析
+- 信道优化建议
+- CSV导出功能
 
 ### 3. 投影仪推荐系统（交互式）
 - **按预算推荐**：智能预算范围计算，支持国补价格对比
@@ -60,7 +47,7 @@ python3 integrated_system.py
 - 网络延迟测试（ms）
 - 网络质量评估和使用建议
 
-### 5. 运行所有功能
+### 5. 完整系统测试
 - 一键运行所有功能模块
 - 生成综合测试报告
 
@@ -91,148 +78,171 @@ source .venv/bin/activate
 
 ### 安装依赖
 ```bash
-pip install -r requirements.txt
+pip install psutil requests geopy
 ```
 
-**或者手动安装**：
+## 🎯 命令行参数
+
+### 硬件信息检测
 ```bash
-pip install psutil requests
+python wifi_scan.py --hardware
 ```
 
-## 🎯 启动脚本说明
+### WiFi网络扫描
+```bash
+python wifi_scan.py --wifi
+```
 
-### start.bat（Windows推荐）
-- 自动检测虚拟环境（`.venv` → `venv` → `env`）
-- 优先使用虚拟环境中的Python
-- 设置UTF-8编码确保中文正常显示
-- 错误处理和暂停显示
-- 支持云端和本地虚拟环境
+### 网络速度测试
+```bash
+python wifi_scan.py --speed-test
+```
 
-### start.sh（Linux/macOS）
-- 跨平台支持（Linux和macOS）
-- 自动检测虚拟环境
-- 设置正确的编码和权限
-- 支持云端和本地虚拟环境
+### 投影仪推荐
+```bash
+# 按预算推荐
+python wifi_scan.py --projector --budget 3000-8000
+
+# 按品牌搜索
+python wifi_scan.py --projector --brand 极米
+
+# 按分辨率推荐
+python wifi_scan.py --projector --resolution 4K
+
+# 组合条件
+python wifi_scan.py --projector --budget 3000-8000 --brand 极米 --resolution 4K
+```
+
+### 完整系统测试
+```bash
+python wifi_scan.py --all-in-one
+```
+
+### 显示帮助
+```bash
+python wifi_scan.py --help
+```
 
 ## 📊 项目结构
 
 ```
 wifi_scan/
-├── integrated_system.py       # 核心集成系统（主程序）
-├── wifi_scan.py              # WiFi扫描工具
-├── hardware_info.py          # 硬件信息检测
-├── network_speed_tester.py   # 网络速度测试
-├── test_projector_recommendation.py  # 投影仪推荐测试
-├── test_brand_search.py      # 品牌搜索测试
-├── test_budget_range.py      # 预算范围测试
-├── start.bat                 # Windows启动脚本
-├── start.sh                  # Linux/macOS启动脚本
-├── requirements.txt          # 依赖列表
+├── wifi_scan.py              # 核心集成系统（主程序）
+├── json/                     # 数据文件夹
+│   ├── config/               # 配置文件
+│   ├── hardware/              # 硬件数据
+│   │   ├── cpu_performance.json
+│   │   ├── gpu_performance.json
+│   │   └── memory_performance.json
+│   ├── logs/                  # 日志文件
+│   └── projector/             # 投影仪数据
+│       └── projector_database.json
+├── scripts/                   # 脚本文件
+│   ├── start.sh              # Linux/macOS启动脚本
+│   └── start.bat             # Windows启动脚本
 ├── README.md                 # 项目说明文档
-├── integrated_system.md      # 集成系统文档
-├── wifi_scan.md              # WiFi扫描文档
-├── hardware_info.md          # 硬件信息文档
-├── network_speed_tester.md   # 网络测试文档
-├── test_projector_recommendation.md  # 投影仪测试文档
-├── test_brand_search.md      # 品牌搜索测试文档
-└── test_budget_range.md      # 预算范围测试文档
+└── .venv/                    # 虚拟环境（可选）
 ```
 
 ## 🐛 故障排除
 
-### 虚拟环境未检测到
-**问题**：未使用虚拟环境中的Python
-**解决**：确保虚拟环境目录名为`.venv`、`venv`或`env`
-
-### 中文显示乱码
-**问题**：中文显示为乱码
-**解决**：确保使用`start.bat`或`start.sh`，它们会设置UTF-8编码
-
 ### 依赖缺失
 **问题**：ImportError或ModuleNotFoundError
-**解决**：运行`pip install -r requirements.txt`安装依赖
+**解决**：运行`pip install psutil requests geopy`安装依赖
 
 ### Python版本不兼容
 **问题**：显示"Python版本过低"错误
 **解决**：升级到Python 3.7+
 
+### 中文显示乱码
+**问题**：中文显示为乱码
+**解决**：确保终端使用UTF-8编码
+
+### WiFi扫描失败
+**问题**：无法扫描WiFi网络
+**解决**：
+- 确保以管理员权限运行（Windows）
+- 确保WiFi适配器正常工作
+- 检查是否有其他WiFi管理程序冲突
+
 ### 京东链接无法打开
 **问题**：点击京东链接后显示错误页面
 **解决**：使用智能搜索链接，系统会自动优化搜索参数
 
-## ✅ 测试
-
-运行全面测试：
-```bash
-python integrated_system.py
-# 选择"5. 运行所有功能"
-```
-
-或者运行单独的测试脚本：
-```bash
-python test_projector_recommendation.py
-python test_brand_search.py
-python test_budget_range.py
-```
-
 ## 📝 版本信息
 
-### v2.4.0 (2026-03-28) - 重大更新
-
-#### 🎉 新增功能
-1. **投影仪推荐系统**
-   - 按预算智能推荐投影仪
-   - 按品牌搜索投影仪
-   - 联网搜索最新投影仪信息
-   - 多维度性价比评估（5个维度，总分100分）
-   - 详细商品信息显示
-   - 京东商品链接跳转
-
-2. **硬件信息检测增强**
-   - GPU智能识别（自动过滤虚拟GPU）
-   - 内存频率和DDR类型检测
-   - BIOS版本检测和最新版本对比
-   - 主板信息检测
-   - 硬盘读写速度测试
-
-3. **预算范围计算优化**
-   - 智能分层预算范围计算
-   - 低预算保护机制（最低500元）
-   - 边界条件平滑处理
-
-4. **网络速度测试**
-   - 上传/下载速度测试
-   - 网络延迟测试
-   - 网络质量评估
-
-5. **启动脚本优化**
-   - 支持云端和本地虚拟环境
-   - 增强错误处理
-   - 更好的用户提示
+### v3.0.1 (2026-03-29) - 小版本更新
 
 #### 🔧 功能改进
-1. **代码重构**
-   - 集成所有功能到统一界面
-   - 消除代码重复
-   - 优化代码结构
+1. **日志文件命名规范化**
+   - 文件名格式：`地理位置 + 空格 + SSID + 基于周围WiFi信道优化推荐(日期).json`
+   - 示例：`x省x市 示例网络 基于周围WiFi信道优化推荐(20260329).json`
 
-2. **用户体验优化**
-   - 更友好的交互界面
-   - 更详细的信息显示
-   - 更智能的推荐算法
+2. **日志目录结构优化**
+   - 目录命名格式：`省_市`（如 `安徽_合肥`）
+   - 解决之前"省_省市"格式错误的问题
+   - 使用正确的正则表达式逻辑提取省市信息
 
-3. **性能优化**
-   - 优化搜索算法
-   - 提高响应速度
-   - 减少内存占用
+3. **代码优化**
+   - 移除重复导入语句
+   - 修复类结构问题
+   - 添加缺失方法
+
+4. **空白文件夹清理**
+   - 自动清理空目录
 
 #### 🐛 Bug修复
-1. 修复预算范围计算错误（1000元预算应为500~1500元）
-2. 修复京东链接生成问题（使用真实商品链接）
-3. 修复GPU检测显示虚拟显卡问题
-4. 修复内存频率显示为0MHz问题
-5. 修复BIOS是否最新显示"未知"问题
-6. 修复硬盘读写速度显示异常问题
+1. 修复日志目录命名错误（`安徽_安徽省合肥` → `安徽_合肥`）
+2. 修复正则表达式无法正确提取省市信息的问题
+3. 修复空白文件夹未清理的问题
+
+### v3.0.0 (2026-03-28) - 重大重构
+
+#### 🎉 新增功能
+1. **单文件架构**
+   - 所有功能集成到单个 `wifi_scan.py` 文件
+   - 统一的工具类 `UnifiedUtils` 消除代码重复
+   - 简化项目结构，便于部署和维护
+
+2. **代码优化**
+   - 抽象重复方法，减少150+行重复代码
+   - 统一的命令执行接口
+   - 统一的JSON文件操作
+   - 统一的打印格式
+   - 统一的时间戳格式化
+
+3. **功能增强**
+   - 硬件性能评分系统
+   - 跨平台硬件检测优化
+   - 网络速度测试增强
+   - 投影仪推荐算法优化
+
+#### 🔧 功能改进
+1. **硬件信息检测**
+   - macOS专用优化
+   - Apple Silicon支持
+   - 性能数据管理
+
+2. **WiFi扫描**
+   - 信道分析优化
+   - CSV导出功能
+   - 地理位置检测
+
+3. **投影仪推荐**
+   - 智能预算范围计算
+   - 多维度性价比评估
+   - 京东商品链接
+
+#### 🐛 Bug修复
+1. 修复重复代码导致的维护困难
+2. 修复跨平台兼容性问题
+3. 优化内存使用和性能
+
+### v2.4.0 (2026-03-28)
+- 投影仪推荐系统
+- 硬件信息检测增强
+- 网络速度测试
+- 预算范围计算优化
 
 ### v2.3.0 (2026-03-20)
 - 基础WiFi扫描功能
@@ -242,13 +252,16 @@ python test_budget_range.py
 ## 💡 使用提示
 
 1. **推荐使用虚拟环境**：避免依赖冲突，保持环境干净
-2. **使用start.bat/start.sh启动**：自动检测虚拟环境，设置正确的编码
+2. **使用命令行参数**：可以直接运行特定功能，无需交互
 3. **投影仪推荐**：
    - 输入预算时，系统会智能计算合理的预算范围
    - 选择品牌时，支持32个主流投影仪品牌
    - 查看性价比分析时，系统会从5个维度综合评估
    - 点击京东链接可以直接跳转到商品页面
-4. **运行测试**：遇到问题时先运行测试检查系统状态
+4. **WiFi扫描**：
+   - 系统会自动检测最佳信道
+   - 扫描结果会保存到日志文件
+   - 可以导出CSV格式数据
 
 ## 📊 投影仪数据库
 
@@ -285,7 +298,7 @@ python test_budget_range.py
 ## 📞 技术支持
 
 如遇问题，请：
-1. 运行`python integrated_system.py`选择"运行所有功能"检查系统状态
+1. 运行`python wifi_scan.py --all-in-one`检查系统状态
 2. 查看错误信息和日志
 3. 确认Python版本和依赖安装情况
 4. 检查网络连接（用于联网搜索）
@@ -298,44 +311,18 @@ python test_budget_range.py
 - 用户隐私数据已脱敏
 - 网络传输使用加密协议
 
-### 云端环境
-- 支持云端虚拟环境自动检测
-- 云端环境配置已优化
-- 支持自动更新和同步
-
-## 📚 文档说明
-
-### 主要文档
-- **README.md**：项目总体说明和快速开始
-- **integrated_system.md**：集成系统详细文档
-- **wifi_scan.md**：WiFi扫描功能文档
-- **hardware_info.md**：硬件信息检测文档
-- **network_speed_tester.md**：网络速度测试文档
-
-### 测试文档
-- **test_projector_recommendation.md**：投影仪推荐测试文档
-- **test_brand_search.md**：品牌搜索测试文档
-- **test_budget_range.md**：预算范围测试文档
-
 ## 🌟 特色功能
 
-1. **智能预算推荐**：根据用户预算智能推荐最合适的投影仪
-2. **多维度评估**：从5个维度综合评估性价比
-3. **国补价格对比**：显示原价和国补后价格对比
-4. **京东直达**：一键跳转到京东商品页面
-5. **详细商品信息**：显示完整的技术参数和功能
-6. **联网搜索**：模拟电商API获取最新商品信息
-7. **跨平台支持**：支持Windows、Linux、macOS
-8. **虚拟环境支持**：自动检测和使用虚拟环境
-9. **云端环境支持**：支持云端虚拟环境
+1. **单文件架构**：所有功能集成在一个文件中，便于部署
+2. **统一工具类**：消除代码重复，提高可维护性
+3. **智能预算推荐**：根据用户预算智能推荐最合适的投影仪
+4. **多维度评估**：从5个维度综合评估性价比
+5. **国补价格对比**：显示原价和国补后价格对比
+6. **京东直达**：一键跳转到京东商品页面
+7. **详细商品信息**：显示完整的技术参数和功能
+8. **联网搜索**：模拟电商API获取最新商品信息
+9. **跨平台支持**：支持Windows、Linux、macOS
 10. **全面硬件检测**：CPU、GPU、内存、硬盘、BIOS、主板
-
-## 📦 克隆项目
-
-```bash
-git clone https://github.com/yourusername/wifi_scan.git
-cd wifi_scan
-```
 
 ## 🎯 路线图
 

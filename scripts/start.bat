@@ -7,6 +7,8 @@ chcp 65001 >nul 2>&1
 
 REM 切换到脚本所在目录
 cd /d "%~dp0"
+REM 切换到项目根目录（scripts的父目录）
+cd ..
 
 REM 设置环境变量确保中文正确显示
 set PYTHONIOENCODING=utf-8
@@ -50,7 +52,7 @@ echo [信息] 当前Python环境:
 echo.
 
 REM 运行集成系统
-%PYTHON_EXE% integrated_system.py
+%PYTHON_EXE% wifi_scan.py
 
 REM 检查执行结果
 if %errorlevel% neq 0 (

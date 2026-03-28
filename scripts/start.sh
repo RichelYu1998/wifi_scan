@@ -4,7 +4,8 @@
 
 # 获取脚本所在目录
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-cd "$SCRIPT_DIR"
+# 切换到项目根目录（scripts的父目录）
+cd "$SCRIPT_DIR/.."
 
 # 设置环境变量确保中文正确显示
 export PYTHONIOENCODING=utf-8
@@ -69,7 +70,7 @@ $PYTHON_EXE --version
 echo
 
 # 运行集成系统
-$PYTHON_EXE integrated_system.py
+$PYTHON_EXE wifi_scan.py
 
 # 检查执行结果
 if [ $? -ne 0 ]; then

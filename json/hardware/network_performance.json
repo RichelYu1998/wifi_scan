@@ -1,0 +1,21 @@
+{
+  "Wi-Fi 7": 100,
+  "Wi-Fi 6E": 95,
+  "Wi-Fi 6": 90,
+  "Wi-Fi 5": 80,
+  "Wi-Fi 4": 60,
+  "Ethernet 10G": 100,
+  "Ethernet 5G": 95,
+  "Ethernet 2.5G": 90,
+  "Ethernet 1G": 85,
+  "Ethernet 100M": 70,
+  "Intel Wi-Fi 7": 100,
+  "Intel Wi-Fi 6E": 95,
+  "Intel Wi-Fi 6": 90,
+  "Broadcom Wi-Fi 7": 100,
+  "Broadcom Wi-Fi 6E": 95,
+  "Qualcomm Wi-Fi 7": 100,
+  "Qualcomm Wi-Fi 6E": 95,
+  "Realtek Wi-Fi 6": 85,
+  "Realtek Wi-Fi 5": 75
+}
