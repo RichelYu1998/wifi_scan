@@ -3369,32 +3369,40 @@ class ProjectorRecommender:
         resolution_preference = None
         
         while True:
-            print("\n" + "-" * 50)
+            print("\n" + "-" * 60)
             print("当前筛选条件:")
+            
+            conditions = []
             if budget_range:
-                print(f"  ✓ 预算: ¥{budget_range[0]} - ¥{budget_range[1]}")
-            else:
-                print("  ✗ 预算: 未设置")
+                conditions.append(f"预算 ¥{budget_range[0]}-{budget_range[1]}")
             if brand_preference:
-                print(f"  ✓ 品牌: {brand_preference}")
-            else:
-                print("  ✗ 品牌: 未设置")
+                conditions.append(f"品牌 {brand_preference}")
             if resolution_preference:
-                print(f"  ✓ 分辨率: {resolution_preference}")
+                conditions.append(f"{resolution_preference}分辨率")
+            
+            if conditions:
+                print("  " + "，".join(conditions))
             else:
-                print("  ✗ 分辨率: 未设置")
-            print("-" * 50)
+                print("  未设置任何筛选条件（将显示全部投影仪）")
+            print("-" * 60)
             
-            print("\n请选择操作:")
-            print("1. 设置预算范围")
-            print("2. 设置品牌偏好")
-            print("3. 设置分辨率偏好")
-            print("4. 开始推荐")
-            print("0. 退出")
+            available_options = []
+            if not budget_range:
+                available_options.append("1.设置预算范围")
+            if not brand_preference:
+                available_options.append("2.设置品牌偏好")
+            if not resolution_preference:
+                available_options.append("3.设置分辨率偏好")
+            available_options.append("4.开始推荐")
+            available_options.append("0.退出")
             
-            choice = input("\n请选择 (0-4): ").strip()
+            print("\n可用的操作:")
+            for opt in available_options:
+                print(f"  {opt}")
             
-            if choice == '1':
+            choice = input("\n请选择: ").strip()
+            
+            if choice == '1' and not budget_range:
                 print("\n请输入预算范围（格式：最小值-最大值，例如 3000-8000）:")
                 budget_input = input("预算范围: ").strip()
                 if budget_input:
@@ -3405,7 +3413,7 @@ class ProjectorRecommender:
                     except ValueError:
                         print("⚠️ 格式错误，请使用格式: 最小值-最大值")
             
-            elif choice == '2':
+            elif choice == '2' and not brand_preference:
                 print("\n请输入品牌偏好（多个品牌用逗号分隔，例如: 极米,坚果,当贝）:")
                 print("支持的品牌: 极米,坚果,当贝,明基,爱普生,索尼,松下,小米,海尔,联想")
                 brand_input = input("品牌偏好: ").strip()
@@ -3413,7 +3421,7 @@ class ProjectorRecommender:
                     brand_preference = brand_input
                     print(f"✅ 品牌已设置为: {brand_preference}")
             
-            elif choice == '3':
+            elif choice == '3' and not resolution_preference:
                 print("\n请选择分辨率:")
                 print("1. 4K")
                 print("2. 1080P")
@@ -3432,14 +3440,26 @@ class ProjectorRecommender:
                     print("⚠️ 无效选择")
             
             elif choice == '4':
-                if not budget_range and not brand_preference and not resolution_preference:
-                    print("\n⚠️ 提示: 您还没有设置任何筛选条件，将显示全部投影仪")
-                print("\n开始搜索投影仪...")
+                search_desc = self._generate_search_description(budget_range, brand_preference, resolution_preference)
+                print(f"\n🔍 正在搜索: {search_desc}...")
                 break
             
             elif choice == '0':
                 print("\n👋 退出投影仪推荐系统")
                 return
+            
+            elif choice in ['1', '2', '3'] and (
+                (choice == '1' and budget_range) or 
+                (choice == '2' and brand_preference) or 
+                (choice == '3' and resolution_preference)
+            ):
+                print(f"\n⚠️ 该条件已设置，若需重新设置请先输入 5 清除所有条件")
+            
+            elif choice == '5':
+                budget_range = None
+                brand_preference = None
+                resolution_preference = None
+                print("\n✅ 已清除所有筛选条件")
             
             else:
                 print("⚠️ 无效选择，请重试")
@@ -3447,6 +3467,20 @@ class ProjectorRecommender:
         projectors = self.recommend_projector(budget_range, brand_preference, resolution_preference)
         
         self.print_recommendations(projectors, budget_range, brand_preference, resolution_preference)
+    
+    def _generate_search_description(self, budget_range, brand_preference, resolution_preference):
+        """生成搜索描述"""
+        parts = []
+        if budget_range:
+            parts.append(f"¥{budget_range[0]}-{budget_range[1]}")
+        if brand_preference:
+            parts.append(f"{brand_preference}品牌")
+        if resolution_preference:
+            parts.append(f"{resolution_preference}分辨率")
+        
+        if not parts:
+            return "全部投影仪"
+        return "，".join(parts) + "的投影仪"
 
 
 class EscapeManager:
