@@ -3400,7 +3400,30 @@ class ProjectorRecommender:
             for opt in available_options:
                 print(f"  {opt}")
             
+            print("\n💡 提示：可以直接输入筛选条件（如：1000 极米 4K），或直接回车更新数据库")
             choice = input("\n请选择: ").strip()
+            
+            if not choice:
+                print("\n🔄 正在更新投影仪数据库...")
+                self._update_database()
+                print("✅ 数据库更新完成！\n")
+                continue
+            
+            parsed = self._parse_user_input(choice)
+            if parsed:
+                if parsed.get('budget'):
+                    budget_range = parsed['budget']
+                    print(f"✅ 预算已设置为: ¥{budget_range[0]} - ¥{budget_range[1]}")
+                if parsed.get('brand'):
+                    brand_preference = parsed['brand']
+                    print(f"✅ 品牌已设置为: {brand_preference}")
+                if parsed.get('resolution'):
+                    resolution_preference = parsed['resolution']
+                    print(f"✅ 分辨率已设置为: {resolution_preference}")
+                
+                search_desc = self._generate_search_description(budget_range, brand_preference, resolution_preference)
+                print(f"\n🔍 正在搜索: {search_desc}...")
+                break
             
             if choice == '1' and not budget_range:
                 print("\n请输入预算（支持三种格式：）:")
@@ -3508,6 +3531,41 @@ class ProjectorRecommender:
         projectors = self.recommend_projector(budget_range, brand_preference, resolution_preference)
         
         self.print_recommendations(projectors, budget_range, brand_preference, resolution_preference)
+    
+    def _parse_user_input(self, input_str):
+        """解析用户输入，识别预算、品牌和分辨率"""
+        if not input_str:
+            return None
+        
+        parts = input_str.split()
+        result = {}
+        
+        for part in parts:
+            part = part.strip()
+            
+            if not part:
+                continue
+            
+            if '-' in part:
+                try:
+                    min_budget, max_budget = map(int, part.split('-'))
+                    result['budget'] = (min_budget, max_budget)
+                except ValueError:
+                    pass
+            elif part.isdigit():
+                try:
+                    budget = int(part)
+                    min_budget = max(0, budget - 500)
+                    max_budget = budget + 500
+                    result['budget'] = (min_budget, max_budget)
+                except ValueError:
+                    pass
+            elif part.upper().endswith('K') or part.upper().endswith('P'):
+                result['resolution'] = part.upper()
+            else:
+                result['brand'] = part
+        
+        return result if result else None
     
     def _generate_search_description(self, budget_range, brand_preference, resolution_preference):
         """生成搜索描述"""
