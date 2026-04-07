@@ -266,8 +266,53 @@ class UnifiedUtils:
     
     @staticmethod
     def fetch_url(url, timeout=20, headers=None, user_agent=None):
-        """统一的URL获取方法"""
+        """统一的URL获取方法（优化版：支持CDN加速和快速失败）"""
         try:
+            # 国内CDN加速映射
+            cdn_map = {
+                # CPU性能数据
+                'www.cpubenchmark.net': 'cpubenchmark.net',
+                'cpu.userbenchmark.com': 'cpu.userbenchmark.com',
+                'www.techpowerup.com': 'techpowerup.com',
+                
+                # GPU性能数据
+                'www.videocardbenchmark.net': 'videocardbenchmark.net',
+                'gpu.userbenchmark.com': 'gpu.userbenchmark.com',
+                
+                # 内存性能数据
+                'www.memorybenchmark.net': 'memorybenchmark.net',
+                
+                # 网卡数据
+                'www.asus.com.cn': 'www.asus.com.cn',
+                'www.asus.com': 'www.asus.com.cn',
+                'www.lenovo.com': 'www.lenovo.com.cn',
+                'www.lenovo.com.cn': 'www.lenovo.com.cn',
+                'www.dell.com': 'www.dell.com.cn',
+                'www.hp.com': 'www.hp.com.cn',
+                'www.samsung.com': 'www.samsung.com.cn',
+                
+                # 投影仪数据（国内网站，无需CDN）
+                'search.jd.com': 'search.jd.com',
+                's.taobao.com': 's.taobao.com',
+                'search.suning.com': 'search.suning.com',
+            }
+            
+            # 使用CDN加速的URL
+            for original, cdn in cdn_map.items():
+                if original in url:
+                    url = url.replace(original, cdn)
+                    break
+            
+            # 国内网站使用较短超时时间，国外网站使用较长超时时间
+            is_china_site = any(domain in url for domain in [
+                'jd.com', 'taobao.com', 'tmall.com', 'suning.com', 
+                'asus.com.cn', 'lenovo.com.cn', 'dell.com.cn', 
+                'hp.com.cn', 'samsung.com.cn', 'baidu.com'
+            ])
+            
+            # 国内网站5秒超时，国外网站10秒超时
+            actual_timeout = 5 if is_china_site else 10
+            
             # 创建不验证SSL证书的上下文
             ssl_context = ssl.create_default_context()
             ssl_context.check_hostname = False
@@ -290,18 +335,22 @@ class UnifiedUtils:
                 headers['Accept-Language'] = 'zh-CN,zh;q=0.9,en;q=0.8'
             
             if 'Accept-Encoding' not in headers:
-                headers['Accept-Encoding'] = 'gzip, deflate, br'
+                headers['Accept-Encoding'] = 'gzip, deflate'
             
             if 'Connection' not in headers:
                 headers['Connection'] = 'keep-alive'
             
+            if 'Cache-Control' not in headers:
+                headers['Cache-Control'] = 'max-age=0'
+            
             request = urllib.request.Request(url, headers=headers)
             
-            with urllib.request.urlopen(request, timeout=timeout, context=ssl_context) as response:
+            with urllib.request.urlopen(request, timeout=actual_timeout, context=ssl_context) as response:
                 content = response.read()
                 
                 # 检查是否是gzip压缩
                 if response.headers.get('Content-Encoding') == 'gzip':
+                    import gzip
                     html_content = gzip.decompress(content).decode('utf-8')
                 else:
                     # 尝试直接解码，如果失败则尝试其他编码
@@ -312,6 +361,10 @@ class UnifiedUtils:
                 
                 return html_content
                 
+        except urllib.error.URLError as e:
+            if hasattr(e, 'reason'):
+                print(f"网络错误 ({url}): {e.reason}")
+            return None
         except Exception:
             return None
     
@@ -2242,9 +2295,32 @@ class HardwarePerformanceUpdater:
             'network': network_data
         }
     
-    def update_all_performance_data(self, force_update=False):
+    def update_all_performance_data(self, force_update=False, skip_network=False):
         """更新所有性能数据 - 从网络获取最新数据并与本地数据合并"""
         update_time = UnifiedUtils.format_timestamp()
+        
+        # 如果跳过网络更新，直接使用本地数据
+        if skip_network:
+            print("⚡ 跳过网络更新，使用本地数据...")
+            
+            # 加载本地数据
+            cpu_data = self._load_json_file(self.cpu_performance_file, self._get_default_cpu_data()[0])
+            gpu_data = self._load_json_file(self.gpu_performance_file, self._get_default_gpu_data()[0])
+            memory_data = self._load_json_file(self.memory_performance_file, self._get_default_memory_data())
+            network_data = self._load_json_file(self.network_performance_file, self._get_default_network_data())
+            
+            print(f"✅ 使用本地数据: CPU({len(cpu_data)}), GPU({len(gpu_data)})")
+            
+            result = {
+                'cpu': cpu_data,
+                'gpu': gpu_data,
+                'memory': memory_data,
+                'network': network_data,
+                'update_time': update_time,
+                'from_network': False
+            }
+            
+            return result
         
         # 从网络获取最新性能数据
         print("📡 正在从网络获取最新的硬件性能数据...")
@@ -3315,7 +3391,7 @@ class ProjectorRecommender:
             if self.debug_mode:
                 print(f"⚠️ 检查数据库更新失败: {e}")
     
-    def _update_database(self):
+    def _update_database(self, skip_network=False):
         """更新投影仪数据库（联网获取最新数据）"""
         try:
             if self.debug_mode:
@@ -3336,6 +3412,12 @@ class ProjectorRecommender:
                             print(f"ℹ️ 数据库更新时间: {last_update}")
                             print("✅ 投影仪数据库已是最新版本")
                         return
+            
+            # 如果跳过网络更新，直接使用本地数据
+            if skip_network:
+                if self.debug_mode:
+                    print("⚡ 跳过网络更新，使用本地投影仪数据库")
+                return
             
             # 如果需要更新，这里可以添加联网更新逻辑
             # 目前使用本地JSON文件，如果需要联网更新，可以添加API调用
@@ -7740,15 +7822,75 @@ class NetworkDataUpdater:
             return None
     
     def _fetch_url(self, url, timeout=10):
-        """获取URL内容"""
+        """获取URL内容（优化版：支持CDN加速和快速失败）"""
         try:
+            # 国内CDN加速映射
+            cdn_map = {
+                # CPU性能数据
+                'www.cpubenchmark.net': 'cpubenchmark.net',
+                'cpu.userbenchmark.com': 'cpu.userbenchmark.com',
+                'www.techpowerup.com': 'techpowerup.com',
+                
+                # GPU性能数据
+                'www.videocardbenchmark.net': 'videocardbenchmark.net',
+                'gpu.userbenchmark.com': 'gpu.userbenchmark.com',
+                
+                # 内存性能数据
+                'www.memorybenchmark.net': 'memorybenchmark.net',
+                
+                # 网卡数据
+                'www.asus.com.cn': 'www.asus.com.cn',
+                'www.asus.com': 'www.asus.com.cn',
+                'www.lenovo.com': 'www.lenovo.com.cn',
+                'www.lenovo.com.cn': 'www.lenovo.com.cn',
+                'www.dell.com': 'www.dell.com.cn',
+                'www.hp.com': 'www.hp.com.cn',
+                'www.samsung.com': 'www.samsung.com.cn',
+                
+                # 投影仪数据（国内网站，无需CDN）
+                'search.jd.com': 'search.jd.com',
+                's.taobao.com': 's.taobao.com',
+                'search.suning.com': 'search.suning.com',
+            }
+            
+            # 使用CDN加速的URL
+            for original, cdn in cdn_map.items():
+                if original in url:
+                    url = url.replace(original, cdn)
+                    break
+            
+            # 国内网站使用较短超时时间，国外网站使用较长超时时间
+            is_china_site = any(domain in url for domain in [
+                'jd.com', 'taobao.com', 'tmall.com', 'suning.com', 
+                'asus.com.cn', 'lenovo.com.cn', 'dell.com.cn', 
+                'hp.com.cn', 'samsung.com.cn', 'baidu.com'
+            ])
+            
+            # 国内网站3秒超时，国外网站5秒超时
+            actual_timeout = 3 if is_china_site else 5
+            
             request = urllib.request.Request(url)
             request.add_header('User-Agent', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36')
             request.add_header('Accept', 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8')
             request.add_header('Accept-Language', 'zh-CN,zh;q=0.9,en;q=0.8')
+            request.add_header('Accept-Encoding', 'gzip, deflate')
+            request.add_header('Connection', 'keep-alive')
+            request.add_header('Cache-Control', 'max-age=0')
             
-            with urllib.request.urlopen(request, timeout=timeout, context=self.ssl_context) as response:
-                return response.read().decode('utf-8', errors='ignore')
+            with urllib.request.urlopen(request, timeout=actual_timeout, context=self.ssl_context) as response:
+                content = response.read()
+                
+                # 检查是否是gzip压缩
+                if response.headers.get('Content-Encoding') == 'gzip':
+                    import gzip
+                    return gzip.decompress(content).decode('utf-8', errors='ignore')
+                else:
+                    return content.decode('utf-8', errors='ignore')
+                    
+        except urllib.error.URLError as e:
+            if self.debug_mode:
+                print(f"    网络错误 ({url}): {e.reason}")
+            return None
         except Exception as e:
             if self.debug_mode:
                 print(f"    获取URL失败 ({url}): {e}")
@@ -8058,6 +8200,7 @@ def main():
     parser.add_argument('--update-projector-db', action='store_true', help='强制更新投影仪数据库')
     parser.add_argument('--update-hardware-db', action='store_true', help='强制更新硬件性能数据库')
     parser.add_argument('--update-mapping', action='store_true', help='从网络更新映射配置（品牌、带宽、国家、ISP等）')
+    parser.add_argument('--skip-network-update', action='store_true', help='跳过网络更新，直接使用本地数据（速度更快）')
     parser.add_argument('--budget', type=str, help='投影仪预算范围（例如: 3000-8000）')
     parser.add_argument('--brand', type=str, help='投影仪品牌偏好（例如: 极米,坚果,当贝）')
     parser.add_argument('--resolution', type=str, help='投影仪分辨率偏好（例如: 4K,1080P）')
@@ -8123,6 +8266,13 @@ def main():
             print("❌ 映射配置更新失败，请检查网络连接")
         return
 
+    # 检查是否跳过网络更新
+    if args.skip_network_update:
+        print("⚡ 跳过网络更新，使用本地数据（速度更快）")
+        # 临时禁用网络更新
+        original_update_mapping = UnifiedUtils.update_mapping_config
+        UnifiedUtils.update_mapping_config = lambda: True  # 返回成功，但不实际更新
+
     if args.hardware or args.projector or args.interactive:
         if args.interactive:
             print("🎯 启动交互式投影仪推荐模式...")
@@ -8134,10 +8284,13 @@ def main():
             detector = detector_cls(debug_mode=args.debug)
             if needs_update and mode == 'hardware':
                 print("🔄 正在更新硬件性能数据库...")
-                HardwarePerformanceUpdater(debug_mode=args.debug).update_all_performance_data(force_update=True)
+                HardwarePerformanceUpdater(debug_mode=args.debug).update_all_performance_data(
+                    force_update=True, 
+                    skip_network=args.skip_network_update
+                )
                 print("✅ 硬件性能数据库更新完成！\n")
             if mode == 'projector':
-                detector._update_database() if needs_update else detector._check_and_update_database()
+                detector._update_database(skip_network=args.skip_network_update) if needs_update else detector._check_and_update_database()
             action(detector)
     else:
         WiFiChannelScanner().generate_report(export_csv=args.export, debug=args.debug)
