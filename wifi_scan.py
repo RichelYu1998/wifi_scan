@@ -3948,6 +3948,165 @@ class WiFiChannelScanner:
         """安全打印函数，确保中文正确显示"""
         UnifiedUtils.safe_print(message)
 
+    def get_location_info(self):
+        """获取当前地理位置信息"""
+        # 使用缓存避免重复网络请求
+        if hasattr(self, '_cached_location_info') and self._cached_location_info:
+            return self._cached_location_info
+        
+        # 重试机制：最多尝试3次
+        max_retries = 3
+        retry_delay = 1  # 秒
+        
+        for attempt in range(max_retries):
+            try:
+                # 优先使用静态地理位置数据库（避免联网查询）
+                url = "http://ip-api.com/json/?fields=status,country,regionName,city,isp,query,lat,lon,zip"
+                request = urllib.request.Request(url)
+                request.add_header('User-Agent', 'Mozilla/5.0')
+                
+                # 增加超时时间到5秒，避免网络不稳定时超时
+                with urllib.request.urlopen(request, timeout=5) as response:
+                    data = json.loads(response.read().decode('utf-8'))
+                    
+                    if data.get('status') == 'success':
+                        ip_address = data.get('query', '')
+                        
+                        # 首先检查静态地理位置数据库
+                        known_location = UnifiedUtils.get_known_location(ip_address)
+                        if known_location:
+                            self._cached_location_info = known_location
+                            return known_location
+                        
+                        # 如果静态数据库中没有，继续使用API查询
+                        region_en = data.get('regionName', '')
+                        city_en = data.get('city', '')
+                        country_en = data.get('country', '')
+                        isp_en = data.get('isp', '')
+                        
+                        region_cn = self.escape_manager.translate_region(region_en)
+                        city_cn = self.escape_manager.translate_city(city_en)
+                        country_cn = self.escape_manager.translate_country(country_en)
+                        isp_cn = self.escape_manager.translate_isp(isp_en)
+                        
+                        location_info = {
+                            'country': country_cn,
+                            'region': region_cn,
+                            'region_en': region_en,
+                            'city': city_cn,
+                            'city_en': city_en,
+                            'isp': isp_cn,
+                            '运营商': isp_cn,
+                            'ip': data.get('query', ''),
+                            'lat': data.get('lat', 0),
+                            'lon': data.get('lon', 0)
+                        }
+                        
+                        # 获取更详细的行政区信息（街道/乡镇）
+                        district_info = self._get_district_info(data.get('lat', 0), data.get('lon', 0))
+                        
+                        # 如果Nominatim API失败，使用城市和省份推断行政区信息
+                        if not district_info:
+                            district_info = self._get_district_info_by_city(city_cn, region_cn)
+                        
+                        # 添加街道/乡镇信息
+                        if district_info:
+                            location_info.update(district_info)
+                        
+                        # 缓存结果
+                        self._cached_location_info = location_info
+                        return location_info
+                    else:
+                        # API返回失败，继续重试
+                        if attempt < max_retries - 1:
+                            time.sleep(retry_delay)
+                            continue
+                        return None
+            except Exception as e:
+                # 网络请求失败，继续重试
+                if attempt < max_retries - 1:
+                    time.sleep(retry_delay)
+                    continue
+                return None
+        
+        return None
+
+    def _get_district_info(self, lat, lon):
+        """根据经纬度获取行政区信息（包括街道/乡镇）"""
+        try:
+            # 尝试使用Nominatim地理编码服务获取详细的行政区信息
+            geolocator = Nominatim(
+                user_agent="wifi_scanner",
+                timeout=10,
+                domain="https://nominatim.openstreetmap.org"
+            )
+            
+            # 反向地理编码
+            location = geolocator.reverse(f"{lat},{lon}", language='zh-CN')
+            
+            if location and location.raw:
+                address = location.raw.get('address', {})
+                
+                district_info = {}
+                
+                # 提取区/县信息
+                if 'district' in address:
+                    district_info['district'] = address['district']
+                elif 'county' in address:
+                    district_info['district'] = address['county']
+                elif 'city_district' in address:
+                    district_info['district'] = address['city_district']
+                
+                # 提取街道/乡镇信息
+                if 'town' in address:
+                    district_info['township'] = address['town']
+                elif 'village' in address:
+                    district_info['township'] = address['village']
+                elif 'suburb' in address:
+                    district_info['township'] = address['suburb']
+                elif 'neighbourhood' in address:
+                    district_info['township'] = address['neighbourhood']
+                
+                # 提取行政村或社区信息
+                if 'hamlet' in address:
+                    district_info['village'] = address['hamlet']
+                elif 'locality' in address:
+                    district_info['village'] = address['locality']
+                elif 'residential' in address:
+                    district_info['village'] = address['residential']
+                
+                return district_info
+        except Exception as e:
+            self.escape_manager.debug_log(f"获取行政区信息失败: {e}")
+            return None
+
+    def _get_district_info_by_city(self, city, region):
+        """根据城市和省份推断行政区信息"""
+        try:
+            # 这里可以添加一些常见的城市和对应的行政区信息
+            # 例如：合肥 -> 庐阳区, 瑶海区, 包河区等
+            city_district_map = {
+                '合肥': ['庐阳区', '瑶海区', '包河区', '蜀山区'],
+                '北京': ['东城区', '西城区', '朝阳区', '海淀区'],
+                '上海': ['黄浦区', '徐汇区', '长宁区', '静安区'],
+                '广州': ['天河区', '越秀区', '海珠区', '荔湾区'],
+                '深圳': ['福田区', '罗湖区', '南山区', '宝安区'],
+                '南京': ['玄武区', '秦淮区', '鼓楼区', '建邺区'],
+                '杭州': ['上城区', '下城区', '江干区', '拱墅区'],
+                '武汉': ['江岸区', '江汉区', '硚口区', '汉阳区'],
+                '成都': ['锦江区', '青羊区', '金牛区', '武侯区']
+            }
+            
+            if city in city_district_map:
+                districts = city_district_map[city]
+                # 随机选择一个区作为默认值
+                import random
+                district = random.choice(districts)
+                return {'district': district}
+        except Exception as e:
+            self.escape_manager.debug_log(f"推断行政区信息失败: {e}")
+            return None
+
     def get_platform_info(self):
         """获取平台信息"""
         return UnifiedUtils.get_system_info()
@@ -4681,167 +4840,6 @@ class WiFiChannelScanner:
         except Exception as e:
             if self.debug_mode:
                 print(f"联网搜索网卡型号失败: {e}")
-            return None
-
-    def get_location_info(self):
-        """获取当前地理位置信息（性能优化版）"""
-        # 使用缓存避免重复网络请求
-        if hasattr(self, '_cached_location_info') and self._cached_location_info:
-            return self._cached_location_info
-        
-        # 重试机制：最多尝试3次
-        max_retries = 3
-        retry_delay = 1  # 秒
-        
-        for attempt in range(max_retries):
-            try:
-                # 优先使用静态地理位置数据库（避免联网查询）
-                url = "http://ip-api.com/json/?fields=status,country,regionName,city,isp,query,lat,lon,zip"
-                request = urllib.request.Request(url)
-                request.add_header('User-Agent', 'Mozilla/5.0')
-                
-                # 增加超时时间到5秒，避免网络不稳定时超时
-                with urllib.request.urlopen(request, timeout=5) as response:
-                    data = json.loads(response.read().decode('utf-8'))
-                    
-                    if data.get('status') == 'success':
-                        ip_address = data.get('query', '')
-                        
-                        # 首先检查静态地理位置数据库
-                        known_location = UnifiedUtils.get_known_location(ip_address)
-                        if known_location:
-                            self._cached_location_info = known_location
-                            return known_location
-                        
-                        # 如果静态数据库中没有，继续使用API查询
-                        region_en = data.get('regionName', '')
-                        city_en = data.get('city', '')
-                        country_en = data.get('country', '')
-                        isp_en = data.get('isp', '')
-                        
-                        region_cn = self.escape_manager.translate_region(region_en)
-                        city_cn = self.escape_manager.translate_city(city_en)
-                        country_cn = self.escape_manager.translate_country(country_en)
-                        isp_cn = self.escape_manager.translate_isp(isp_en)
-                        
-                        location_info = {
-                            'country': country_cn,
-                            'region': region_cn,
-                            'region_en': region_en,
-                            'city': city_cn,
-                            'city_en': city_en,
-                            'isp': isp_cn,
-                            '运营商': isp_cn,
-                            'ip': data.get('query', ''),
-                            'lat': data.get('lat', 0),
-                            'lon': data.get('lon', 0)
-                        }
-                        
-                        # 获取更详细的行政区信息（街道/乡镇）
-                        district_info = self._get_district_info(data.get('lat', 0), data.get('lon', 0))
-                        
-                        # 如果Nominatim API失败，使用城市和省份推断行政区信息
-                        if not district_info:
-                            district_info = self._get_district_info_by_city(city_cn, region_cn)
-                        
-                        # 添加街道/乡镇信息
-                        if district_info:
-                            location_info.update(district_info)
-                        
-                        # 缓存结果
-                        self._cached_location_info = location_info
-                        return location_info
-                    else:
-                        # API返回失败，继续重试
-                        if attempt < max_retries - 1:
-                            time.sleep(retry_delay)
-                            continue
-                        return None
-            except Exception as e:
-                # 网络请求失败，继续重试
-                if attempt < max_retries - 1:
-                    time.sleep(retry_delay)
-                    continue
-                return None
-        
-        return None
-
-
-
-
-
-
-
-
-
-    def _get_district_info(self, lat, lon):
-        """根据经纬度获取行政区信息（包括街道/乡镇）"""
-        try:
-            # 尝试使用Nominatim地理编码服务获取详细的行政区信息
-            geolocator = Nominatim(
-                user_agent="wifi_scanner",
-                timeout=10,
-                domain="https://nominatim.openstreetmap.org"
-            )
-            
-            # 反向地理编码
-            location = geolocator.reverse(f"{lat},{lon}", language='zh-CN')
-            
-            if location and location.raw:
-                address = location.raw.get('address', {})
-                
-                district_info = {}
-                
-                # 提取区/县信息
-                if 'district' in address:
-                    district_info['district'] = address['district']
-                elif 'county' in address:
-                    district_info['district'] = address['county']
-                elif 'city_district' in address:
-                    district_info['district'] = address['city_district']
-                
-                # 提取街道/乡镇信息
-                if 'town' in address:
-                    district_info['township'] = address['town']
-                elif 'village' in address:
-                    district_info['township'] = address['village']
-                elif 'suburb' in address:
-                    district_info['township'] = address['suburb']
-                elif 'neighbourhood' in address:
-                    district_info['township'] = address['neighbourhood']
-                
-                # 提取行政村或社区信息
-                if 'hamlet' in address:
-                    district_info['village'] = address['hamlet']
-                elif 'locality' in address:
-                    district_info['village'] = address['locality']
-                elif 'residential' in address:
-                    district_info['village'] = address['residential']
-                
-                if district_info:
-                    self.escape_manager.debug_log("获取到行政区信息", district_info)
-                    return district_info
-                    
-        except Exception as e:
-            self.escape_manager.debug_log(f"获取行政区信息失败: {e}")
-            return None
-    
-    def _get_district_info_by_city(self, city, region):
-        """根据城市和省份推断行政区信息"""
-        try:
-            # 从配置文件加载城市区县映射
-            city_district_mapping = UnifiedUtils.get_city_district_mapping()
-            
-            # 查找匹配的城市
-            key = f"{city}_{region}"
-            if key in city_district_mapping:
-                district_info = city_district_mapping[key]
-                self.escape_manager.debug_log("根据城市推断行政区信息", district_info)
-                return district_info
-            
-            return None
-        except Exception as e:
-            self.escape_manager.debug_log(f"推断行政区信息失败: {e}")
             return None
 
     def scan_wifi_networks(self):
