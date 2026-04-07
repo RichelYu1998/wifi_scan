@@ -37,7 +37,7 @@ class UnifiedUtils:
             'region_en': 'Anhui',
             'city': '合肥',
             'city_en': 'Hefei',
-            'isp': 'Chinanet',
+            'isp': '中国电信',
             '运营商': 'Chinanet',
             'lat': 31.8696,
             'lon': 117.293,
@@ -3488,6 +3488,7 @@ class EscapeManager:
         
         # ISP英文到中文映射
         self.isp_map = {
+            'Chinanet': '中国电信',
             'China Mobile': '中国移动', 'China Telecom': '中国电信', 'China Unicom': '中国联通',
             'China Netcom': '中国网通', 'China Tietong': '中国铁通', 'China Railcom': '中国铁通',
             'China Education and Research Network': '中国教育和科研计算机网',
@@ -6761,7 +6762,8 @@ def main():
         # 如果指定了更新数据库，强制更新
         if args.update_projector_db:
             projector_recommender._update_database()
-            projector_recommender.reload_database()
+        else:
+            projector_recommender._check_and_update_database()
         
         projector_recommender.print_recommendations(budget_range=budget_range, brand_preference=args.brand, resolution_preference=args.resolution)
         
