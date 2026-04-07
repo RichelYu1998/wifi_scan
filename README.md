@@ -193,6 +193,22 @@ wifi_scan/
 
 ## 📝 版本信息
 
+### v3.1.4 (2026-04-08) - 代码精简
+
+#### 🔧 代码优化
+1. **移除冗余的代理方法**
+   - 移除 `_extract_gpu_brand`、`_get_gpu_brand_from_vendor_id`、`_extract_gpu_model` 等冗余方法
+   - 直接调用 `UnifiedUtils` 类方法，减少中间层
+
+2. **_detect_windows_bios 方法精简**
+   - 使用字典字面量直接返回结果
+   - 减少中间变量赋值
+
+3. **_measure_disk_speed 方法精简**
+   - 合并 `_get_disk_read_speed` 和 `_get_disk_write_speed` 到 `_measure_disk_speed`
+   - 使用列表推导式简化循环
+   - 使用 `min/max` 简化速度限制逻辑
+
 ### v3.1.3 (2026-04-08) - 代码精简
 
 #### 🔧 代码优化

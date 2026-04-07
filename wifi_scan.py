@@ -1411,67 +1411,32 @@ class OptimizedHardwareDetector:
         return self._measure_disk_speed('write')
     
     def _measure_disk_speed(self, operation='read'):
-        """测量磁盘速度（通用方法）
-        
-        Args:
-            operation: 'read' 或 'write'
-        
-        Returns:
-            速度（MB/s）
-        """
+        """测量磁盘速度（通用方法）"""
         try:
             if platform.system() == 'Windows':
-                import tempfile
-                import time
-                
-                # 创建临时文件进行真实测试
-                with tempfile.NamedTemporaryFile(delete=False) as tmp_file:
-                    test_file = tmp_file.name
-                
-                # 写入测试数据
-                test_size = 50 * 1024 * 1024  # 50MB
-                test_data = b'0' * 1024 * 1024  # 1MB块
-                
+                import tempfile, time
+                with tempfile.NamedTemporaryFile(delete=False) as tmp:
+                    test_file = tmp.name
+                test_size, test_data = 50 * 1024 * 1024, b'0' * 1024 * 1024
                 with open(test_file, 'wb') as f:
-                    for i in range(50):  # 50MB
-                        f.write(test_data)
-                
-                # 清空文件缓存
+                    [f.write(test_data) for _ in range(50)]
                 try:
                     import ctypes
                     with open(test_file, 'rb') as f:
                         ctypes.windll.kernel32.FlushFileBuffers(ctypes.windll.kernel32._get_osfhandle(f.fileno()))
                 except:
                     pass
-                
-                # 测量速度
                 start_time = time.time()
-                if operation == 'read':
-                    with open(test_file, 'rb') as f:
-                        while f.read(1024 * 1024):  # 每次读取1MB
-                            pass
-                else:  # write
-                    with open(test_file, 'wb') as f:
-                        for i in range(50):  # 50MB
-                            f.write(test_data)
-                
-                elapsed_time = time.time() - start_time
-                
-                # 清理临时文件
+                with open(test_file, 'rb' if operation == 'read' else 'wb') as f:
+                    if operation == 'read':
+                        while f.read(1024 * 1024): pass
+                    else:
+                        [f.write(test_data) for _ in range(50)]
                 os.remove(test_file)
-                
-                if elapsed_time > 0:
-                    speed_mb = (test_size / (1024 * 1024)) / elapsed_time  # MB/s
-                    # 限制为合理的范围
-                    if speed_mb > 1000:
-                        speed_mb = 500 if operation == 'read' else 400
-                    return round(speed_mb, 2)
-                        
+                return round(min((test_size / 1024 / 1024) / max(time.time() - start_time, 0.001), 500 if operation == 'read' else 400), 2)
         except Exception as e:
             if self.debug_mode:
                 print(f"获取硬盘{operation}速度失败: {e}")
-        
-        # 返回保守的默认值
         return 180.0 if operation == 'read' else 150.0
     
     def _calculate_macos_performance_score(self, hardware_info):
@@ -1586,8 +1551,8 @@ class OptimizedHardwareDetector:
                     best_gpu = max(physical_gpus, key=lambda x: x['vram_gb'])
                     gpu_info['名称'] = best_gpu['name']
                     gpu_info['GPU芯片'] = best_gpu['name']
-                    gpu_info['品牌'] = self._extract_gpu_brand(best_gpu['name'], best_gpu['pnp_device_id'])
-                    gpu_info['型号'] = self._extract_gpu_model(best_gpu['name'])
+                    gpu_info['品牌'] = UnifiedUtils.extract_gpu_brand(best_gpu['name'], best_gpu['pnp_device_id'])
+                    gpu_info['型号'] = UnifiedUtils.extract_gpu_model(best_gpu['name'])
                     gpu_info['显存_GB'] = best_gpu['vram_gb']
                     gpu_info['类型'] = '独立' if best_gpu['vram_gb'] > 0 else '集成'
             
@@ -1608,8 +1573,8 @@ class OptimizedHardwareDetector:
                                 if not any(keyword in gpu_name for keyword in ['Virtual', 'Microsoft']):
                                     gpu_info['名称'] = gpu_name
                                     gpu_info['GPU芯片'] = gpu_name
-                                    gpu_info['品牌'] = self._extract_gpu_brand(gpu_name)
-                                    gpu_info['型号'] = self._extract_gpu_model(gpu_name)
+                                    gpu_info['品牌'] = UnifiedUtils.extract_gpu_brand(gpu_name)
+                                    gpu_info['型号'] = UnifiedUtils.extract_gpu_model(gpu_name)
                                     gpu_info['显存_GB'] = UnifiedUtils.extract_gpu_vram(gpu_name)
                                     gpu_info['类型'] = '独立' if gpu_info['显存_GB'] > 0 else '集成'
                     except Exception as e:
@@ -1631,8 +1596,8 @@ class OptimizedHardwareDetector:
                         gpu_info['名称'] = gpu.name
                         gpu_info['GPU芯片'] = gpu.name
                         gpu_info['显存_GB'] = round(gpu.memoryTotal / 1024, 1)
-                        gpu_info['品牌'] = self._extract_gpu_brand(gpu.name)
-                        gpu_info['型号'] = self._extract_gpu_model(gpu.name)
+                        gpu_info['品牌'] = UnifiedUtils.extract_gpu_brand(gpu.name)
+                        gpu_info['型号'] = UnifiedUtils.extract_gpu_model(gpu.name)
                         gpu_info['类型'] = '独立' if gpu_info['显存_GB'] > 0 else '集成'
                 except ImportError:
                     pass
@@ -1734,31 +1699,17 @@ class OptimizedHardwareDetector:
     
     def _detect_windows_bios(self):
         """检测Windows BIOS信息"""
-        bios_info = {
-            '版本': '未知',
-            '发布日期': '未知',
-            '制造商': '未知',
-            '是否最新': '无法检测'
-        }
-        
         try:
-            # 使用通用方法获取BIOS信息
-            bios_info['版本'] = UnifiedUtils.get_wmic_single_value('bios', 'SMBIOSBIOSVersion') or '未知'
-            bios_info['制造商'] = UnifiedUtils.get_wmic_single_value('bios', 'Manufacturer') or '未知'
-            
-            # 获取BIOS发布日期并转换格式
-            release_date = UnifiedUtils.get_wmic_single_value('bios', 'ReleaseDate')
-            if release_date:
-                bios_info['发布日期'] = self._convert_bios_date_format(release_date)
-            
-            # 检测BIOS是否最新
-            bios_info['是否最新'] = self._check_bios_latest(bios_info['版本'])
-                        
+            return {
+                '版本': UnifiedUtils.get_wmic_single_value('bios', 'SMBIOSBIOSVersion') or '未知',
+                '发布日期': self._convert_bios_date_format(UnifiedUtils.get_wmic_single_value('bios', 'ReleaseDate')),
+                '制造商': UnifiedUtils.get_wmic_single_value('bios', 'Manufacturer') or '未知',
+                '是否最新': self._check_bios_latest(UnifiedUtils.get_wmic_single_value('bios', 'SMBIOSBIOSVersion') or '')
+            }
         except Exception as e:
             if self.debug_mode:
                 print(f"Windows BIOS检测失败: {e}")
-        
-        return bios_info
+            return {'版本': '未知', '发布日期': '未知', '制造商': '未知', '是否最新': '无法检测'}
     
     def _convert_bios_date_format(self, wmic_date):
         """将WMIC日期格式转换为年月日时格式"""
@@ -2007,18 +1958,6 @@ class OptimizedHardwareDetector:
                 print(f"硬件信息检测失败: {e}")
         
         return hardware_info
-    
-    def _extract_gpu_brand(self, gpu_name, pnp_device_id=None):
-        """从GPU名称和PNP设备ID中提取品牌"""
-        return UnifiedUtils.extract_gpu_brand(gpu_name, pnp_device_id)
-    
-    def _get_gpu_brand_from_vendor_id(self, vendor_id):
-        """根据厂商ID获取显卡品牌"""
-        return UnifiedUtils.get_gpu_brand_from_vendor_id(vendor_id)
-    
-    def _extract_gpu_model(self, gpu_name):
-        """从GPU名称中提取型号"""
-        return UnifiedUtils.extract_gpu_model(gpu_name)
     
     def _calculate_windows_performance_score(self, hardware_info):
         """计算Windows硬件性能评分"""
