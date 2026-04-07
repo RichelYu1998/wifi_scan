@@ -4537,199 +4537,49 @@ class WiFiChannelScanner:
         # 如果联网搜索失败，使用本地固定逻辑
         description_lower = description.lower()
         
-        # 腾达(Tenda)网卡型号检测
-        if 'tenda' in description_lower or '腾达' in description_lower:
-            # 常见的腾达网卡型号
-            tenda_models = [
-                'u12', 'u9', 'u6', 'u3', 'w311u', 'w311m', 'w311ma',
-                'w322u', 'w322p', 'w322m', 'w322u+', 'w322p+', 'w322m+',
-                'w311u+', 'w311m+', 'w311ma+', 'w311u v3.0', 'w311m v3.0'
-            ]
-            
-            # 在描述中查找具体的腾达型号
-            for model in tenda_models:
-                if model in description_lower:
-                    # 返回格式化的品牌型号
-                    return f"腾达{model.upper()}"
-            
-            # 如果没找到具体型号，返回通用腾达品牌
-            return "腾达无线网卡"
-        
-        # TP-LINK网卡型号检测
-        elif 'tp-link' in description_lower or 'tplink' in description_lower:
-            # 常见的TP-LINK网卡型号
-            tplink_models = [
-                'tl-wn722n', 'tl-wn723n', 'tl-wn725n', 'tl-wn727n',
-                'tl-wn821n', 'tl-wn822n', 'tl-wn823n', 'tl-wn851n',
-                'tl-wn881nd', 'tl-wn951n', 'tl-wdn3200', 'tl-wdn4800'
-            ]
-            
-            for model in tplink_models:
-                if model in description_lower:
-                    return f"TP-LINK {model.upper()}"
-            
-            return "TP-LINK无线网卡"
-        
-        # 水星(Mercury)网卡型号检测
-        elif 'mercury' in description_lower or '水星' in description_lower:
-            mercury_models = [
-                'mw150us', 'mw150uh', 'mw300um', 'mw300uh'
-            ]
-            
-            for model in mercury_models:
-                if model in description_lower:
-                    return f"水星{model.upper()}"
-            
-            return "水星无线网卡"
-        
-        # D-Link网卡型号检测
-        elif 'd-link' in description_lower or 'dlink' in description_lower:
-            dlink_models = [
-                'dwa-125', 'dwa-131', 'dwa-140', 'dwa-160',
-                'dwa-171', 'dwa-182', 'dwa-192'
-            ]
-            
-            for model in dlink_models:
-                if model in description_lower:
-                    return f"D-Link {model.upper()}"
-            
-            return "D-Link无线网卡"
-        
-        # 主流笔记本品牌内置无线网卡检测
-        # 联想(Lenovo)笔记本网卡
-        if 'lenovo' in description_lower or '联想' in description_lower:
-            if 'thinkpad' in description_lower:
-                return "联想ThinkPad内置无线网卡"
-            elif 'legion' in description_lower or '拯救者' in description_lower:
-                return "联想拯救者内置无线网卡"
-            elif 'yoga' in description_lower or 'y系列' in description_lower:
-                return "联想Yoga/Y系列内置无线网卡"
-            else:
-                return "联想笔记本内置无线网卡"
-        
-        # 机械师(Terrans Force)笔记本网卡
-        elif 'terrans force' in description_lower or '机械师' in description_lower:
-            if 'f117' in description_lower:
-                return "机械师F117系列内置无线网卡"
-            elif 't58' in description_lower or 't5' in description_lower:
-                return "机械师T58/T5系列内置无线网卡"
-            elif 'machcreator' in description_lower or '创物者' in description_lower:
-                return "机械师创物者系列内置无线网卡"
-            else:
-                return "机械师笔记本内置无线网卡"
-        
-        # 机械革命(MECHREVO)笔记本网卡
-        elif 'mechrevo' in description_lower or '机械革命' in description_lower:
-            if 'z3' in description_lower or 'z系列' in description_lower:
-                return "机械革命Z3/Z系列内置无线网卡"
-            elif 'x10' in description_lower or 'x系列' in description_lower:
-                return "机械革命X10/X系列内置无线网卡"
-            elif 's2' in description_lower or 's系列' in description_lower:
-                return "机械革命S2/S系列内置无线网卡"
-            elif '深海泰坦' in description_lower or 'deepsea' in description_lower:
-                return "机械革命深海泰坦系列内置无线网卡"
-            else:
-                return "机械革命笔记本内置无线网卡"
-        
-        # 华硕(ASUS)笔记本网卡
-        elif 'asus' in description_lower or '华硕' in description_lower:
-            if 'rog' in description_lower or '玩家国度' in description_lower:
-                return "华硕ROG玩家国度内置无线网卡"
-            elif 'tuf' in description_lower or '电竞特工' in description_lower:
-                return "华硕TUF电竞特工内置无线网卡"
-            elif 'vivobook' in description_lower or 'vivobook' in description_lower:
-                return "华硕Vivobook系列内置无线网卡"
-            elif 'zenbook' in description_lower or 'zenbook' in description_lower:
-                return "华硕Zenbook系列内置无线网卡"
-            else:
-                return "华硕笔记本内置无线网卡"
-        
-        # 戴尔(DELL)笔记本网卡
-        elif 'dell' in description_lower or '戴尔' in description_lower:
-            if 'alienware' in description_lower or '外星人' in description_lower:
-                return "戴尔外星人内置无线网卡"
-            elif 'xps' in description_lower:
-                return "戴尔XPS系列内置无线网卡"
-            elif 'latitude' in description_lower:
-                return "戴尔Latitude系列内置无线网卡"
-            elif 'inspiron' in description_lower:
-                return "戴尔Inspiron系列内置无线网卡"
-            else:
-                return "戴尔笔记本内置无线网卡"
-        
-        # 惠普(HP)笔记本网卡
-        elif 'hp' in description_lower or '惠普' in description_lower or 'hewlett packard' in description_lower:
-            if 'omen' in description_lower:
-                return "惠普暗影精灵内置无线网卡"
-            elif 'pavilion' in description_lower:
-                return "惠普Pavilion系列内置无线网卡"
-            elif 'elitebook' in description_lower:
-                return "惠普EliteBook系列内置无线网卡"
-            elif 'spectre' in description_lower:
-                return "惠普Spectre系列内置无线网卡"
-            else:
-                return "惠普笔记本内置无线网卡"
-        
-        # 微星(MSI)笔记本网卡
-        elif 'msi' in description_lower or '微星' in description_lower:
-            if 'ge' in description_lower or 'ge系列' in description_lower:
-                return "微星GE系列内置无线网卡"
-            elif 'gs' in description_lower or 'gs系列' in description_lower:
-                return "微星GS系列内置无线网卡"
-            elif 'gt' in description_lower or 'gt系列' in description_lower:
-                return "微星GT系列内置无线网卡"
-            else:
-                return "微星笔记本内置无线网卡"
-        
-        # 神舟(Hasee)笔记本网卡
-        elif 'hasee' in description_lower or '神舟' in description_lower:
-            if '战神' in description_lower:
-                return "神舟战神系列内置无线网卡"
-            elif '优雅' in description_lower:
-                return "神舟优雅系列内置无线网卡"
-            elif '精盾' in description_lower:
-                return "神舟精盾系列内置无线网卡"
-            else:
-                return "神舟笔记本内置无线网卡"
-        
-        # 华为(Huawei)笔记本网卡
-        elif 'huawei' in description_lower or '华为' in description_lower:
-            if 'matebook' in description_lower:
-                return "华为MateBook系列内置无线网卡"
-            else:
-                return "华为笔记本内置无线网卡"
-        
-        # 小米(MI)笔记本网卡
-        elif 'xiaomi' in description_lower or '小米' in description_lower or 'mi' in description_lower:
-            if 'redmibook' in description_lower or 'redmi' in description_lower:
-                return "小米RedmiBook系列内置无线网卡"
-            else:
-                return "小米笔记本内置无线网卡"
-        
-        # 宏碁(Acer)笔记本网卡
-        elif 'acer' in description_lower or '宏碁' in description_lower:
-            if 'predator' in description_lower or '掠夺者' in description_lower:
-                return "宏碁掠夺者内置无线网卡"
-            elif 'nitro' in description_lower or '暗影骑士' in description_lower:
-                return "宏碁暗影骑士内置无线网卡"
-            elif 'aspire' in description_lower:
-                return "宏碁Aspire系列内置无线网卡"
-            else:
-                return "宏碁笔记本内置无线网卡"
-        
-        # 技嘉(GIGABYTE)笔记本网卡
-        elif 'gigabyte' in description_lower or '技嘉' in description_lower:
-            if 'aorus' in description_lower:
-                return "技嘉AORUS系列内置无线网卡"
-            else:
-                return "技嘉笔记本内置无线网卡"
-        
-        # 雷神(ThundeRobot)笔记本网卡
-        elif 'thunderobot' in description_lower or '雷神' in description_lower:
-            if '911' in description_lower:
-                return "雷神911系列内置无线网卡"
-            else:
-                return "雷神笔记本内置无线网卡"
+        # 从配置文件加载网卡型号数据
+        try:
+            config_file = os.path.join(UnifiedUtils.CONFIG_DIR, 'network_card_models.json')
+            if os.path.exists(config_file):
+                with open(config_file, 'r', encoding='utf-8') as f:
+                    network_card_config = json.load(f)
+                
+                network_card_models = network_card_config.get('network_card_models', {})
+                
+                # 遍历所有品牌配置
+                for brand_key, brand_config in network_card_models.items():
+                    brand_name = brand_config.get('brand', '')
+                    brand_keywords = [brand_key.lower()]
+                    
+                    # 添加中文品牌名作为关键词
+                    if brand_name:
+                        brand_keywords.append(brand_name.lower())
+                    
+                    # 检查描述中是否包含品牌关键词
+                    if any(keyword in description_lower for keyword in brand_keywords):
+                        # 检查是否有型号列表
+                        models = brand_config.get('models', [])
+                        if models:
+                            # 在描述中查找具体的型号
+                            for model in models:
+                                if model in description_lower:
+                                    # 返回格式化的品牌型号
+                                    return f"{brand_name}{model.upper()}"
+                        
+                        # 检查是否有系列配置（笔记本品牌）
+                        series = brand_config.get('series', {})
+                        if series:
+                            for series_key, series_name in series.items():
+                                if series_key in description_lower:
+                                    return series_name
+                        
+                        # 返回默认品牌信息
+                        default_name = brand_config.get('default', f"{brand_name}无线网卡")
+                        return default_name
+                
+        except Exception as e:
+            if self.debug_mode:
+                print(f"加载网卡型号配置失败: {e}")
         
         # 如果描述中包含Realtek芯片但使用腾达等品牌，尝试推断品牌型号
         if 'realtek' in description_lower:
