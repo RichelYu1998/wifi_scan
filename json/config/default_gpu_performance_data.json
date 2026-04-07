@@ -1,22 +1,11 @@
 {
   "default_gpu_data": {
-    "RTX 5090": 100, "RTX 5080": 98, "RTX 5070": 95,
-    "RTX 4090": 95, "RTX 4080": 90, "RTX 4070": 85,
-    "RTX 3090": 90, "RTX 3080": 85, "RTX 3070": 80,
-    "RTX 4060": 75, "RTX 3060": 70,
-    "GTX 1660": 65, "GTX 1650": 60,
-    "RTX 2080": 85, "RTX 2070": 80, "RTX 2060": 75,
-    "GTX 1080": 80, "GTX 1070": 75, "GTX 1060": 65,
-    "GTX 980": 70, "GTX 970": 65, "GTX 960": 55,
-    "RX 7900": 100, "RX 7800": 95, "RX 7700": 90,
-    "RX 6900": 90, "RX 6800": 85, "RX 6700": 80,
-    "RX 6600": 75, "RX 6500": 65,
-    "RX 5700": 75, "RX 5600": 70, "RX 5500": 60,
-    "Arc A770": 75, "Arc A750": 70, "Arc A580": 65,
-    "Arc B580": 75, "Arc B570": 70,
-    "Apple M4": 100, "Apple M3": 95, "Apple M2": 90, "Apple M1": 85,
-    "Apple M2 Pro": 95, "Apple M3 Pro": 100, "Apple M4 Pro": 100,
-    "Apple M2 Max": 100, "Apple M3 Max": 100, "Apple M4 Max": 100,
-    "Apple M2 Ultra": 100, "Apple M3 Ultra": 100
-  }
+    "#1 GeForce RTX 5090 D": 100,
+    "#3 GeForce RTX 5090": 100,
+    "#4 GeForce RTX 4090": 95,
+    "#6 GeForce RTX 5080": 100,
+    "#7 GeForce RTX 4080": 95,
+    "#8 GeForce RTX 4080 SUPER": 95
+  },
+  "last_update": "2026-04-08T01:00:39.689988"
 }
