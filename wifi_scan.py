@@ -5855,12 +5855,12 @@ class WiFiChannelScanner:
             
             location_prefix = f"{region}省{city}市"
             
-            # 添加区信息
-            if district:
+            # 添加区信息（只在区信息有效时添加）
+            if district and district != 'unknown' and district != '':
                 location_prefix += district
             
-            # 添加乡镇信息
-            if township:
+            # 添加乡镇信息（只在乡镇信息有效时添加）
+            if township and township != 'unknown' and township != '':
                 location_prefix += township
         
         # 智能修复当前SSID中的乱码（使用转义管理器）
