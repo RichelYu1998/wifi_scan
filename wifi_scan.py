@@ -626,17 +626,6 @@ class UnifiedUtils:
                 cpu_score = model_score
                 break
         
-        # 如果没有匹配到，使用默认评分
-        if cpu_score == 0:
-            if 'M2 Pro' in cpu_name:
-                cpu_score = 90
-            elif 'M2' in cpu_name:
-                cpu_score = 85
-            elif 'M1' in cpu_name:
-                cpu_score = 80
-            else:
-                cpu_score = 70
-        
         score += cpu_score
         
         # 内存评分
@@ -651,17 +640,6 @@ class UnifiedUtils:
             except (ValueError, TypeError):
                 continue
         
-        # 如果没有匹配到，使用默认评分
-        if memory_score == 0:
-            if memory_gb >= 32:
-                memory_score = 10
-            elif memory_gb >= 16:
-                memory_score = 8
-            elif memory_gb >= 8:
-                memory_score = 6
-            else:
-                memory_score = 4
-        
         score += memory_score
         
         # GPU评分
@@ -671,10 +649,6 @@ class UnifiedUtils:
             if model.lower() in gpu_name.lower():
                 gpu_score = model_score
                 break
-        
-        # 如果没有匹配到，使用默认评分
-        if gpu_score == 0:
-            gpu_score = 8
         
         score += gpu_score
         
