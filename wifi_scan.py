@@ -2334,27 +2334,34 @@ class HardwarePerformanceUpdater:
 
     def _load_json_file(self, file_path, default_data):
         """加载JSON文件 - 使用JSON文件管理器"""
-        # 兼容旧代码，同时支持文件路径和类型+文件名
         import os
         
         if os.path.exists(file_path):
-            # 如果是完整路径，直接加载
-            return UnifiedUtils.load_json_file(file_path, default_data)
+            data = UnifiedUtils.load_json_file(file_path, default_data)
+            # 处理内存数据是列表格式的情况，提取字典部分
+            if isinstance(data, list) and len(data) > 0:
+                if isinstance(data[0], dict):
+                    return data[0]
+            return data
         else:
-            # 如果是文件名，使用JSON文件管理器
-            # 尝试从文件名推断文件类型
             filename = os.path.basename(file_path)
             
             if 'cpu' in filename.lower():
-                return self.json_manager.load_json_file('cpu', filename, default_data=default_data)
+                data = self.json_manager.load_json_file('cpu', filename, default_data=default_data)
             elif 'gpu' in filename.lower():
-                return self.json_manager.load_json_file('gpu', filename, default_data=default_data)
+                data = self.json_manager.load_json_file('gpu', filename, default_data=default_data)
             elif 'memory' in filename.lower():
-                return self.json_manager.load_json_file('memory', filename, default_data=default_data)
+                data = self.json_manager.load_json_file('memory', filename, default_data=default_data)
             elif 'network' in filename.lower():
-                return self.json_manager.load_json_file('network_hardware', filename, default_data=default_data)
+                data = self.json_manager.load_json_file('network_hardware', filename, default_data=default_data)
             else:
-                return default_data
+                data = default_data
+            
+            # 处理内存数据是列表格式的情况
+            if isinstance(data, list) and len(data) > 0:
+                if isinstance(data[0], dict):
+                    return data[0]
+            return data
     
     def _get_default_cpu_data(self):
         """获取CPU性能数据 - 优先网络数据，保存到本地"""
