@@ -6649,7 +6649,6 @@ def main():
     parser.add_argument('--export', type=str, help='导出CSV文件的路径（例如: ./wifi_report.csv）')
     parser.add_argument('--debug', action='store_true', help='显示调试信息（默认不显示）')
     
-    # 新增功能参数
     parser.add_argument('--hardware', action='store_true', help='检测硬件信息')
     parser.add_argument('--projector', action='store_true', help='投影仪推荐')
     parser.add_argument('--update-projector-db', action='store_true', help='强制更新投影仪数据库')
@@ -6659,7 +6658,6 @@ def main():
     parser.add_argument('--resolution', type=str, help='投影仪分辨率偏好（例如: 4K,1080P）')
     parser.add_argument('--all-in-one', action='store_true', help='运行完整系统测试（WiFi扫描+硬件检测+投影仪推荐）')
     
-    # JSON文件管理参数
     parser.add_argument('--json-stats', action='store_true', help='显示JSON文件统计信息')
     parser.add_argument('--organize-json', action='store_true', help='重新组织JSON文件到标准目录结构')
     parser.add_argument('--show-json-rules', action='store_true', help='显示JSON文件分类规则')
@@ -6668,98 +6666,60 @@ def main():
     args = parser.parse_args()
     
     # JSON文件管理功能
-    if args.json_stats or args.organize_json or args.show_json_rules or args.fix_date_format:
+    if any([args.json_stats, args.organize_json, args.show_json_rules, args.fix_date_format]):
         json_manager = JSONFileManager("json")
-        
-        if args.json_stats:
-            # 显示JSON文件统计信息
-            stats = json_manager.get_file_stats()
-            print("\n📊 JSON文件统计信息:")
-            print("=" * 50)
-            total = 0
-            for category, info in stats.items():
-                print(f"\n📁 {category}: {info['file_count']} 个文件")
-                total += info['file_count']
-            print(f"\n总计: {total} 个JSON文件")
-            
-        elif args.organize_json:
-            # 重新组织JSON文件
-            json_manager.organize_files()
-            
-        elif args.show_json_rules:
-            # 显示分类规则
-            json_manager.print_classification_summary()
-        
-        elif args.fix_date_format:
-            # 修复所有JSON文件中的日期格式
-            json_manager.fix_all_date_formats()
-        
+        (args.json_stats and [json_manager.get_file_stats(), print("\n📊 JSON文件统计信息:")] or
+         args.organize_json and json_manager.organize_files() or
+         args.show_json_rules and json_manager.print_classification_summary() or
+         args.fix_date_format and json_manager.fix_all_date_formats())
         return
 
     # 处理预算范围
     budget_range = None
     if args.budget:
         try:
-            min_budget, max_budget = map(int, args.budget.split('-'))
-            budget_range = (min_budget, max_budget)
+            budget_range = tuple(map(int, args.budget.split('-')))
         except ValueError:
             print("⚠️  预算格式错误，请使用格式: 最小值-最大值（例如: 3000-8000）")
             return
 
-    # 执行相应的功能
+    # 执行相应功能
     if args.all_in_one:
-        # 运行完整系统测试
         print("🚀 启动完整系统测试")
         print("=" * 60)
-        
-        # 1. 硬件信息检测
-        print("\n1️⃣ 硬件信息检测中...")
-        hardware_detector = OptimizedHardwareDetector(debug_mode=args.debug)
-        hardware_detector.print_hardware_info()
-        
-        # 2. WiFi扫描
-        print("\n2️⃣ WiFi网络扫描中...")
-        scanner = WiFiChannelScanner()
-        scanner.generate_report(export_csv=args.export, debug=args.debug)
-        
-        # 3. 投影仪推荐
-        print("\n3️⃣ 投影仪推荐中...")
-        projector_recommender = ProjectorRecommender(debug_mode=args.debug)
-        projector_recommender.print_recommendations(budget_range=budget_range, brand_preference=args.brand)
-        
+        funcs = [
+            (lambda: OptimizedHardwareDetector(debug_mode=args.debug), "硬件信息检测", lambda d: d.print_hardware_info()),
+            (WiFiChannelScanner, "WiFi网络扫描", lambda s: s.generate_report(export_csv=args.export, debug=args.debug)),
+            (lambda: ProjectorRecommender(debug_mode=args.debug), "投影仪推荐", lambda p: p.print_recommendations(budget_range=budget_range, brand_preference=args.brand))
+        ]
+        for i, (init_func, name, action) in enumerate(funcs, 1):
+            print(f"\n{i}️⃣ {name}中...")
+            action(init_func())
         print("\n" + "=" * 60)
         print("✅ 完整系统测试完成！")
-        
-    elif args.hardware:
-        # 仅检测硬件信息
-        hardware_detector = OptimizedHardwareDetector(debug_mode=args.debug)
-        
-        # 如果指定了更新数据库，强制更新硬件性能数据
-        if args.update_hardware_db:
+        return
+
+    # 单功能模式：初始化对应的检测器/推荐器
+    detectors = {
+        'hardware': (OptimizedHardwareDetector, args.update_hardware_db, 
+                     lambda d: (d.print_hardware_info(), 
+                                HardwarePerformanceUpdater(debug_mode=args.debug).update_all_performance_data(force_update=True) or print("✅ 硬件性能数据库更新完成！"))),
+        'projector': (ProjectorRecommender, args.update_projector_db,
+                      lambda p: p.print_recommendations(budget_range=budget_range, brand_preference=args.brand, resolution_preference=args.resolution))
+    }
+
+    if args.hardware or args.projector:
+        mode = 'hardware' if args.hardware else 'projector'
+        detector_cls, needs_update, action = detectors[mode]
+        detector = detector_cls(debug_mode=args.debug)
+        if needs_update and mode == 'hardware':
             print("🔄 正在更新硬件性能数据库...")
-            performance_updater = HardwarePerformanceUpdater(debug_mode=args.debug)
-            performance_updater.update_all_performance_data(force_update=True)
-            print("✅ 硬件性能数据库更新完成！")
-            print()
-        
-        hardware_detector.print_hardware_info()
-        
-    elif args.projector:
-        # 仅推荐投影仪
-        projector_recommender = ProjectorRecommender(debug_mode=args.debug)
-        
-        # 如果指定了更新数据库，强制更新
-        if args.update_projector_db:
-            projector_recommender._update_database()
-        else:
-            projector_recommender._check_and_update_database()
-        
-        projector_recommender.print_recommendations(budget_range=budget_range, brand_preference=args.brand, resolution_preference=args.resolution)
-        
+            HardwarePerformanceUpdater(debug_mode=args.debug).update_all_performance_data(force_update=True)
+            print("✅ 硬件性能数据库更新完成！\n")
+        detector._update_database() if needs_update else detector._check_and_update_database()
+        action(detector)
     else:
-        # 默认执行WiFi扫描
-        scanner = WiFiChannelScanner()
-        scanner.generate_report(export_csv=args.export, debug=args.debug)
+        WiFiChannelScanner().generate_report(export_csv=args.export, debug=args.debug)
 
 
 if __name__ == '__main__':
