@@ -3784,20 +3784,28 @@ class EscapeManager:
         return "未知WiFi"
     
     def translate_region(self, region_en):
-        """将省份英文名转换为中文名"""
-        return self.region_map.get(region_en, region_en)
+        """将省份英文名转换为中文名（大小写不敏感）"""
+        if not region_en:
+            return region_en
+        return self.region_map.get(region_en.lower(), region_en)
     
     def translate_city(self, city_en):
-        """将城市英文名转换为中文名"""
-        return self.city_map.get(city_en, city_en)
+        """将城市英文名转换为中文名（大小写不敏感）"""
+        if not city_en:
+            return city_en
+        return self.city_map.get(city_en.lower(), city_en)
     
     def translate_country(self, country_en):
-        """将国家英文名转换为中文名"""
-        return self.country_map.get(country_en, country_en)
+        """将国家英文名转换为中文名（大小写不敏感）"""
+        if not country_en:
+            return country_en
+        return self.country_map.get(country_en.lower(), country_en)
     
     def translate_isp(self, isp_en):
-        """将ISP英文名转换为中文名"""
-        return self.isp_map.get(isp_en, isp_en)
+        """将ISP英文名转换为中文名（大小写不敏感）"""
+        if not isp_en:
+            return isp_en
+        return self.isp_map.get(isp_en.lower(), isp_en)
     
     def get_wifi_bandwidth(self, description):
         """根据网卡描述信息获取最大带宽（单位：Mbps）"""
