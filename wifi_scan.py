@@ -3369,10 +3369,26 @@ class ProjectorRecommender:
         resolution_preference = None
         
         while True:
-            print("\n请选择筛选条件（输入数字或直接回车跳过）:")
-            print("1. 预算范围")
-            print("2. 品牌偏好")
-            print("3. 分辨率偏好")
+            print("\n" + "-" * 50)
+            print("当前筛选条件:")
+            if budget_range:
+                print(f"  ✓ 预算: ¥{budget_range[0]} - ¥{budget_range[1]}")
+            else:
+                print("  ✗ 预算: 未设置")
+            if brand_preference:
+                print(f"  ✓ 品牌: {brand_preference}")
+            else:
+                print("  ✗ 品牌: 未设置")
+            if resolution_preference:
+                print(f"  ✓ 分辨率: {resolution_preference}")
+            else:
+                print("  ✗ 分辨率: 未设置")
+            print("-" * 50)
+            
+            print("\n请选择操作:")
+            print("1. 设置预算范围")
+            print("2. 设置品牌偏好")
+            print("3. 设置分辨率偏好")
             print("4. 开始推荐")
             print("0. 退出")
             
@@ -3405,14 +3421,19 @@ class ProjectorRecommender:
                 res_choice = input("分辨率 (1-3): ").strip()
                 if res_choice == '1':
                     resolution_preference = '4K'
+                    print("✅ 分辨率已设置为: 4K")
                 elif res_choice == '2':
                     resolution_preference = '1080P'
+                    print("✅ 分辨率已设置为: 1080P")
                 elif res_choice == '3':
                     resolution_preference = '720P'
-                if resolution_preference:
-                    print(f"✅ 分辨率已设置为: {resolution_preference}")
+                    print("✅ 分辨率已设置为: 720P")
+                else:
+                    print("⚠️ 无效选择")
             
             elif choice == '4':
+                if not budget_range and not brand_preference and not resolution_preference:
+                    print("\n⚠️ 提示: 您还没有设置任何筛选条件，将显示全部投影仪")
                 print("\n开始搜索投影仪...")
                 break
             
