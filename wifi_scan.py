@@ -6655,7 +6655,8 @@ def main():
             print("🔄 正在更新硬件性能数据库...")
             HardwarePerformanceUpdater(debug_mode=args.debug).update_all_performance_data(force_update=True)
             print("✅ 硬件性能数据库更新完成！\n")
-        detector._update_database() if needs_update else detector._check_and_update_database()
+        if mode == 'projector':
+            detector._update_database() if needs_update else detector._check_and_update_database()
         action(detector)
     else:
         WiFiChannelScanner().generate_report(export_csv=args.export, debug=args.debug)
