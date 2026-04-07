@@ -1,0 +1,197 @@
+[
+  {
+    "scan_time": "2026-04-08T03:27:24.036448",
+    "location": {
+      "country": "中国",
+      "region": "安徽",
+      "region_en": "Anhui",
+      "city": "合肥",
+      "city_en": "Hefei",
+      "isp": "中国电信",
+      "运营商": "中国电信",
+      "ip": "117.64.64.112",
+      "lat": 31.8696,
+      "lon": 117.293,
+      "district": "庐阳区",
+      "township": "逍遥津街道",
+      "village": "县桥社区"
+    },
+    "current_wifi": {
+      "ssid": "TP-LINK_E8C9",
+      "channel_24g": null,
+      "channel_5g": 44
+    },
+    "network_card": {
+      "网卡完整描述": "Wi-Fi  (0x000014E4, 0x0000100C)",
+      "网卡品牌型号": "Broadcom无线网卡",
+      "网卡型号": "Broadcom无线网卡",
+      "max_bandwidth_mbps": 2400,
+      "最大支持带宽": "2.4G",
+      "WiFi标准": "WiFi 6 (802.11ax)",
+      "max_bandwidth_gbps": 2.4
+    },
+    "total_networks": 9,
+    "recommended_channels": [
+      2,
+      149,
+      9
+    ],
+    "network_details": [
+      {
+        "ssid": "CMCC-tfgm",
+        "channel": 2,
+        "rssi_dbm": -84
+      },
+      {
+        "ssid": "客厅_5G",
+        "channel": 149,
+        "rssi_dbm": -83
+      },
+      {
+        "ssid": "CMCC-yne5",
+        "channel": 9,
+        "rssi_dbm": -83
+      },
+      {
+        "ssid": "508",
+        "channel": 13,
+        "rssi_dbm": -83
+      },
+      {
+        "ssid": "DIRECT-21-HP Smart Tank 510",
+        "channel": 8,
+        "rssi_dbm": -72
+      },
+      {
+        "ssid": "Xiaomi_7119",
+        "channel": 8,
+        "rssi_dbm": -64
+      },
+      {
+        "ssid": "@PHICOMM_C0",
+        "channel": 3,
+        "rssi_dbm": -48
+      },
+      {
+        "ssid": "ChinaNet-WsMV",
+        "channel": 13,
+        "rssi_dbm": -43
+      },
+      {
+        "ssid": "TP-LINK_E8C9",
+        "channel": 44,
+        "rssi_dbm": -29
+      }
+    ],
+    "channel_statistics": {
+      "2": {
+        "count": 1,
+        "total_rssi": -84,
+        "networks": [
+          {
+            "ssid": "CMCC-tfgm",
+            "channel": 2,
+            "rssi_dbm": -84
+          }
+        ],
+        "avg_rssi": -84.0
+      },
+      "149": {
+        "count": 1,
+        "total_rssi": -83,
+        "networks": [
+          {
+            "ssid": "客厅_5G",
+            "channel": 149,
+            "rssi_dbm": -83
+          }
+        ],
+        "avg_rssi": -83.0
+      },
+      "9": {
+        "count": 1,
+        "total_rssi": -83,
+        "networks": [
+          {
+            "ssid": "CMCC-yne5",
+            "channel": 9,
+            "rssi_dbm": -83
+          }
+        ],
+        "avg_rssi": -83.0
+      },
+      "13": {
+        "count": 2,
+        "total_rssi": -126,
+        "networks": [
+          {
+            "ssid": "508",
+            "channel": 13,
+            "rssi_dbm": -83
+          },
+          {
+            "ssid": "ChinaNet-WsMV",
+            "channel": 13,
+            "rssi_dbm": -43
+          }
+        ],
+        "avg_rssi": -63.0
+      },
+      "8": {
+        "count": 2,
+        "total_rssi": -136,
+        "networks": [
+          {
+            "ssid": "DIRECT-21-HP Smart Tank 510",
+            "channel": 8,
+            "rssi_dbm": -72
+          },
+          {
+            "ssid": "Xiaomi_7119",
+            "channel": 8,
+            "rssi_dbm": -64
+          }
+        ],
+        "avg_rssi": -68.0
+      },
+      "3": {
+        "count": 1,
+        "total_rssi": -48,
+        "networks": [
+          {
+            "ssid": "@PHICOMM_C0",
+            "channel": 3,
+            "rssi_dbm": -48
+          }
+        ],
+        "avg_rssi": -48.0
+      },
+      "44": {
+        "count": 1,
+        "total_rssi": -29,
+        "networks": [
+          {
+            "ssid": "TP-LINK_E8C9",
+            "channel": 44,
+            "rssi_dbm": -29
+          }
+        ],
+        "avg_rssi": -29.0
+      }
+    },
+    "optimization_suggestions": [
+      {
+        "type": "信道选择",
+        "priority": "高",
+        "suggestion": "使用推荐信道：2",
+        "reason": "当前网络数量最少，干扰最低"
+      },
+      {
+        "type": "5G优化",
+        "priority": "低",
+        "suggestion": "5G频段可用，干扰较少",
+        "reason": "5G频段信道更多，干扰更少"
+      }
+    ]
+  }
+]
