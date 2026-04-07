@@ -4660,70 +4660,85 @@ class WiFiChannelScanner:
     def get_location_info(self):
         """获取当前地理位置信息（性能优化版）"""
         # 使用缓存避免重复网络请求
-        if hasattr(self, '_cached_location_info'):
+        if hasattr(self, '_cached_location_info') and self._cached_location_info:
             return self._cached_location_info
-            
-        try:
-            # 优先使用静态地理位置数据库（避免联网查询）
-            url = "http://ip-api.com/json/?fields=status,country,regionName,city,isp,query,lat,lon,zip"
-            request = urllib.request.Request(url)
-            request.add_header('User-Agent', 'Mozilla/5.0')
-            
-            with urllib.request.urlopen(request, timeout=2) as response:
-                data = json.loads(response.read().decode('utf-8'))
+        
+        # 重试机制：最多尝试3次
+        max_retries = 3
+        retry_delay = 1  # 秒
+        
+        for attempt in range(max_retries):
+            try:
+                # 优先使用静态地理位置数据库（避免联网查询）
+                url = "http://ip-api.com/json/?fields=status,country,regionName,city,isp,query,lat,lon,zip"
+                request = urllib.request.Request(url)
+                request.add_header('User-Agent', 'Mozilla/5.0')
                 
-                if data.get('status') == 'success':
-                    ip_address = data.get('query', '')
+                # 增加超时时间到5秒，避免网络不稳定时超时
+                with urllib.request.urlopen(request, timeout=5) as response:
+                    data = json.loads(response.read().decode('utf-8'))
                     
-                    # 首先检查静态地理位置数据库
-                    known_location = UnifiedUtils.get_known_location(ip_address)
-                    if known_location:
-                        self._cached_location_info = known_location
-                        return known_location
-                    
-                    # 如果静态数据库中没有，继续使用API查询
-                    # 简化中文转换逻辑（只转换主要字段，使用转义管理器）
-                    region_en = data.get('regionName', '')
-                    city_en = data.get('city', '')
-                    country_en = data.get('country', '')
-                    isp_en = data.get('isp', '')
-                    
-                    region_cn = self.escape_manager.translate_region(region_en)
-                    city_cn = self.escape_manager.translate_city(city_en)
-                    country_cn = self.escape_manager.translate_country(country_en)
-                    isp_cn = self.escape_manager.translate_isp(isp_en)
-                    
-                    location_info = {
-                        'country': country_cn,
-                        'region': region_cn,
-                        'region_en': region_en,
-                        'city': city_cn,
-                        'city_en': city_en,
-                        'isp': isp_cn,
-                        '运营商': isp_cn,
-                        'ip': data.get('query', ''),
-                        'lat': data.get('lat', 0),
-                        'lon': data.get('lon', 0)
-                    }
-                    
-                    # 获取更详细的行政区信息（街道/乡镇）
-                    district_info = self._get_district_info(data.get('lat', 0), data.get('lon', 0))
-                    
-                    # 如果Nominatim API失败，使用城市和省份推断行政区信息
-                    if not district_info:
-                        district_info = self._get_district_info_by_city(city_cn, region_cn)
-                    
-                    # 添加街道/乡镇信息
-                    if district_info:
-                        location_info.update(district_info)
-                    
-                    # 缓存结果
-                    self._cached_location_info = location_info
-                    return location_info
-                else:
-                    return None
-        except Exception:
-            return None
+                    if data.get('status') == 'success':
+                        ip_address = data.get('query', '')
+                        
+                        # 首先检查静态地理位置数据库
+                        known_location = UnifiedUtils.get_known_location(ip_address)
+                        if known_location:
+                            self._cached_location_info = known_location
+                            return known_location
+                        
+                        # 如果静态数据库中没有，继续使用API查询
+                        region_en = data.get('regionName', '')
+                        city_en = data.get('city', '')
+                        country_en = data.get('country', '')
+                        isp_en = data.get('isp', '')
+                        
+                        region_cn = self.escape_manager.translate_region(region_en)
+                        city_cn = self.escape_manager.translate_city(city_en)
+                        country_cn = self.escape_manager.translate_country(country_en)
+                        isp_cn = self.escape_manager.translate_isp(isp_en)
+                        
+                        location_info = {
+                            'country': country_cn,
+                            'region': region_cn,
+                            'region_en': region_en,
+                            'city': city_cn,
+                            'city_en': city_en,
+                            'isp': isp_cn,
+                            '运营商': isp_cn,
+                            'ip': data.get('query', ''),
+                            'lat': data.get('lat', 0),
+                            'lon': data.get('lon', 0)
+                        }
+                        
+                        # 获取更详细的行政区信息（街道/乡镇）
+                        district_info = self._get_district_info(data.get('lat', 0), data.get('lon', 0))
+                        
+                        # 如果Nominatim API失败，使用城市和省份推断行政区信息
+                        if not district_info:
+                            district_info = self._get_district_info_by_city(city_cn, region_cn)
+                        
+                        # 添加街道/乡镇信息
+                        if district_info:
+                            location_info.update(district_info)
+                        
+                        # 缓存结果
+                        self._cached_location_info = location_info
+                        return location_info
+                    else:
+                        # API返回失败，继续重试
+                        if attempt < max_retries - 1:
+                            time.sleep(retry_delay)
+                            continue
+                        return None
+            except Exception as e:
+                # 网络请求失败，继续重试
+                if attempt < max_retries - 1:
+                    time.sleep(retry_delay)
+                    continue
+                return None
+        
+        return None
 
 
 
