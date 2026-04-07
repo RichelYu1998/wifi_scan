@@ -116,7 +116,7 @@ menu() {
     echo "5. 完整系统测试"
     echo "6. 更新投影仪数据库"
     echo "7. 更新硬件数据库"
-    echo "8. 更新映射配置（品牌、带宽、国家、ISP等）"
+    echo "8. 更新硬件数据（网卡、GPU、投影仪）"
     echo "9. JSON文件管理"
     echo "10. 自定义参数运行"
     echo "0. 退出程序"
@@ -160,7 +160,7 @@ while true; do
             $PYTHON_EXE wifi_scan.py --hardware --update-hardware-db
             ;;
         8)
-            echo "[信息] 更新映射配置（品牌、带宽、国家、ISP等）..."
+            echo "[信息] 更新硬件数据（网卡、GPU、投影仪）..."
             $PYTHON_EXE wifi_scan.py --update-mapping
             ;;
         9)

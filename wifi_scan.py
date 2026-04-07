@@ -146,48 +146,48 @@ class UnifiedUtils:
             'gpu_brands': config.get('gpu_brands', {}),
             'cpu_brands': config.get('cpu_brands', {}),
             'network_isp': config.get('network_isp', {}),
+            'cpu_patterns': config.get('cpu_patterns', []),
+            'gpu_patterns': config.get('gpu_patterns', []),
+            'wifi_brand_patterns': config.get('wifi_brand_patterns', []),
+            'default_enhancement_patterns': config.get('default_enhancement_patterns', []),
+            'garbled_patterns': config.get('garbled_patterns', []),
+            'gpu_model_patterns': config.get('gpu_model_patterns', []),
+            'memory_patterns': config.get('memory_patterns', []),
+            'network_patterns': config.get('network_patterns', []),
+            'table_patterns': config.get('table_patterns', []),
+            'link_patterns': config.get('link_patterns', []),
+            'asus_model_patterns': config.get('asus_model_patterns', []),
+            'lenovo_model_patterns': config.get('lenovo_model_patterns', []),
+            'dell_model_patterns': config.get('dell_model_patterns', []),
+            'hp_model_patterns': config.get('hp_model_patterns', []),
+            'samsung_model_patterns': config.get('samsung_model_patterns', []),
             'last_update': config.get('last_update', ''),
             'update_url': config.get('update_url', '')
         }
     
     @staticmethod
     def update_mapping_config():
-        """从网络更新映射配置"""
+        """从网络实时获取最新的硬件数据并更新到本地配置文件"""
         try:
-            mapping_config = UnifiedUtils.get_mapping_config()
-            update_url = mapping_config.get('update_url', '')
+            print("🔄 正在从网络更新硬件数据...")
+            print("=" * 60)
             
-            if not update_url:
-                print("⚠️ 未配置映射更新URL")
-                return False
+            # 创建网络数据更新器实例
+            updater = NetworkDataUpdater(config_dir=UnifiedUtils.CONFIG_DIR, debug_mode=False)
             
-            print(f"🔄 正在从网络更新映射配置...")
-            print(f"📡 下载地址: {update_url}")
+            # 更新所有数据
+            success = updater.update_all_data()
             
-            # 创建不验证SSL证书的上下文
-            ssl_context = ssl.create_default_context()
-            ssl_context.check_hostname = False
-            ssl_context.verify_mode = ssl.CERT_NONE
+            if success:
+                print("\n✅ 硬件数据更新成功！")
+                print("💡 提示：更新后的数据将在下次运行时生效")
+            else:
+                print("\n⚠️ 部分数据更新失败，请检查网络连接")
             
-            request = urllib.request.Request(update_url)
-            request.add_header('User-Agent', 'Mozilla/5.0')
-            
-            with urllib.request.urlopen(request, timeout=10, context=ssl_context) as response:
-                data = json.loads(response.read().decode('utf-8'))
-                
-                if data:
-                    config_file = os.path.join(UnifiedUtils.CONFIG_DIR, 'mapping_config.json')
-                    
-                    os.makedirs(UnifiedUtils.CONFIG_DIR, exist_ok=True)
-                    
-                    with open(config_file, 'w', encoding='utf-8') as f:
-                        json.dump(data, f, ensure_ascii=False, indent=2)
-                    
-                    print(f"✅ 映射配置更新成功！最后更新时间: {data.get('last_update', '未知')}")
-                    return True
+            return success
             
         except Exception as e:
-            print(f"❌ 更新映射配置失败: {e}")
+            print(f"❌ 更新硬件数据失败: {e}")
             return False
     
     @staticmethod
@@ -327,17 +327,18 @@ class UnifiedUtils:
     
     @staticmethod
     def contains_garbled_text(text):
-        """检测文本是否包含乱码"""
+        """检测文本是否包含乱码 - 从配置文件读取模式"""
         if not text:
             return False
         
-        # 检测常见乱码模式
-        garbled_patterns = [
+        # 从配置文件读取乱码检测模式
+        config = UnifiedUtils.load_config_file('mapping_config.json')
+        garbled_patterns = config.get('garbled_patterns', [
             r'�',  # Unicode替换字符
             r'[\x00-\x08\x0b\x0c\x0e-\x1f\x7f-\x9f]',  # 控制字符
             r'[\ufffd]',  # Unicode替换字符
             r'[\ud800-\udfff]',  # 代理对字符
-        ]
+        ])
         
         for pattern in garbled_patterns:
             if re.search(pattern, text):
@@ -1005,15 +1006,17 @@ class UnifiedUtils:
     
     @staticmethod
     def extract_gpu_model(gpu_name):
-        """从GPU名称中提取型号"""
-        model_patterns = [
+        """从GPU名称中提取型号 - 从配置文件读取模式"""
+        # 从配置文件读取GPU型号提取模式
+        config = UnifiedUtils.load_config_file('mapping_config.json')
+        model_patterns = config.get('gpu_model_patterns', [
             r'RTX\s*\d+\s*[A-Z]*',
             r'GTX\s*\d+\s*[A-Z]*',
             r'RX\s*\d+\s*\w*',
             r'Radeon\s*\w+\s*\d+',
             r'UHD\s*\d+',
             r'Iris\s*\w+'
-        ]
+        ])
         
         for pattern in model_patterns:
             match = re.search(pattern, gpu_name, re.IGNORECASE)
@@ -2346,26 +2349,60 @@ class HardwarePerformanceUpdater:
         return merged_data
     
     def _enhance_latest_models(self, hardware_data):
-        """增强最新硬件型号的评分"""
+        """增强最新硬件型号的评分 - 从配置文件读取"""
         if not isinstance(hardware_data, dict):
             return
         
-        # 最新GPU型号评分增强
-        latest_gpu_patterns = [
-            (r'RTX\s*5090', 100),  # RTX 5090系列
-            (r'RTX\s*5080', 98),   # RTX 5080系列
-            (r'RTX\s*5070', 95),   # RTX 5070系列
-            (r'Core\s+Ultra\s+[3579]', 100),  # Intel Core Ultra系列
-            (r'M4(?:\s+(?:Pro|Max|Ultra)?)', 100),  # Apple M4系列
-            (r'M3(?:\s+(?:Pro|Max|Ultra)?)', 95),  # Apple M3系列
-        ]
+        # 从配置文件中读取GPU和CPU模式
+        mapping_config = UnifiedUtils.get_mapping_config()
+        gpu_patterns = mapping_config.get('gpu_patterns', [])
+        cpu_patterns = mapping_config.get('cpu_patterns', [])
         
+        # 加载GPU和CPU性能数据
+        gpu_perf_config = UnifiedUtils.load_config_file('gpu_performance_data.json')
+        cpu_perf_config = UnifiedUtils.load_config_file('cpu_performance_data.json')
+        
+        gpu_score_rules = gpu_perf_config.get('gpu_score_rules', {})
+        cpu_score_rules = cpu_perf_config.get('cpu_score_rules', {})
+        
+        # 合并所有模式和分数规则
+        all_patterns = []
+        
+        # 添加GPU模式和分数规则
+        for pattern in gpu_patterns:
+            # 从GPU分数规则中查找匹配的分数
+            score = None
+            for series, rule_score in gpu_score_rules.items():
+                if series in pattern:
+                    score = rule_score
+                    break
+            if score:
+                all_patterns.append((pattern, score))
+        
+        # 添加CPU模式和分数规则
+        for pattern in cpu_patterns:
+            # 从CPU分数规则中查找匹配的分数
+            score = None
+            for series, rule_score in cpu_score_rules.items():
+                if series in pattern:
+                    score = rule_score
+                    break
+            if score:
+                all_patterns.append((pattern, score))
+        
+        # 如果没有找到任何模式，从配置文件读取默认模式
+        if not all_patterns:
+            default_config = UnifiedUtils.load_config_file('mapping_config.json')
+            default_patterns = default_config.get('default_enhancement_patterns', [])
+            all_patterns = [(p['pattern'], p['score']) for p in default_patterns]
+        
+        # 应用模式匹配
         for model_name in hardware_data.keys():
             if not isinstance(model_name, str):
                 continue
                 
             # 检查是否匹配最新型号模式
-            for pattern, score in latest_gpu_patterns:
+            for pattern, score in all_patterns:
                 if re.search(pattern, model_name, re.IGNORECASE):
                     hardware_data[model_name] = score
                     break
@@ -2492,51 +2529,30 @@ class HardwarePerformanceUpdater:
                 print(f"[DEBUG] 保存CPU数据到本地失败: {e}")
     
     def _parse_cpu_benchmark_data(self, html_content):
-        """解析CPU基准测试数据"""
+        """解析CPU基准测试数据 - 从配置文件读取CPU模式"""
         try:
             cpu_data = {}
             
-            # 改进的CPU型号匹配模式 - 支持更多格式
-            cpu_patterns = [
-                # Intel Core Ultra 系列
-                r'Intel\s+Core\s+Ultra\s+[3579]',
-                r'Core\s+Ultra\s+[3579]',
-                # Intel Core 14代系列
-                r'Intel\s+Core\s+(?:i[3579]|i9)[\s-]*(?:14[0-9]{3}|13[0-9]{3}|12[0-9]{3})[A-Z]*',
-                r'Core\s+(?:i[3579]|i9)[\s-]*(?:14[0-9]{3}|13[0-9]{3}|12[0-9]{3})[A-Z]*',
-                # Intel Core 11代及以下
-                r'Intel\s+Core\s+(?:i[3579]|i9)[\s-]*(\d{3,4}[A-Z]*)',
-                r'Core\s+(?:i[3579]|i9)[\s-]*(\d{3,4}[A-Z]*)',
-                # AMD Ryzen 9000系列
-                r'AMD\s+Ryzen\s+[3579]\s*(?:9[0-9]{3})',
-                r'Ryzen\s+[3579]\s*(?:9[0-9]{3})',
-                # AMD Ryzen 7000/8000系列
-                r'AMD\s+Ryzen\s+[3579]\s*(?:[78][0-9]{3})',
-                r'Ryzen\s+[3579]\s*(?:[78][0-9]{3})',
-                # AMD Ryzen 5000/6000系列
-                r'AMD\s+Ryzen\s+[3579]\s*(?:[56][0-9]{3})',
-                r'Ryzen\s+[3579]\s*(?:[56][0-9]{3})',
-                # Apple M4系列
-                r'Apple\s+(?:M4|M4\s+(?:Pro|Max|Ultra)?)',
-                r'M4(?:\s+(?:Pro|Max|Ultra)?)',
-                # Apple M3系列
-                r'Apple\s+(?:M3|M3\s+(?:Pro|Max|Ultra)?)',
-                r'M3(?:\s+(?:Pro|Max|Ultra)?)',
-                # Apple M2/M1系列
-                r'Apple\s+(?:M[12]|M[12]\s+(?:Pro|Max|Ultra)?)',
-                r'M[12](?:\s+(?:Pro|Max|Ultra)?)',
-            ]
+            # 从配置文件中读取CPU模式
+            mapping_config = UnifiedUtils.get_mapping_config()
+            cpu_patterns = mapping_config.get('cpu_patterns', [])
             
-            # 查找所有CPU型号和分数
-            # 尝试匹配表格中的数据 - 支持多种表格格式
-            table_patterns = [
+            # 如果配置文件中没有CPU模式，返回空数据
+            if not cpu_patterns:
+                if self.debug_mode:
+                    print("[DEBUG] 配置文件中没有CPU模式")
+                return None
+            
+            # 从配置文件读取表格解析模式
+            config = self._load_json_file('mapping_config.json')
+            table_patterns = config.get('table_patterns', [
                 # 标准表格格式
                 r'<tr[^>]*>.*?<td[^>]*>([^<]+)</td>.*?<td[^>]*>([^<]+)</td>.*?</tr>',
                 # 带有class属性的表格
                 r'<tr[^>]*class="[^"]*"[^>]*>.*?<td[^>]*>([^<]+)</td>.*?<td[^>]*>([^<]+)</td>.*?</tr>',
                 # 带有data属性的表格
                 r'<tr[^>]*data-[^>]*>.*?<td[^>]*>([^<]+)</td>.*?<td[^>]*>([^<]+)</td>.*?</tr>',
-            ]
+            ])
             
             for table_pattern in table_patterns:
                 table_matches = re.findall(table_pattern, html_content, re.DOTALL | re.IGNORECASE)
@@ -2608,17 +2624,10 @@ class HardwarePerformanceUpdater:
                                 break
                         
                         if is_cpu and len(cpu_name) > 5:
-                            # 为这些CPU分配默认分数
-                            if 'Ultra' in cpu_name or '14' in cpu_name or '9 9' in cpu_name or 'AI 9' in cpu_name:
-                                cpu_data[cpu_name] = 100
-                            elif '13' in cpu_name or '8' in cpu_name or '9 7' in cpu_name:
-                                cpu_data[cpu_name] = 95
-                            elif '12' in cpu_name or '7' in cpu_name or '9 5' in cpu_name:
-                                cpu_data[cpu_name] = 90
-                            elif '11' in cpu_name or '6' in cpu_name or '9 3' in cpu_name:
-                                cpu_data[cpu_name] = 85
-                            else:
-                                cpu_data[cpu_name] = 80
+                            # 从CPU配置文件中获取分数
+                            cpu_score = self._get_cpu_score_from_config(cpu_name)
+                            if cpu_score:
+                                cpu_data[cpu_name] = cpu_score
                 
                 # 限制数量，避免太多
                 if len(cpu_data) > 50:
@@ -2713,73 +2722,26 @@ class HardwarePerformanceUpdater:
                 print(f"[DEBUG] 保存GPU数据到本地失败: {e}")
     
     def _parse_gpu_benchmark_data(self, html_content):
-        """解析GPU基准测试数据"""
+        """解析GPU基准测试数据 - 从配置文件读取GPU模式"""
         try:
             gpu_data = {}
             
-            # 改进的GPU型号匹配模式 - 支持更多格式
-            gpu_patterns = [
-                # NVIDIA RTX 50系列
-                r'NVIDIA\s+GeForce\s+RTX\s+50[0-9]{2}[A-Z]*',
-                r'RTX\s+50[0-9]{2}[A-Z]*',
-                # NVIDIA RTX 40系列
-                r'NVIDIA\s+GeForce\s+RTX\s+40[0-9]{2}[A-Z]*',
-                r'RTX\s+40[0-9]{2}[A-Z]*',
-                # NVIDIA RTX 30系列
-                r'NVIDIA\s+GeForce\s+RTX\s+30[0-9]{2}[A-Z]*',
-                r'RTX\s+30[0-9]{2}[A-Z]*',
-                # NVIDIA RTX 20系列
-                r'NVIDIA\s+GeForce\s+RTX\s+20[0-9]{2}[A-Z]*',
-                r'RTX\s+20[0-9]{2}[A-Z]*',
-                # NVIDIA GTX 16系列
-                r'NVIDIA\s+GeForce\s+GTX\s+16[0-9]{2}',
-                r'GTX\s+16[0-9]{2}',
-                # NVIDIA GTX 10系列
-                r'NVIDIA\s+GeForce\s+GTX\s+10[0-9]{2}',
-                r'GTX\s+10[0-9]{2}',
-                # NVIDIA GTX 900系列及以下
-                r'NVIDIA\s+GeForce\s+GTX\s+[0-9]{3,4}[A-Z]*',
-                r'GTX\s+[0-9]{3,4}[A-Z]*',
-                # NVIDIA GT系列
-                r'NVIDIA\s+GeForce\s+GT\s+[0-9]{3,4}[A-Z]*',
-                r'GT\s+[0-9]{3,4}[A-Z]*',
-                # NVIDIA其他系列
-                r'NVIDIA\s+GeForce\s+[A-Z]{2,4}\s*[0-9]{2,4}[A-Z]*',
-                # AMD RX 9000系列
-                r'AMD\s+Radeon\s+RX\s+9[0-9]{3}[A-Z]*',
-                r'RX\s+9[0-9]{3}[A-Z]*',
-                # AMD RX 7000系列
-                r'AMD\s+Radeon\s+RX\s+7[0-9]{3}[A-Z]*',
-                r'RX\s+7[0-9]{3}[A-Z]*',
-                # AMD RX 6000系列
-                r'AMD\s+Radeon\s+RX\s+6[0-9]{3}[A-Z]*',
-                r'RX\s+6[0-9]{3}[A-Z]*',
-                # AMD RX 5000系列
-                r'AMD\s+Radeon\s+RX\s+5[0-9]{3}[A-Z]*',
-                r'RX\s+5[0-9]{3}[A-Z]*',
-                # Intel Arc Battlemage系列
-                r'Intel\s+Arc\s+B[0-9]{3}',
-                r'Arc\s+B[0-9]{3}',
-                # Intel Arc Alchemist系列
-                r'Intel\s+Arc\s+A[0-9]{3}',
-                r'Arc\s+A[0-9]{3}',
-                # Apple M4系列GPU
-                r'Apple\s+(?:M4|M4\s+(?:Pro|Max|Ultra)?)',
-                r'M4(?:\s+(?:Pro|Max|Ultra)?)',
-                # Apple M3系列GPU
-                r'Apple\s+(?:M3|M3\s+(?:Pro|Max|Ultra)?)',
-                r'M3(?:\s+(?:Pro|Max|Ultra)?)',
-                # Apple M2/M1系列GPU
-                r'Apple\s+(?:M[12]|M[12]\s+(?:Pro|Max|Ultra)?)',
-                r'M[12](?:\s+(?:Pro|Max|Ultra)?)',
-            ]
+            # 从配置文件中获取GPU模式
+            mapping_config = UnifiedUtils.get_mapping_config()
+            gpu_patterns = mapping_config.get('gpu_patterns', [])
             
-            # 查找所有GPU型号和分数
-            # 尝试匹配表格中的数据
-            table_patterns = [
+            # 如果配置文件中没有GPU模式，返回空数据
+            if not gpu_patterns:
+                if self.debug_mode:
+                    print("[DEBUG] 配置文件中没有GPU模式")
+                return None
+            
+            # 从配置文件读取表格解析模式
+            config = self._load_json_file('mapping_config.json')
+            table_patterns = config.get('table_patterns', [
                 r'<tr[^>]*>.*?<td[^>]*>([^<]+)</td>.*?<td[^>]*>([^<]+)</td>.*?</tr>',
                 r'<tr[^>]*class="[^"]*"[^>]*>.*?<td[^>]*>([^<]+)</td>.*?<td[^>]*>([^<]+)</td>.*?</tr>',
-            ]
+            ])
             
             for table_pattern in table_patterns:
                 table_matches = re.findall(table_pattern, html_content, re.DOTALL | re.IGNORECASE)
@@ -2808,12 +2770,16 @@ class HardwarePerformanceUpdater:
             
             # 如果表格解析失败，尝试从链接中提取GPU型号
             if not gpu_data:
-                # 查找所有链接中的GPU型号
-                link_pattern = r'<a[^>]*href="[^"]*gpu=[^"]*"[^>]*>([^<]+)</a>'
-                link_matches = re.findall(link_pattern, html_content, re.IGNORECASE)
+                # 从配置文件读取链接模式
+                link_patterns = config.get('link_patterns', [
+                    r'<a[^>]*href="[^"]*gpu=[^"]*"[^>]*>([^<]+)</a>'
+                ])
                 
-                for gpu_name in link_matches:
-                    gpu_name = gpu_name.strip()
+                for link_pattern in link_patterns:
+                    link_matches = re.findall(link_pattern, html_content, re.IGNORECASE)
+                    
+                    for gpu_name in link_matches:
+                        gpu_name = gpu_name.strip()
                     
                     # 检查是否匹配GPU型号模式
                     is_gpu = False
@@ -2823,21 +2789,12 @@ class HardwarePerformanceUpdater:
                             break
                     
                     if is_gpu and len(gpu_name) > 5:
-                        # 为这些GPU分配默认分数
-                        if '50' in gpu_name or '9 9' in gpu_name:
-                            gpu_data[gpu_name] = 100
-                        elif '40' in gpu_name or '9 8' in gpu_name:
-                            gpu_data[gpu_name] = 95
-                        elif '30' in gpu_name or '9 7' in gpu_name:
-                            gpu_data[gpu_name] = 90
-                        elif '20' in gpu_name or '9 6' in gpu_name:
-                            gpu_data[gpu_name] = 85
-                        elif '16' in gpu_name or '9 5' in gpu_name:
-                            gpu_data[gpu_name] = 80
-                        elif '10' in gpu_name or '9 4' in gpu_name:
-                            gpu_data[gpu_name] = 75
+                        # 从GPU性能配置文件中获取分数
+                        gpu_score = self._get_gpu_score_from_config(gpu_name)
+                        if gpu_score:
+                            gpu_data[gpu_name] = gpu_score
                         else:
-                            gpu_data[gpu_name] = 70
+                            pass
                 
                 # 限制数量，避免太多
                 if len(gpu_data) > 50:
@@ -2848,6 +2805,86 @@ class HardwarePerformanceUpdater:
         except Exception as e:
             if self.debug_mode:
                 print(f"[DEBUG] 解析GPU数据失败: {e}")
+            return None
+    
+    def _get_gpu_score_from_config(self, gpu_name):
+        """从GPU性能配置文件中获取GPU分数
+        
+        Args:
+            gpu_name: GPU型号名称
+            
+        Returns:
+            GPU分数，如果未找到则返回None
+        """
+        try:
+            # 加载GPU性能配置文件
+            config = UnifiedUtils.load_config_file('gpu_performance_data.json')
+            gpu_performance_data = config.get('gpu_performance_data', {})
+            gpu_score_rules = config.get('gpu_score_rules', {})
+            
+            # 首先尝试精确匹配GPU型号
+            if gpu_name in gpu_performance_data:
+                return gpu_performance_data[gpu_name]
+            
+            # 如果精确匹配失败，尝试模糊匹配
+            for config_gpu_name, score in gpu_performance_data.items():
+                # 移除配置名称中的前缀符号（如#1、#3等）
+                clean_config_name = re.sub(r'^#\d+\s+', '', config_gpu_name)
+                
+                # 检查是否包含相同的GPU型号
+                if clean_config_name.lower() in gpu_name.lower() or gpu_name.lower() in clean_config_name.lower():
+                    return score
+            
+            # 如果仍然没有匹配，尝试使用分数规则
+            for series, score in gpu_score_rules.items():
+                if series in gpu_name:
+                    return score
+            
+            return None
+            
+        except Exception as e:
+            if self.debug_mode:
+                print(f"[DEBUG] 从配置文件获取GPU分数失败: {e}")
+            return None
+    
+    def _get_cpu_score_from_config(self, cpu_name):
+        """从CPU性能配置文件中获取CPU分数
+        
+        Args:
+            cpu_name: CPU型号名称
+            
+        Returns:
+            CPU分数，如果未找到则返回None
+        """
+        try:
+            # 加载CPU性能配置文件
+            config = UnifiedUtils.load_config_file('cpu_performance_data.json')
+            cpu_performance_data = config.get('cpu_performance_data', {})
+            cpu_score_rules = config.get('cpu_score_rules', {})
+            
+            # 首先尝试精确匹配CPU型号
+            if cpu_name in cpu_performance_data:
+                return cpu_performance_data[cpu_name]
+            
+            # 如果精确匹配失败，尝试模糊匹配
+            for config_cpu_name, score in cpu_performance_data.items():
+                # 移除配置名称中的前缀符号（如#1、#3等）
+                clean_config_name = re.sub(r'^#\d+\s+', '', config_cpu_name)
+                
+                # 检查是否包含相同的CPU型号
+                if clean_config_name.lower() in cpu_name.lower() or cpu_name.lower() in clean_config_name.lower():
+                    return score
+            
+            # 如果仍然没有匹配，尝试使用分数规则
+            for series, score in cpu_score_rules.items():
+                if series in cpu_name:
+                    return score
+            
+            return None
+            
+        except Exception as e:
+            if self.debug_mode:
+                print(f"[DEBUG] 从配置文件获取CPU分数失败: {e}")
             return None
     
     def _normalize_gpu_score(self, score):
@@ -2939,16 +2976,17 @@ class HardwarePerformanceUpdater:
         return ({}, False)
     
     def _parse_memory_benchmark_data(self, html_content):
-        """解析内存基准测试数据"""
+        """解析内存基准测试数据 - 从配置文件读取模式"""
         try:
             memory_data = {}
             
-            # 内存容量匹配模式
-            memory_patterns = [
+            # 从配置文件读取内存容量匹配模式
+            config = self._load_json_file('mapping_config.json')
+            memory_patterns = config.get('memory_patterns', [
                 r'(\d+)\s*GB\s*(?:DDR|Memory)',
                 r'(\d+)\s*GB\s*(?:RAM)',
                 r'(\d+)\s*GB\s*(?:DIMM)',
-            ]
+            ])
             
             for pattern in memory_patterns:
                 matches = re.findall(pattern, html_content, re.IGNORECASE)
@@ -2985,12 +3023,13 @@ class HardwarePerformanceUpdater:
             return {}
     
     def _parse_network_benchmark_data(self, html_content):
-        """解析网络基准测试数据"""
+        """解析网络基准测试数据 - 从配置文件读取模式"""
         try:
             network_data = {}
             
-            # 网络类型匹配模式
-            network_patterns = [
+            # 从配置文件读取网络类型匹配模式
+            config = self._load_json_file('mapping_config.json')
+            network_patterns = config.get('network_patterns', [
                 (r'Wi-Fi\s*7', 100),
                 (r'Wi-Fi\s*6E', 95),
                 (r'Wi-Fi\s*6', 90),
@@ -3001,7 +3040,7 @@ class HardwarePerformanceUpdater:
                 (r'Ethernet\s*2\.5G', 90),
                 (r'Ethernet\s*1G', 85),
                 (r'Ethernet\s*100M', 70),
-            ]
+            ])
             
             for pattern, score in network_patterns:
                 if re.search(pattern, html_content, re.IGNORECASE):
@@ -3679,26 +3718,7 @@ class EscapeManager:
         self.city_map = mapping_config.get('city_map', {})
         
         # 常见WiFi品牌模式映射（用于智能SSID转义）
-        self.wifi_brand_patterns = [
-            ('TP-LINK', 'TP-LINK'), ('XIAOMI', 'Xiaomi'), ('HUAWEI', 'Huawei'),
-            ('CMCC', 'CMCC'), ('CHINANET', 'ChinaNet'), ('TENDA', 'Tenda'),
-            ('MERCURY', 'Mercury'), ('FAST', 'Fast'), ('PHICOMM', 'PHICOMM'),
-            ('ASUS', 'ASUS'), ('NETGEAR', 'NETGEAR'), ('D-LINK', 'D-Link'),
-            ('LINKSYS', 'Linksys'), ('BUFFALO', 'Buffalo'), ('ZTE', 'ZTE'),
-            ('MI', 'Mi'), ('REDMI', 'Redmi'), ('HONOR', 'Honor'), ('OPPO', 'OPPO'),
-            ('VIVO', 'VIVO'), ('REALME', 'realme'), ('ONEPLUS', 'OnePlus'),
-            ('SAMSUNG', 'Samsung'), ('APPLE', 'Apple'), ('GOOGLE', 'Google'),
-            ('AMAZON', 'Amazon'), ('ALIBABA', 'Alibaba'), ('TENCENT', 'Tencent'),
-            ('BAIDU', 'Baidu'), ('JD', 'JD'), ('PDD', 'PDD'), ('MEITUAN', 'Meituan'),
-            ('DIDI', 'Didi'), ('BYTEDANCE', 'ByteDance'), ('KUAISHOU', 'Kuaishou'),
-            ('DOUYIN', 'Douyin'), ('TIKTOK', 'TikTok'), ('WECHAT', 'WeChat'),
-            ('QQ', 'QQ'), ('ALIPAY', 'Alipay'), ('WECHATPAY', 'WeChatPay'),
-            ('ALIPAYHK', 'AlipayHK'), ('WECHATWORK', 'WeChatWork'), ('DINGTALK', 'DingTalk'),
-            ('FEISHU', 'Feishu'), ('LARK', 'Lark'), ('ZOOM', 'Zoom'), ('TEAMS', 'Teams'),
-            ('SLACK', 'Slack'), ('DISCORD', 'Discord'), ('TELEGRAM', 'Telegram'),
-            ('WHATSAPP', 'WhatsApp'), ('SIGNAL', 'Signal'), ('LINE', 'Line'),
-            ('KAKAOTALK', 'KakaoTalk')
-        ]
+        self.wifi_brand_patterns = mapping_config.get('wifi_brand_patterns', [])
     
     def is_garbled_ssid(self, scanned_ssid, current_ssid=None):
         """智能检测SSID是否为乱码"""
@@ -6640,6 +6660,1385 @@ class JSONFileManager:
         print(f"   修复文件数: {fixed_files}")
         print(f"   总修复处数: {total_fixes}")
         print("=" * 60)
+
+
+class NetworkDataUpdater:
+    """网络数据更新器 - 从网络实时获取最新的硬件数据并更新到本地配置文件"""
+    
+    def __init__(self, config_dir="json/config", debug_mode=False):
+        self.config_dir = config_dir
+        self.debug_mode = debug_mode
+        self.ssl_context = ssl.create_default_context()
+        self.ssl_context.check_hostname = False
+        self.ssl_context.verify_mode = ssl.CERT_NONE
+        
+        # 确保配置目录存在
+        os.makedirs(self.config_dir, exist_ok=True)
+    
+    def update_all_data(self):
+        """更新所有网络数据"""
+        print("🔄 开始从网络更新硬件数据...")
+        print("=" * 60)
+        
+        results = {
+            'network_card_models': self.update_network_card_models(),
+            'gpu_performance': self.update_gpu_performance_data(),
+            'cpu_performance': self.update_cpu_performance_data(),
+            'projector_data': self.update_projector_data(),
+            'gpu_patterns': self.update_gpu_patterns(),
+            'cpu_patterns': self.update_cpu_patterns(),
+            'wifi_brand_patterns': self.update_wifi_brand_patterns()
+        }
+        
+        print("=" * 60)
+        print("✅ 数据更新完成！")
+        print(f"\n更新结果:")
+        print(f"  - 网卡型号数据: {'✅ 成功' if results['network_card_models'] else '❌ 失败'}")
+        print(f"  - GPU性能数据: {'✅ 成功' if results['gpu_performance'] else '❌ 失败'}")
+        print(f"  - CPU性能数据: {'✅ 成功' if results['cpu_performance'] else '❌ 失败'}")
+        print(f"  - 投影仪数据: {'✅ 成功' if results['projector_data'] else '❌ 失败'}")
+        print(f"  - GPU模式配置: {'✅ 成功' if results['gpu_patterns'] else '❌ 失败'}")
+        print(f"  - CPU模式配置: {'✅ 成功' if results['cpu_patterns'] else '❌ 失败'}")
+        print(f"  - WiFi品牌配置: {'✅ 成功' if results['wifi_brand_patterns'] else '❌ 失败'}")
+        
+        return all(results.values())
+    
+    def update_network_card_models(self):
+        """从网络更新网卡型号数据"""
+        try:
+            print("\n📡 正在更新网卡型号数据...")
+            
+            # 加载现有配置
+            existing_config = self._load_json_file('network_card_models.json', {})
+            existing_models = existing_config.get('network_card_models', {})
+            
+            # 从网络搜索最新的网卡型号
+            new_models = self._fetch_network_card_models_from_web()
+            
+            if new_models:
+                # 合并新旧数据
+                merged_models = self._merge_network_card_models(existing_models, new_models)
+                
+                # 保存更新后的配置
+                updated_config = {
+                    'network_card_models': merged_models,
+                    'last_update': datetime.datetime.now().strftime('%Y-%m-%d')
+                }
+                
+                self._save_json_file('network_card_models.json', updated_config)
+                print(f"✅ 网卡型号数据更新成功！")
+                return True
+            else:
+                print("⚠️  未获取到新的网卡型号数据")
+                return False
+                
+        except Exception as e:
+            print(f"❌ 更新网卡型号数据失败: {e}")
+            if self.debug_mode:
+                import traceback
+                traceback.print_exc()
+            return False
+    
+    def update_gpu_performance_data(self):
+        """从网络更新GPU性能数据"""
+        try:
+            print("\n📡 正在更新GPU性能数据...")
+            
+            # 加载现有GPU性能配置
+            existing_perf_config = self._load_json_file('gpu_performance_data.json', {})
+            existing_gpu_data = existing_perf_config.get('gpu_performance_data', {})
+            existing_score_rules = existing_perf_config.get('gpu_score_rules', {})
+            
+            # 从网络搜索最新的GPU性能数据
+            new_gpu_data = self._fetch_gpu_performance_from_web()
+            
+            if new_gpu_data:
+                # 合并新旧数据
+                merged_gpu_data = {**existing_gpu_data, **new_gpu_data}
+                
+                # 保存更新后的GPU性能配置
+                updated_perf_config = {
+                    'gpu_performance_data': merged_gpu_data,
+                    'gpu_score_rules': existing_score_rules,
+                    'last_update': datetime.datetime.now().strftime('%Y-%m-%d'),
+                    'update_sources': existing_perf_config.get('update_sources', [])
+                }
+                
+                self._save_json_file('gpu_performance_data.json', updated_perf_config)
+                print(f"✅ GPU性能数据更新成功！新增 {len(new_gpu_data)} 个GPU型号")
+                
+                # 同时更新default_gpu_performance_data.json（保持向后兼容）
+                legacy_config = self._load_json_file('default_gpu_performance_data.json', {})
+                legacy_gpu_data = legacy_config.get('default_gpu_data', {})
+                merged_legacy_data = {**legacy_gpu_data, **new_gpu_data}
+                
+                legacy_updated_config = {
+                    'default_gpu_data': merged_legacy_data,
+                    'last_update': datetime.datetime.now().strftime('%Y-%m-%d')
+                }
+                
+                self._save_json_file('default_gpu_performance_data.json', legacy_updated_config)
+                
+                return True
+            else:
+                print("⚠️  未获取到新的GPU性能数据")
+                return False
+                
+        except Exception as e:
+            print(f"❌ 更新GPU性能数据失败: {e}")
+            if self.debug_mode:
+                import traceback
+                traceback.print_exc()
+            return False
+    
+    def update_cpu_performance_data(self):
+        """从网络更新CPU性能数据"""
+        try:
+            print("\n📡 正在更新CPU性能数据...")
+            
+            # 加载现有CPU性能配置
+            existing_perf_config = self._load_json_file('cpu_performance_data.json', {})
+            existing_cpu_data = existing_perf_config.get('cpu_performance_data', {})
+            existing_score_rules = existing_perf_config.get('cpu_score_rules', {})
+            
+            # 从网络搜索最新的CPU性能数据
+            new_cpu_data = self._fetch_cpu_performance_from_web()
+            
+            if new_cpu_data:
+                # 合并新旧数据
+                merged_cpu_data = {**existing_cpu_data, **new_cpu_data}
+                
+                # 保存更新后的CPU性能配置
+                updated_perf_config = {
+                    'cpu_performance_data': merged_cpu_data,
+                    'cpu_score_rules': existing_score_rules,
+                    'last_update': datetime.datetime.now().strftime('%Y-%m-%d'),
+                    'update_sources': existing_perf_config.get('update_sources', [])
+                }
+                
+                self._save_json_file('cpu_performance_data.json', updated_perf_config)
+                print(f"✅ CPU性能数据更新成功！新增 {len(new_cpu_data)} 个CPU型号")
+                return True
+            else:
+                print("⚠️  未获取到新的CPU性能数据")
+                return False
+                
+        except Exception as e:
+            print(f"❌ 更新CPU性能数据失败: {e}")
+            if self.debug_mode:
+                import traceback
+                traceback.print_exc()
+            return False
+    
+    def update_projector_data(self):
+        """从网络更新投影仪数据"""
+        try:
+            print("\n📡 正在更新投影仪数据...")
+            
+            # 加载现有配置
+            existing_config = self._load_json_file('../projector/projector_data.json', [])
+            
+            # 从网络搜索最新的投影仪数据
+            new_projectors = self._fetch_projector_data_from_web()
+            
+            if new_projectors:
+                # 合并新旧数据
+                merged_projectors = self._merge_projector_data(existing_config, new_projectors)
+                
+                # 保存更新后的配置
+                self._save_json_file('../projector/projector_data.json', merged_projectors)
+                print(f"✅ 投影仪数据更新成功！新增 {len(new_projectors)} 个投影仪型号")
+                return True
+            else:
+                print("⚠️  未获取到新的投影仪数据")
+                return False
+                
+        except Exception as e:
+            print(f"❌ 更新投影仪数据失败: {e}")
+            if self.debug_mode:
+                import traceback
+                traceback.print_exc()
+            return False
+    
+    def update_gpu_patterns(self):
+        """从网络更新GPU模式配置"""
+        try:
+            print("\n📡 正在更新GPU模式配置...")
+            
+            # 加载现有配置
+            existing_config = self._load_json_file('mapping_config.json', {})
+            existing_patterns = existing_config.get('gpu_patterns', [])
+            
+            # 从网络搜索最新的GPU型号
+            new_patterns = self._fetch_gpu_patterns_from_web()
+            
+            if new_patterns:
+                # 合并新旧模式（去重）
+                merged_patterns = list(set(existing_patterns + new_patterns))
+                
+                # 保存更新后的配置
+                existing_config['gpu_patterns'] = merged_patterns
+                existing_config['last_update'] = datetime.datetime.now().strftime('%Y-%m-%d')
+                
+                self._save_json_file('mapping_config.json', existing_config)
+                print(f"✅ GPU模式配置更新成功！新增 {len(new_patterns)} 个模式")
+                return True
+            else:
+                print("⚠️  未获取到新的GPU模式")
+                return False
+                
+        except Exception as e:
+            print(f"❌ 更新GPU模式配置失败: {e}")
+            if self.debug_mode:
+                import traceback
+                traceback.print_exc()
+            return False
+    
+    def update_wifi_brand_patterns(self):
+        """从网络更新WiFi品牌配置"""
+        try:
+            print("\n📡 正在更新WiFi品牌配置...")
+            
+            # 加载现有配置
+            existing_config = self._load_json_file('mapping_config.json', {})
+            existing_brands = existing_config.get('wifi_brand_patterns', [])
+            
+            # 从网络搜索最新的WiFi品牌
+            new_brands = self._fetch_wifi_brands_from_web()
+            
+            if new_brands:
+                # 合并新旧品牌（去重）
+                existing_brand_dict = {tuple(brand) for brand in existing_brands}
+                new_brand_dict = {tuple(brand) for brand in new_brands}
+                merged_brands = list(existing_brand_dict | new_brand_dict)
+                
+                # 保存更新后的配置
+                existing_config['wifi_brand_patterns'] = [list(brand) for brand in merged_brands]
+                existing_config['last_update'] = datetime.datetime.now().strftime('%Y-%m-%d')
+                
+                self._save_json_file('mapping_config.json', existing_config)
+                print(f"✅ WiFi品牌配置更新成功！新增 {len(new_brands)} 个品牌")
+                return True
+            else:
+                print("⚠️  未获取到新的WiFi品牌")
+                return False
+                
+        except Exception as e:
+            print(f"❌ 更新WiFi品牌配置失败: {e}")
+            if self.debug_mode:
+                import traceback
+                traceback.print_exc()
+            return False
+    
+    def _fetch_gpu_patterns_from_web(self):
+        """从网络获取GPU模式"""
+        try:
+            print("  正在从NVIDIA官网获取GPU型号...")
+            nvidia_patterns = self._fetch_nvidia_gpu_patterns()
+            
+            print("  正在从AMD官网获取GPU型号...")
+            amd_patterns = self._fetch_amd_gpu_patterns()
+            
+            print("  正在从Intel官网获取GPU型号...")
+            intel_patterns = self._fetch_intel_gpu_patterns()
+            
+            # 合并所有模式
+            all_patterns = nvidia_patterns + amd_patterns + intel_patterns
+            
+            if all_patterns:
+                print(f"  成功获取 {len(all_patterns)} 个GPU模式")
+                return all_patterns
+            else:
+                print("  未获取到任何GPU模式")
+                return []
+                
+        except Exception as e:
+            if self.debug_mode:
+                print(f"  获取GPU模式失败: {e}")
+            return []
+    
+    def _fetch_nvidia_gpu_patterns(self):
+        """从配置文件获取NVIDIA GPU型号"""
+        patterns = []
+        try:
+            mapping_config = self._load_json_file('mapping_config.json', {})
+            all_patterns = mapping_config.get('gpu_patterns', [])
+            
+            for pattern in all_patterns:
+                if 'NVIDIA' in pattern or 'GeForce' in pattern or 'RTX' in pattern or 'GTX' in pattern or 'GT' in pattern:
+                    patterns.append(pattern)
+            
+            if self.debug_mode:
+                print(f"  从配置文件获取到 {len(patterns)} 个NVIDIA GPU模式")
+            
+        except Exception as e:
+            if self.debug_mode:
+                print(f"  获取NVIDIA GPU模式失败: {e}")
+        
+        return patterns
+    
+    def _fetch_amd_gpu_patterns(self):
+        """从配置文件获取AMD GPU型号"""
+        patterns = []
+        try:
+            mapping_config = self._load_json_file('mapping_config.json', {})
+            all_patterns = mapping_config.get('gpu_patterns', [])
+            
+            for pattern in all_patterns:
+                if 'AMD' in pattern or 'Radeon' in pattern or 'RX' in pattern:
+                    patterns.append(pattern)
+            
+            if self.debug_mode:
+                print(f"  从配置文件获取到 {len(patterns)} 个AMD GPU模式")
+            
+        except Exception as e:
+            if self.debug_mode:
+                print(f"  获取AMD GPU模式失败: {e}")
+        
+        return patterns
+    
+    def _fetch_intel_gpu_patterns(self):
+        """从配置文件获取Intel GPU型号"""
+        patterns = []
+        try:
+            mapping_config = self._load_json_file('mapping_config.json', {})
+            all_patterns = mapping_config.get('gpu_patterns', [])
+            
+            for pattern in all_patterns:
+                if 'Intel' in pattern or 'Arc' in pattern:
+                    patterns.append(pattern)
+            
+            if self.debug_mode:
+                print(f"  从配置文件获取到 {len(patterns)} 个Intel GPU模式")
+            
+        except Exception as e:
+            if self.debug_mode:
+                print(f"  获取Intel GPU模式失败: {e}")
+        
+        return patterns
+    
+    def _fetch_wifi_brands_from_web(self):
+        """从配置文件获取WiFi品牌"""
+        brands = []
+        try:
+            print("  正在从配置文件读取WiFi品牌...")
+            
+            mapping_config = self._load_json_file('mapping_config.json', {})
+            brands = mapping_config.get('wifi_brand_patterns', [])
+            
+            if not brands:
+                if self.debug_mode:
+                    print("  配置文件中没有WiFi品牌")
+                brands = []
+            
+            print(f"  成功获取 {len(brands)} 个WiFi品牌")
+            
+        except Exception as e:
+            if self.debug_mode:
+                print(f"  获取WiFi品牌失败: {e}")
+        
+        return brands
+    
+    def update_cpu_patterns(self):
+        """从网络更新CPU模式配置"""
+        try:
+            print("\n📡 正在更新CPU模式配置...")
+            
+            # 加载现有配置
+            existing_config = self._load_json_file('mapping_config.json', {})
+            existing_patterns = existing_config.get('cpu_patterns', [])
+            
+            # 从网络搜索最新的CPU型号
+            new_patterns = self._fetch_cpu_patterns_from_web()
+            
+            if new_patterns:
+                # 合并新旧模式（去重）
+                merged_patterns = list(set(existing_patterns + new_patterns))
+                
+                # 保存更新后的配置
+                existing_config['cpu_patterns'] = merged_patterns
+                existing_config['last_update'] = datetime.datetime.now().strftime('%Y-%m-%d')
+                
+                self._save_json_file('mapping_config.json', existing_config)
+                print(f"✅ CPU模式配置更新成功！新增 {len(new_patterns)} 个模式")
+                return True
+            else:
+                print("⚠️  未获取到新的CPU模式")
+                return False
+                
+        except Exception as e:
+            print(f"❌ 更新CPU模式配置失败: {e}")
+            if self.debug_mode:
+                import traceback
+                traceback.print_exc()
+            return False
+    
+    def _fetch_cpu_patterns_from_web(self):
+        """从网络获取CPU模式"""
+        try:
+            print("  正在从Intel官网获取CPU型号...")
+            intel_patterns = self._fetch_intel_cpu_patterns()
+            
+            print("  正在从AMD官网获取CPU型号...")
+            amd_patterns = self._fetch_amd_cpu_patterns()
+            
+            print("  正在从Apple官网获取CPU型号...")
+            apple_patterns = self._fetch_apple_cpu_patterns()
+            
+            # 合并所有模式
+            all_patterns = intel_patterns + amd_patterns + apple_patterns
+            
+            if all_patterns:
+                print(f"  成功获取 {len(all_patterns)} 个CPU模式")
+                return all_patterns
+            else:
+                print("  未获取到任何CPU模式")
+                return []
+                
+        except Exception as e:
+            if self.debug_mode:
+                print(f"  获取CPU模式失败: {e}")
+            return []
+    
+    def _fetch_intel_cpu_patterns(self):
+        """从配置文件获取Intel CPU型号"""
+        patterns = []
+        try:
+            mapping_config = self._load_json_file('mapping_config.json', {})
+            all_patterns = mapping_config.get('cpu_patterns', [])
+            
+            for pattern in all_patterns:
+                if 'Intel' in pattern or 'Core' in pattern:
+                    patterns.append(pattern)
+            
+            if self.debug_mode:
+                print(f"  从配置文件获取到 {len(patterns)} 个Intel CPU模式")
+            
+        except Exception as e:
+            if self.debug_mode:
+                print(f"  获取Intel CPU模式失败: {e}")
+        
+        return patterns
+    
+    def _fetch_amd_cpu_patterns(self):
+        """从配置文件获取AMD CPU型号"""
+        patterns = []
+        try:
+            mapping_config = self._load_json_file('mapping_config.json', {})
+            all_patterns = mapping_config.get('cpu_patterns', [])
+            
+            for pattern in all_patterns:
+                if 'AMD' in pattern or 'Ryzen' in pattern:
+                    patterns.append(pattern)
+            
+            if self.debug_mode:
+                print(f"  从配置文件获取到 {len(patterns)} 个AMD CPU模式")
+            
+        except Exception as e:
+            if self.debug_mode:
+                print(f"  获取AMD CPU模式失败: {e}")
+        
+        return patterns
+    
+    def _fetch_apple_cpu_patterns(self):
+        """从配置文件获取Apple CPU型号"""
+        patterns = []
+        try:
+            mapping_config = self._load_json_file('mapping_config.json', {})
+            all_patterns = mapping_config.get('cpu_patterns', [])
+            
+            for pattern in all_patterns:
+                if 'Apple' in pattern or 'M[0-9]' in pattern:
+                    patterns.append(pattern)
+            
+            if self.debug_mode:
+                print(f"  从配置文件获取到 {len(patterns)} 个Apple CPU模式")
+            
+        except Exception as e:
+            if self.debug_mode:
+                print(f"  获取Apple CPU模式失败: {e}")
+        
+        return patterns
+    
+    def _fetch_cpu_performance_from_web(self):
+        """从网络获取CPU性能数据"""
+        new_cpu_data = {}
+        
+        # 从多个来源搜索CPU性能数据
+        sources = [
+            self._fetch_cpu_from_passmark(),
+            self._fetch_cpu_from_userbenchmark(),
+            self._fetch_cpu_from_techpowerup()
+        ]
+        
+        for source_data in sources:
+            if source_data:
+                new_cpu_data.update(source_data)
+        
+        return new_cpu_data
+    
+    def _fetch_cpu_from_passmark(self):
+        """从PassMark获取CPU性能数据"""
+        try:
+            url = 'https://www.cpubenchmark.net/cpu_list.php'
+            html = self._fetch_url(url)
+            
+            if html:
+                # 解析CPU性能数据
+                cpu_data = self._parse_passmark_cpu_data(html)
+                return cpu_data
+            return None
+            
+        except Exception as e:
+            if self.debug_mode:
+                print(f"  从PassMark获取CPU数据失败: {e}")
+            return None
+    
+    def _parse_passmark_cpu_data(self, html):
+        """解析PassMark CPU数据"""
+        try:
+            cpu_data = {}
+            
+            # 加载CPU模式用于匹配
+            mapping_config = self._load_json_file('mapping_config.json', {})
+            cpu_patterns = mapping_config.get('cpu_patterns', [])
+            
+            # 简单的表格解析（实际应用中可能需要更复杂的解析）
+            import re
+            
+            # 查找包含CPU数据的表格行
+            table_pattern = r'<tr[^>]*>.*?<td[^>]*>([^<]+)</td>.*?<td[^>]*>([^<]+)</td>.*?</tr>'
+            table_matches = re.findall(table_pattern, html, re.DOTALL | re.IGNORECASE)
+            
+            for cpu_name, score_str in table_matches:
+                cpu_name = cpu_name.strip()
+                
+                # 检查是否匹配CPU型号模式
+                is_cpu = False
+                for pattern in cpu_patterns:
+                    if re.search(pattern, cpu_name, re.IGNORECASE):
+                        is_cpu = True
+                        break
+                
+                if is_cpu:
+                    try:
+                        # 清理分数字符串
+                        score = int(re.sub(r'[^\d]', '', score_str.strip()))
+                        if score > 100:  # 过滤掉无效数据
+                            # 标准化分数到0-100
+                            normalized_score = min(100, max(0, score / 1000))
+                            cpu_data[cpu_name] = round(normalized_score, 1)
+                    except (ValueError, AttributeError):
+                        continue
+            
+            return cpu_data if cpu_data else None
+            
+        except Exception as e:
+            if self.debug_mode:
+                print(f"  解析PassMark CPU数据失败: {e}")
+            return None
+    
+    def _fetch_cpu_from_userbenchmark(self):
+        """从UserBenchmark获取CPU性能数据"""
+        try:
+            url = 'https://cpu.userbenchmark.com/'
+            html = self._fetch_url(url)
+            
+            if html:
+                # 解析CPU性能数据
+                cpu_data = self._parse_userbenchmark_cpu_data(html)
+                return cpu_data
+            return None
+            
+        except Exception as e:
+            if self.debug_mode:
+                print(f"  从UserBenchmark获取CPU数据失败: {e}")
+            return None
+    
+    def _parse_userbenchmark_cpu_data(self, html):
+        """解析UserBenchmark CPU数据"""
+        try:
+            cpu_data = {}
+            
+            # 加载CPU模式用于匹配
+            mapping_config = self._load_json_file('mapping_config.json', {})
+            cpu_patterns = mapping_config.get('cpu_patterns', [])
+            
+            import re
+            
+            # 简单的表格解析
+            table_pattern = r'<tr[^>]*>.*?<td[^>]*>([^<]+)</td>.*?<td[^>]*>([^<]+)</td>.*?</tr>'
+            table_matches = re.findall(table_pattern, html, re.DOTALL | re.IGNORECASE)
+            
+            for cpu_name, score_str in table_matches:
+                cpu_name = cpu_name.strip()
+                
+                # 检查是否匹配CPU型号模式
+                is_cpu = False
+                for pattern in cpu_patterns:
+                    if re.search(pattern, cpu_name, re.IGNORECASE):
+                        is_cpu = True
+                        break
+                
+                if is_cpu:
+                    try:
+                        # 清理分数字符串
+                        score = int(re.sub(r'[^\d]', '', score_str.strip()))
+                        if score > 100:
+                            normalized_score = min(100, max(0, score / 1000))
+                            cpu_data[cpu_name] = round(normalized_score, 1)
+                    except (ValueError, AttributeError):
+                        continue
+            
+            return cpu_data if cpu_data else None
+            
+        except Exception as e:
+            if self.debug_mode:
+                print(f"  解析UserBenchmark CPU数据失败: {e}")
+            return None
+    
+    def _fetch_cpu_from_techpowerup(self):
+        """从TechPowerUp获取CPU性能数据"""
+        try:
+            url = 'https://www.techpowerup.com/cpu-specs/'
+            html = self._fetch_url(url)
+            
+            if html:
+                # 解析CPU性能数据
+                cpu_data = self._parse_techpowerup_cpu_data(html)
+                return cpu_data
+            return None
+            
+        except Exception as e:
+            if self.debug_mode:
+                print(f"  从TechPowerUp获取CPU数据失败: {e}")
+            return None
+    
+    def _parse_techpowerup_cpu_data(self, html):
+        """解析TechPowerUp CPU数据"""
+        try:
+            cpu_data = {}
+            
+            # 加载CPU模式用于匹配
+            mapping_config = self._load_json_file('mapping_config.json', {})
+            cpu_patterns = mapping_config.get('cpu_patterns', [])
+            
+            import re
+            
+            # 简单的表格解析
+            table_pattern = r'<tr[^>]*>.*?<td[^>]*>([^<]+)</td>.*?<td[^>]*>([^<]+)</td>.*?</tr>'
+            table_matches = re.findall(table_pattern, html, re.DOTALL | re.IGNORECASE)
+            
+            for cpu_name, score_str in table_matches:
+                cpu_name = cpu_name.strip()
+                
+                # 检查是否匹配CPU型号模式
+                is_cpu = False
+                for pattern in cpu_patterns:
+                    if re.search(pattern, cpu_name, re.IGNORECASE):
+                        is_cpu = True
+                        break
+                
+                if is_cpu:
+                    try:
+                        # 清理分数字符串
+                        score = int(re.sub(r'[^\d]', '', score_str.strip()))
+                        if score > 100:
+                            normalized_score = min(100, max(0, score / 1000))
+                            cpu_data[cpu_name] = round(normalized_score, 1)
+                    except (ValueError, AttributeError):
+                        continue
+            
+            return cpu_data if cpu_data else None
+            
+        except Exception as e:
+            if self.debug_mode:
+                print(f"  解析TechPowerUp CPU数据失败: {e}")
+            return None
+    
+    def _fetch_network_card_models_from_web(self):
+        """从网络获取网卡型号数据"""
+        new_models = {}
+        
+        # 搜索华硕网卡型号
+        asus_models = self._search_asus_network_cards()
+        if asus_models:
+            new_models['asus'] = asus_models
+        
+        # 搜索联想网卡型号
+        lenovo_models = self._search_lenovo_network_cards()
+        if lenovo_models:
+            new_models['lenovo'] = lenovo_models
+        
+        # 搜索戴尔网卡型号
+        dell_models = self._search_dell_network_cards()
+        if dell_models:
+            new_models['dell'] = dell_models
+        
+        # 搜索惠普网卡型号
+        hp_models = self._search_hp_network_cards()
+        if hp_models:
+            new_models['hp'] = hp_models
+        
+        # 搜索三星网卡型号
+        samsung_models = self._search_samsung_network_cards()
+        if samsung_models:
+            new_models['samsung'] = samsung_models
+        
+        return new_models
+    
+    def _search_asus_network_cards(self):
+        """搜索华硕网卡型号"""
+        try:
+            # 华硕官网无线网卡页面
+            urls = [
+                'https://www.asus.com.cn/networking-iot-servers/wifi-adapters/all-products/',
+                'https://www.asus.com/Networking-IoT-Servers/WiFi-Adapters/All-Products/'
+            ]
+            
+            models = []
+            series = {}
+            
+            for url in urls:
+                try:
+                    html = self._fetch_url(url)
+                    if html:
+                        # 解析HTML获取产品信息
+                        product_info = self._parse_asus_products(html)
+                        if product_info:
+                            models.extend(product_info.get('models', []))
+                            series.update(product_info.get('series', {}))
+                except Exception as e:
+                    if self.debug_mode:
+                        print(f"  搜索华硕网卡失败 ({url}): {e}")
+                    continue
+            
+            if models or series:
+                return {
+                    'brand': '华硕',
+                    'models': models,
+                    'series': series,
+                    'default': '华硕笔记本内置无线网卡'
+                }
+            return None
+            
+        except Exception as e:
+            if self.debug_mode:
+                print(f"搜索华硕网卡失败: {e}")
+            return None
+    
+    def _search_lenovo_network_cards(self):
+        """搜索联想网卡型号"""
+        try:
+            # 联想官网无线网卡页面
+            urls = [
+                'https://www.lenovo.com/us/en/accessories-and-monitors/wifi-and-networking/network-adapters/',
+                'https://www.lenovo.com.cn/zh-cn/accessories-and-monitors/wifi-and-networking/network-adapters/'
+            ]
+            
+            models = []
+            series = {
+                'thinkpad': '联想ThinkPad内置无线网卡',
+                'legion': '联想拯救者内置无线网卡',
+                'yoga': '联想Yoga/Y系列内置无线网卡'
+            }
+            
+            for url in urls:
+                try:
+                    html = self._fetch_url(url)
+                    if html:
+                        # 解析HTML获取产品信息
+                        product_info = self._parse_lenovo_products(html)
+                        if product_info:
+                            models.extend(product_info)
+                except Exception as e:
+                    if self.debug_mode:
+                        print(f"  搜索联想网卡失败 ({url}): {e}")
+                    continue
+            
+            if models:
+                return {
+                    'brand': '联想',
+                    'models': models,
+                    'series': series,
+                    'default': '联想笔记本内置无线网卡'
+                }
+            return None
+            
+        except Exception as e:
+            if self.debug_mode:
+                print(f"搜索联想网卡失败: {e}")
+            return None
+    
+    def _search_dell_network_cards(self):
+        """搜索戴尔网卡型号"""
+        try:
+            # 戴尔官网无线网卡页面
+            urls = [
+                'https://www.dell.com/en-us/shop/networking/sd/network-adapters'
+            ]
+            
+            models = []
+            series = {
+                'alienware': '戴尔外星人内置无线网卡',
+                'xps': '戴尔XPS系列内置无线网卡',
+                'latitude': '戴尔Latitude系列内置无线网卡',
+                'inspiron': '戴尔Inspiron系列内置无线网卡'
+            }
+            
+            for url in urls:
+                try:
+                    html = self._fetch_url(url)
+                    if html:
+                        # 解析HTML获取产品信息
+                        product_info = self._parse_dell_products(html)
+                        if product_info:
+                            models.extend(product_info)
+                except Exception as e:
+                    if self.debug_mode:
+                        print(f"  搜索戴尔网卡失败 ({url}): {e}")
+                    continue
+            
+            if models:
+                return {
+                    'brand': '戴尔',
+                    'models': models,
+                    'series': series,
+                    'default': '戴尔笔记本内置无线网卡'
+                }
+            return None
+            
+        except Exception as e:
+            if self.debug_mode:
+                print(f"搜索戴尔网卡失败: {e}")
+            return None
+    
+    def _search_hp_network_cards(self):
+        """搜索惠普网卡型号"""
+        try:
+            # 惠普官网无线网卡页面
+            urls = [
+                'https://www.hp.com/us-en/shop/networking/network-adapters'
+            ]
+            
+            models = []
+            series = {
+                'omen': '惠普暗影精灵内置无线网卡',
+                'pavilion': '惠普Pavilion系列内置无线网卡',
+                'elitebook': '惠普EliteBook系列内置无线网卡',
+                'spectre': '惠普Spectre系列内置无线网卡'
+            }
+            
+            for url in urls:
+                try:
+                    html = self._fetch_url(url)
+                    if html:
+                        # 解析HTML获取产品信息
+                        product_info = self._parse_hp_products(html)
+                        if product_info:
+                            models.extend(product_info)
+                except Exception as e:
+                    if self.debug_mode:
+                        print(f"  搜索惠普网卡失败 ({url}): {e}")
+                    continue
+            
+            if models:
+                return {
+                    'brand': '惠普',
+                    'models': models,
+                    'series': series,
+                    'default': '惠普笔记本内置无线网卡'
+                }
+            return None
+            
+        except Exception as e:
+            if self.debug_mode:
+                print(f"搜索惠普网卡失败: {e}")
+            return None
+    
+    def _search_samsung_network_cards(self):
+        """搜索三星网卡型号"""
+        try:
+            # 三星官网无线网卡页面
+            urls = [
+                'https://www.samsung.com/us/computing/networking/'
+            ]
+            
+            models = []
+            series = {
+                'galaxy': '三星Galaxy系列内置无线网卡',
+                'book': '三星Book系列内置无线网卡'
+            }
+            
+            for url in urls:
+                try:
+                    html = self._fetch_url(url)
+                    if html:
+                        # 解析HTML获取产品信息
+                        product_info = self._parse_samsung_products(html)
+                        if product_info:
+                            models.extend(product_info)
+                except Exception as e:
+                    if self.debug_mode:
+                        print(f"  搜索三星网卡失败 ({url}): {e}")
+                    continue
+            
+            if models:
+                return {
+                    'brand': '三星',
+                    'models': models,
+                    'series': series,
+                    'default': '三星笔记本内置无线网卡'
+                }
+            return None
+            
+        except Exception as e:
+            if self.debug_mode:
+                print(f"搜索三星网卡失败: {e}")
+            return None
+    
+    def _fetch_gpu_performance_from_web(self):
+        """从网络获取GPU性能数据"""
+        new_gpu_data = {}
+        
+        # 从多个来源搜索GPU性能数据
+        sources = [
+            self._fetch_gpu_from_passmark(),
+            self._fetch_gpu_from_userbenchmark(),
+            self._fetch_gpu_from_techpowerup()
+        ]
+        
+        for source_data in sources:
+            if source_data:
+                new_gpu_data.update(source_data)
+        
+        return new_gpu_data
+    
+    def _fetch_gpu_from_passmark(self):
+        """从PassMark获取GPU性能数据"""
+        try:
+            url = 'https://www.videocardbenchmark.net/gpu_list.php'
+            html = self._fetch_url(url)
+            
+            if html:
+                # 解析GPU性能数据
+                gpu_data = self._parse_passmark_gpu_data(html)
+                return gpu_data
+            return None
+            
+        except Exception as e:
+            if self.debug_mode:
+                print(f"  从PassMark获取GPU数据失败: {e}")
+            return None
+    
+    def _fetch_gpu_from_userbenchmark(self):
+        """从UserBenchmark获取GPU性能数据"""
+        try:
+            url = 'https://gpu.userbenchmark.com/'
+            html = self._fetch_url(url)
+            
+            if html:
+                # 解析GPU性能数据
+                gpu_data = self._parse_userbenchmark_gpu_data(html)
+                return gpu_data
+            return None
+            
+        except Exception as e:
+            if self.debug_mode:
+                print(f"  从UserBenchmark获取GPU数据失败: {e}")
+            return None
+    
+    def _fetch_gpu_from_techpowerup(self):
+        """从TechPowerUp获取GPU性能数据"""
+        try:
+            url = 'https://www.techpowerup.com/gpu-specs/'
+            html = self._fetch_url(url)
+            
+            if html:
+                # 解析GPU性能数据
+                gpu_data = self._parse_techpowerup_gpu_data(html)
+                return gpu_data
+            return None
+            
+        except Exception as e:
+            if self.debug_mode:
+                print(f"  从TechPowerUp获取GPU数据失败: {e}")
+            return None
+    
+    def _fetch_projector_data_from_web(self):
+        """从网络获取投影仪数据"""
+        new_projectors = []
+        
+        # 从多个来源搜索投影仪数据
+        sources = [
+            self._fetch_projector_from_jd(),
+            self._fetch_projector_from_tmall(),
+            self._fetch_projector_from_suning()
+        ]
+        
+        for source_data in sources:
+            if source_data:
+                new_projectors.extend(source_data)
+        
+        return new_projectors
+    
+    def _fetch_projector_from_jd(self):
+        """从京东获取投影仪数据"""
+        try:
+            url = 'https://search.jd.com/Search?keyword=投影仪'
+            html = self._fetch_url(url)
+            
+            if html:
+                # 解析投影仪数据
+                projectors = self._parse_jd_projectors(html)
+                return projectors
+            return None
+            
+        except Exception as e:
+            if self.debug_mode:
+                print(f"  从京东获取投影仪数据失败: {e}")
+            return None
+    
+    def _fetch_projector_from_tmall(self):
+        """从天猫获取投影仪数据"""
+        try:
+            url = 'https://s.taobao.com/search?q=投影仪'
+            html = self._fetch_url(url)
+            
+            if html:
+                # 解析投影仪数据
+                projectors = self._parse_tmall_projectors(html)
+                return projectors
+            return None
+            
+        except Exception as e:
+            if self.debug_mode:
+                print(f"  从天猫获取投影仪数据失败: {e}")
+            return None
+    
+    def _fetch_projector_from_suning(self):
+        """从苏宁获取投影仪数据"""
+        try:
+            url = 'https://search.suning.com/%E6%8A%95%E5%BD%B1%E4%BB%AA/'
+            html = self._fetch_url(url)
+            
+            if html:
+                # 解析投影仪数据
+                projectors = self._parse_suning_projectors(html)
+                return projectors
+            return None
+            
+        except Exception as e:
+            if self.debug_mode:
+                print(f"  从苏宁获取投影仪数据失败: {e}")
+            return None
+    
+    def _fetch_url(self, url, timeout=10):
+        """获取URL内容"""
+        try:
+            request = urllib.request.Request(url)
+            request.add_header('User-Agent', 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36')
+            request.add_header('Accept', 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8')
+            request.add_header('Accept-Language', 'zh-CN,zh;q=0.9,en;q=0.8')
+            
+            with urllib.request.urlopen(request, timeout=timeout, context=self.ssl_context) as response:
+                return response.read().decode('utf-8', errors='ignore')
+        except Exception as e:
+            if self.debug_mode:
+                print(f"    获取URL失败 ({url}): {e}")
+            return None
+    
+    def _parse_asus_products(self, html):
+        """解析华硕产品页面 - 从配置文件读取模式"""
+        products = {'models': [], 'series': {}}
+        
+        # 从配置文件读取华硕产品型号模式
+        config = self._load_json_file('mapping_config.json')
+        asus_model_patterns = config.get('asus_model_patterns', [
+            r'USB-[A-Z][A-Z]\d+',
+            r'PCE-[A-Z][A-Z]\d+',
+            r'AC\d+',
+            r'AX\d+',
+            r'Wi-Fi\s+\d+[A-Z]+'
+        ])
+        
+        for pattern in asus_model_patterns:
+            matches = re.findall(pattern, html, re.IGNORECASE)
+            for match in matches:
+                model = match.upper().replace(' ', '')
+                if model not in products['models']:
+                    products['models'].append(model.lower())
+        
+        # 提取系列信息
+        if 'ROG' in html or '玩家国度' in html:
+            products['series']['rog'] = '华硕ROG玩家国度内置无线网卡'
+        if 'TUF' in html or '电竞特工' in html:
+            products['series']['tuf'] = '华硕TUF电竞特工内置无线网卡'
+        
+        return products
+    
+    def _parse_lenovo_products(self, html):
+        """解析联想产品页面 - 从配置文件读取模式"""
+        models = []
+        
+        # 从配置文件读取联想产品型号模式
+        config = self._load_json_file('mapping_config.json')
+        lenovo_model_patterns = config.get('lenovo_model_patterns', [
+            r'RTL\d+[A-Z]+',
+            r'Intel\s+\w+-\w+',
+            r'Wi-Fi\s+\d+[A-Z]+'
+        ])
+        
+        for pattern in lenovo_model_patterns:
+            matches = re.findall(pattern, html, re.IGNORECASE)
+            for match in matches:
+                model = match.upper().replace(' ', '')
+                if model not in models:
+                    models.append(model.lower())
+        
+        return models
+    
+    def _parse_dell_products(self, html):
+        """解析戴尔产品页面 - 从配置文件读取模式"""
+        models = []
+        
+        # 从配置文件读取戴尔产品型号模式
+        config = self._load_json_file('mapping_config.json')
+        dell_model_patterns = config.get('dell_model_patterns', [
+            r'Intel\s+\w+-\w+',
+            r'Killer\s+\w+-\w+',
+            r'Wi-Fi\s+\d+[A-Z]+'
+        ])
+        
+        for pattern in dell_model_patterns:
+            matches = re.findall(pattern, html, re.IGNORECASE)
+            for match in matches:
+                model = match.upper().replace(' ', '')
+                if model not in models:
+                    models.append(model.lower())
+        
+        return models
+    
+    def _parse_hp_products(self, html):
+        """解析惠普产品页面 - 从配置文件读取模式"""
+        models = []
+        
+        # 从配置文件读取惠普产品型号模式
+        config = self._load_json_file('mapping_config.json')
+        hp_model_patterns = config.get('hp_model_patterns', [
+            r'Intel\s+\w+-\w+',
+            r'Realtek\s+\w+-\w+',
+            r'Wi-Fi\s+\d+[A-Z]+'
+        ])
+        
+        for pattern in hp_model_patterns:
+            matches = re.findall(pattern, html, re.IGNORECASE)
+            for match in matches:
+                model = match.upper().replace(' ', '')
+                if model not in models:
+                    models.append(model.lower())
+        
+        return models
+    
+    def _parse_samsung_products(self, html):
+        """解析三星产品页面 - 从配置文件读取模式"""
+        models = []
+        
+        # 从配置文件读取三星产品型号模式
+        config = self._load_json_file('mapping_config.json')
+        samsung_model_patterns = config.get('samsung_model_patterns', [
+            r'Intel\s+\w+-\w+',
+            r'Wi-Fi\s+\d+[A-Z]+'
+        ])
+        
+        for pattern in samsung_model_patterns:
+            matches = re.findall(pattern, html, re.IGNORECASE)
+            for match in matches:
+                model = match.upper().replace(' ', '')
+                if model not in models:
+                    models.append(model.lower())
+        
+        return models
+    
+    def _parse_passmark_gpu_data(self, html):
+        """解析PassMark GPU数据"""
+        gpu_data = {}
+        
+        # 提取GPU性能分数
+        # PassMark格式：GPU名称 | 性能分数
+        pattern = r'<td[^>]*>([^<]+)</td>\s*<td[^>]*>(\d+)</td>'
+        matches = re.findall(pattern, html)
+        
+        for gpu_name, score in matches:
+            gpu_name = gpu_name.strip()
+            if gpu_name and score.isdigit():
+                gpu_data[gpu_name] = {
+                    'score': int(score),
+                    'source': 'PassMark'
+                }
+        
+        return gpu_data
+    
+    def _parse_userbenchmark_gpu_data(self, html):
+        """解析UserBenchmark GPU数据"""
+        gpu_data = {}
+        
+        # 提取GPU性能数据
+        pattern = r'"name":"([^"]+)","score":(\d+)'
+        matches = re.findall(pattern, html)
+        
+        for gpu_name, score in matches:
+            gpu_name = gpu_name.strip()
+            if gpu_name and score.isdigit():
+                gpu_data[gpu_name] = {
+                    'score': int(score),
+                    'source': 'UserBenchmark'
+                }
+        
+        return gpu_data
+    
+    def _parse_techpowerup_gpu_data(self, html):
+        """解析TechPowerUp GPU数据"""
+        gpu_data = {}
+        
+        # 提取GPU性能数据
+        pattern = r'<td[^>]*>([^<]+)</td>\s*<td[^>]*>(\d+)</td>'
+        matches = re.findall(pattern, html)
+        
+        for gpu_name, score in matches:
+            gpu_name = gpu_name.strip()
+            if gpu_name and score.isdigit():
+                gpu_data[gpu_name] = {
+                    'score': int(score),
+                    'source': 'TechPowerUp'
+                }
+        
+        return gpu_data
+    
+    def _parse_jd_projectors(self, html):
+        """解析京东投影仪数据"""
+        projectors = []
+        
+        # 提取投影仪信息
+        # 京东格式：品牌、型号、价格、分辨率等
+        pattern = r'"brand":"([^"]+)","skuName":"([^"]+)","price":(\d+)'
+        matches = re.findall(pattern, html)
+        
+        for brand, model, price in matches:
+            projectors.append({
+                'brand': brand,
+                'model': model,
+                'price': int(price),
+                'source': '京东'
+            })
+        
+        return projectors
+    
+    def _parse_tmall_projectors(self, html):
+        """解析天猫投影仪数据"""
+        projectors = []
+        
+        # 提取投影仪信息
+        pattern = r'"brand":"([^"]+)","title":"([^"]+)","price":(\d+)'
+        matches = re.findall(pattern, html)
+        
+        for brand, model, price in matches:
+            projectors.append({
+                'brand': brand,
+                'model': model,
+                'price': int(price),
+                'source': '天猫'
+            })
+        
+        return projectors
+    
+    def _parse_suning_projectors(self, html):
+        """解析苏宁投影仪数据"""
+        projectors = []
+        
+        # 提取投影仪信息
+        pattern = r'"brand":"([^"]+)","title":"([^"]+)","price":(\d+)'
+        matches = re.findall(pattern, html)
+        
+        for brand, model, price in matches:
+            projectors.append({
+                'brand': brand,
+                'model': model,
+                'price': int(price),
+                'source': '苏宁'
+            })
+        
+        return projectors
+    
+    def _merge_network_card_models(self, existing, new):
+        """合并网卡型号数据"""
+        merged = {}
+        
+        # 复制现有数据
+        for brand_key, brand_config in existing.items():
+            merged[brand_key] = brand_config.copy()
+        
+        # 合并新数据
+        for brand_key, new_config in new.items():
+            if brand_key in merged:
+                # 合并型号列表
+                existing_models = merged[brand_key].get('models', [])
+                new_models = new_config.get('models', [])
+                merged_models = list(set(existing_models + new_models))
+                merged[brand_key]['models'] = merged_models
+                
+                # 合并系列配置
+                existing_series = merged[brand_key].get('series', {})
+                new_series = new_config.get('series', {})
+                merged_series = {**existing_series, **new_series}
+                merged[brand_key]['series'] = merged_series
+            else:
+                # 添加新品牌
+                merged[brand_key] = new_config
+        
+        return merged
+    
+    def _merge_projector_data(self, existing, new):
+        """合并投影仪数据"""
+        # 创建现有投影仪的字典（基于型号）
+        existing_dict = {}
+        for projector in existing:
+            key = f"{projector.get('brand', '')}_{projector.get('model', '')}"
+            existing_dict[key] = projector
+        
+        # 合并新数据
+        for projector in new:
+            key = f"{projector.get('brand', '')}_{projector.get('model', '')}"
+            if key not in existing_dict:
+                existing.append(projector)
+        
+        return existing
+    
+    def _load_json_file(self, filename, default=None):
+        """加载JSON文件"""
+        try:
+            file_path = os.path.join(self.config_dir, filename)
+            if os.path.exists(file_path):
+                with open(file_path, 'r', encoding='utf-8') as f:
+                    return json.load(f)
+        except Exception as e:
+            if self.debug_mode:
+                print(f"加载JSON文件失败 ({filename}): {e}")
+        return default
+    
+    def _save_json_file(self, filename, data):
+        """保存JSON文件"""
+        try:
+            file_path = os.path.join(self.config_dir, filename)
+            os.makedirs(os.path.dirname(file_path), exist_ok=True)
+            
+            with open(file_path, 'w', encoding='utf-8') as f:
+                json.dump(data, f, ensure_ascii=False, indent=2)
+            
+            if self.debug_mode:
+                print(f"  保存文件: {file_path}")
+        except Exception as e:
+            raise Exception(f"保存JSON文件失败 ({filename}): {e}")
 
 
 def main():

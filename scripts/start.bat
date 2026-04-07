@@ -96,7 +96,7 @@ echo.
 
 REM Display function menu (using PowerShell for Chinese display)
 :menu
-powershell -NoProfile -ExecutionPolicy Bypass -Command "$OutputEncoding = [System.Text.Encoding]::UTF8; [Console]::OutputEncoding = [System.Text.Encoding]::UTF8; Write-Host '============================================================'; Write-Host 'Please select a function:'; Write-Host '============================================================'; Write-Host '1. WiFi Network Scan'; Write-Host '2. Hardware Detection'; Write-Host '3. Projector Recommendation'; Write-Host '4. Interactive Projector Recommendation'; Write-Host '5. Full System Test'; Write-Host '6. Update Projector Database'; Write-Host '7. Update Hardware Database'; Write-Host '8. Update Mapping Configuration (Brand, Bandwidth, Country, ISP, etc.)'; Write-Host '9. JSON File Management'; Write-Host '10. Run with Custom Parameters'; Write-Host '0. Exit'; Write-Host '============================================================'"
+powershell -NoProfile -ExecutionPolicy Bypass -Command "$OutputEncoding = [System.Text.Encoding]::UTF8; [Console]::OutputEncoding = [System.Text.Encoding]::UTF8; Write-Host '============================================================'; Write-Host 'Please select a function:'; Write-Host '============================================================'; Write-Host '1. WiFi Network Scan'; Write-Host '2. Hardware Detection'; Write-Host '3. Projector Recommendation'; Write-Host '4. Interactive Projector Recommendation'; Write-Host '5. Full System Test'; Write-Host '6. Update Projector Database'; Write-Host '7. Update Hardware Database'; Write-Host '8. Update Hardware Data (Network Card, GPU, Projector)'; Write-Host '9. JSON File Management'; Write-Host '10. Run with Custom Parameters'; Write-Host '0. Exit'; Write-Host '============================================================'"
 set /p choice=Please select a function (0-10):  
 
 echo.
@@ -152,7 +152,7 @@ echo [INFO] Updating hardware performance database...
 goto end
 
 :update_mapping
-echo [INFO] Updating mapping configuration (Brand, Bandwidth, Country, ISP, etc.)...
+echo [INFO] Updating hardware data (Network Card, GPU, Projector)...
 %PYTHON_EXE% wifi_scan.py --update-mapping
 goto end
 

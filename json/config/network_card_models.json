@@ -3,30 +3,62 @@
     "tenda": {
       "brand": "腾达",
       "models": [
-        "u12", "u9", "u6", "u3", "w311u", "w311m", "w311ma",
-        "w322u", "w322p", "w322m", "w322u+", "w322p+", "w322m+",
-        "w311u+", "w311m+", "w311ma+", "w311u v3.0", "w311m v3.0"
+        "u12",
+        "u9",
+        "u6",
+        "u3",
+        "w311u",
+        "w311m",
+        "w311ma",
+        "w322u",
+        "w322p",
+        "w322m",
+        "w322u+",
+        "w322p+",
+        "w322m+",
+        "w311u+",
+        "w311m+",
+        "w311ma+",
+        "w311u v3.0",
+        "w311m v3.0"
       ]
     },
     "tp-link": {
       "brand": "TP-LINK",
       "models": [
-        "tl-wn722n", "tl-wn723n", "tl-wn725n", "tl-wn727n",
-        "tl-wn821n", "tl-wn822n", "tl-wn823n", "tl-wn851n",
-        "tl-wn881nd", "tl-wn951n", "tl-wdn3200", "tl-wdn4800"
+        "tl-wn722n",
+        "tl-wn723n",
+        "tl-wn725n",
+        "tl-wn727n",
+        "tl-wn821n",
+        "tl-wn822n",
+        "tl-wn823n",
+        "tl-wn851n",
+        "tl-wn881nd",
+        "tl-wn951n",
+        "tl-wdn3200",
+        "tl-wdn4800"
       ]
     },
     "mercury": {
       "brand": "水星",
       "models": [
-        "mw150us", "mw150uh", "mw300um", "mw300uh"
+        "mw150us",
+        "mw150uh",
+        "mw300um",
+        "mw300uh"
       ]
     },
     "d-link": {
       "brand": "D-Link",
       "models": [
-        "dwa-125", "dwa-131", "dwa-140", "dwa-160",
-        "dwa-171", "dwa-182", "dwa-192"
+        "dwa-125",
+        "dwa-131",
+        "dwa-140",
+        "dwa-160",
+        "dwa-171",
+        "dwa-182",
+        "dwa-192"
       ]
     },
     "lenovo": {
@@ -65,7 +97,22 @@
         "vivobook": "华硕Vivobook系列内置无线网卡",
         "zenbook": "华硕Zenbook系列内置无线网卡"
       },
-      "default": "华硕笔记本内置无线网卡"
+      "default": "华硕笔记本内置无线网卡",
+      "models": [
+        "ac764",
+        "ac23515",
+        "ac1",
+        "pce-be6500",
+        "ax56",
+        "ac613739",
+        "ac41",
+        "ac56",
+        "ax82",
+        "usb-be93",
+        "ac3",
+        "ax86",
+        "ac0330"
+      ]
     },
     "dell": {
       "brand": "戴尔",
