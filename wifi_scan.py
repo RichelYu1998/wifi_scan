@@ -3357,6 +3357,75 @@ class ProjectorRecommender:
         except Exception as e:
             if self.debug_mode:
                 print(f"❌ 保存投影仪信息失败: {e}")
+    
+    def interactive_mode(self):
+        """交互式投影仪推荐模式"""
+        print("\n" + "=" * 60)
+        print("🎬 投影仪智能推荐系统 - 交互式模式")
+        print("=" * 60)
+        
+        budget_range = None
+        brand_preference = None
+        resolution_preference = None
+        
+        while True:
+            print("\n请选择筛选条件（输入数字或直接回车跳过）:")
+            print("1. 预算范围")
+            print("2. 品牌偏好")
+            print("3. 分辨率偏好")
+            print("4. 开始推荐")
+            print("0. 退出")
+            
+            choice = input("\n请选择 (0-4): ").strip()
+            
+            if choice == '1':
+                print("\n请输入预算范围（格式：最小值-最大值，例如 3000-8000）:")
+                budget_input = input("预算范围: ").strip()
+                if budget_input:
+                    try:
+                        min_budget, max_budget = map(int, budget_input.split('-'))
+                        budget_range = (min_budget, max_budget)
+                        print(f"✅ 预算已设置为: ¥{min_budget} - ¥{max_budget}")
+                    except ValueError:
+                        print("⚠️ 格式错误，请使用格式: 最小值-最大值")
+            
+            elif choice == '2':
+                print("\n请输入品牌偏好（多个品牌用逗号分隔，例如: 极米,坚果,当贝）:")
+                print("支持的品牌: 极米,坚果,当贝,明基,爱普生,索尼,松下,小米,海尔,联想")
+                brand_input = input("品牌偏好: ").strip()
+                if brand_input:
+                    brand_preference = brand_input
+                    print(f"✅ 品牌已设置为: {brand_preference}")
+            
+            elif choice == '3':
+                print("\n请选择分辨率:")
+                print("1. 4K")
+                print("2. 1080P")
+                print("3. 720P")
+                res_choice = input("分辨率 (1-3): ").strip()
+                if res_choice == '1':
+                    resolution_preference = '4K'
+                elif res_choice == '2':
+                    resolution_preference = '1080P'
+                elif res_choice == '3':
+                    resolution_preference = '720P'
+                if resolution_preference:
+                    print(f"✅ 分辨率已设置为: {resolution_preference}")
+            
+            elif choice == '4':
+                print("\n开始搜索投影仪...")
+                break
+            
+            elif choice == '0':
+                print("\n👋 退出投影仪推荐系统")
+                return
+            
+            else:
+                print("⚠️ 无效选择，请重试")
+        
+        projectors = self.recommend_projector(budget_range, brand_preference, resolution_preference)
+        
+        self.print_recommendations(projectors, budget_range, brand_preference, resolution_preference)
 
 
 class EscapeManager:
@@ -6597,6 +6666,7 @@ def main():
     
     parser.add_argument('--hardware', action='store_true', help='检测硬件信息')
     parser.add_argument('--projector', action='store_true', help='投影仪推荐')
+    parser.add_argument('--interactive', action='store_true', help='交互式模式（投影仪推荐）')
     parser.add_argument('--update-projector-db', action='store_true', help='强制更新投影仪数据库')
     parser.add_argument('--update-hardware-db', action='store_true', help='强制更新硬件性能数据库')
     parser.add_argument('--budget', type=str, help='投影仪预算范围（例如: 3000-8000）')
@@ -6654,17 +6724,22 @@ def main():
                       lambda p: p.print_recommendations(budget_range=budget_range, brand_preference=args.brand, resolution_preference=args.resolution))
     }
 
-    if args.hardware or args.projector:
-        mode = 'hardware' if args.hardware else 'projector'
-        detector_cls, needs_update, action = detectors[mode]
-        detector = detector_cls(debug_mode=args.debug)
-        if needs_update and mode == 'hardware':
-            print("🔄 正在更新硬件性能数据库...")
-            HardwarePerformanceUpdater(debug_mode=args.debug).update_all_performance_data(force_update=True)
-            print("✅ 硬件性能数据库更新完成！\n")
-        if mode == 'projector':
-            detector._update_database() if needs_update else detector._check_and_update_database()
-        action(detector)
+    if args.hardware or args.projector or args.interactive:
+        if args.interactive:
+            print("🎯 启动交互式投影仪推荐模式...")
+            projector_recommender = ProjectorRecommender(debug_mode=args.debug)
+            projector_recommender.interactive_mode()
+        elif args.hardware or args.projector:
+            mode = 'hardware' if args.hardware else 'projector'
+            detector_cls, needs_update, action = detectors[mode]
+            detector = detector_cls(debug_mode=args.debug)
+            if needs_update and mode == 'hardware':
+                print("🔄 正在更新硬件性能数据库...")
+                HardwarePerformanceUpdater(debug_mode=args.debug).update_all_performance_data(force_update=True)
+                print("✅ 硬件性能数据库更新完成！\n")
+            if mode == 'projector':
+                detector._update_database() if needs_update else detector._check_and_update_database()
+            action(detector)
     else:
         WiFiChannelScanner().generate_report(export_csv=args.export, debug=args.debug)
 
