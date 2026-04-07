@@ -3422,22 +3422,23 @@ class ProjectorRecommender:
                     print(f"✅ 品牌已设置为: {brand_preference}")
             
             elif choice == '3' and not resolution_preference:
-                print("\n请选择分辨率:")
+                print("\n请输入分辨率（支持格式：4K, 2K, 1080P, 1080, 720P, 720）或选择:")
                 print("1. 4K")
                 print("2. 1080P")
                 print("3. 720P")
-                res_choice = input("分辨率 (1-3): ").strip()
-                if res_choice == '1':
-                    resolution_preference = '4K'
-                    print("✅ 分辨率已设置为: 4K")
-                elif res_choice == '2':
-                    resolution_preference = '1080P'
-                    print("✅ 分辨率已设置为: 1080P")
-                elif res_choice == '3':
-                    resolution_preference = '720P'
-                    print("✅ 分辨率已设置为: 720P")
+                res_choice = input("分辨率: ").strip().upper()
+                
+                resolution_map = {
+                    '1': '4K', '4K': '4K', '2160P': '4K', '2160': '4K',
+                    '2': '1080P', '1080P': '1080P', '1080': '1080P', 'FHD': '1080P',
+                    '3': '720P', '720P': '720P', '720': '720P', 'HD': '720P'
+                }
+                
+                if res_choice in resolution_map:
+                    resolution_preference = resolution_map[res_choice]
+                    print(f"✅ 分辨率已设置为: {resolution_preference}")
                 else:
-                    print("⚠️ 无效选择")
+                    print("⚠️ 无效选择，请输入有效的分辨率或选择编号")
             
             elif choice == '4':
                 search_desc = self._generate_search_description(budget_range, brand_preference, resolution_preference)
