@@ -128,10 +128,67 @@ class UnifiedUtils:
         }
     
     @staticmethod
-    def get_default_gpu_performance_data():
-        """获取默认GPU性能数据配置"""
-        config = UnifiedUtils.load_config_file('default_gpu_performance_data.json')
-        return config.get('default_gpu_data', {})
+    def get_mapping_config():
+        """获取映射配置（品牌、带宽、国家、ISP等）"""
+        config = UnifiedUtils.load_config_file('mapping_config.json')
+        return {
+            'wifi_bandwidth_map': config.get('wifi_bandwidth_map', {}),
+            'country_map': config.get('country_map', {}),
+            'isp_map': config.get('isp_map', {}),
+            'region_map': config.get('region_map', {}),
+            'city_map': config.get('city_map', {}),
+            'smbios_mapping': config.get('smbios_mapping', {}),
+            'type_mapping': config.get('type_mapping', {}),
+            'resolution_map': config.get('resolution_map', {}),
+            'wireless_card_brands': config.get('wireless_card_brands', {}),
+            'laptop_brands': config.get('laptop_brands', {}),
+            'projector_brands': config.get('projector_brands', {}),
+            'gpu_brands': config.get('gpu_brands', {}),
+            'cpu_brands': config.get('cpu_brands', {}),
+            'network_isp': config.get('network_isp', {}),
+            'last_update': config.get('last_update', ''),
+            'update_url': config.get('update_url', '')
+        }
+    
+    @staticmethod
+    def update_mapping_config():
+        """从网络更新映射配置"""
+        try:
+            mapping_config = UnifiedUtils.get_mapping_config()
+            update_url = mapping_config.get('update_url', '')
+            
+            if not update_url:
+                print("⚠️ 未配置映射更新URL")
+                return False
+            
+            print(f"🔄 正在从网络更新映射配置...")
+            print(f"📡 下载地址: {update_url}")
+            
+            # 创建不验证SSL证书的上下文
+            ssl_context = ssl.create_default_context()
+            ssl_context.check_hostname = False
+            ssl_context.verify_mode = ssl.CERT_NONE
+            
+            request = urllib.request.Request(update_url)
+            request.add_header('User-Agent', 'Mozilla/5.0')
+            
+            with urllib.request.urlopen(request, timeout=10, context=ssl_context) as response:
+                data = json.loads(response.read().decode('utf-8'))
+                
+                if data:
+                    config_file = os.path.join(UnifiedUtils.CONFIG_DIR, 'mapping_config.json')
+                    
+                    os.makedirs(UnifiedUtils.CONFIG_DIR, exist_ok=True)
+                    
+                    with open(config_file, 'w', encoding='utf-8') as f:
+                        json.dump(data, f, ensure_ascii=False, indent=2)
+                    
+                    print(f"✅ 映射配置更新成功！最后更新时间: {data.get('last_update', '未知')}")
+                    return True
+            
+        except Exception as e:
+            print(f"❌ 更新映射配置失败: {e}")
+            return False
     
     @staticmethod
     def get_known_location(ip_address):
@@ -550,8 +607,9 @@ class UnifiedUtils:
         Returns:
             DDR类型字符串
         """
-        # SMBIOS内存类型映射
-        smbios_mapping = {
+        # 从配置文件加载SMBIOS内存类型映射
+        mapping_config = UnifiedUtils.get_mapping_config()
+        smbios_mapping = mapping_config.get('smbios_mapping', {
             '20': 'DDR',
             '21': 'DDR2', 
             '22': 'DDR2',
@@ -560,7 +618,7 @@ class UnifiedUtils:
             '34': 'DDR5',
             '25': 'DDR3',
             '27': 'DDR4'
-        }
+        })
         
         # 根据主板型号推断DDR类型
         if motherboard_model:
@@ -1647,12 +1705,13 @@ class OptimizedHardwareDetector:
                     if parts:
                         memory_type = parts[0]
                         
-                        # SMBIOS内存类型映射
-                        smbios_mapping = {
+                        # 从配置文件加载SMBIOS内存类型映射
+                        mapping_config = UnifiedUtils.get_mapping_config()
+                        smbios_mapping = mapping_config.get('smbios_mapping', {
                             '20': 'DDR', '21': 'DDR2', '22': 'DDR2',
                             '24': 'DDR3', '26': 'DDR4', '34': 'DDR5',
                             '25': 'DDR3', '27': 'DDR4'
-                        }
+                        })
                         
                         if memory_type in smbios_mapping:
                             memory_info['DDR类型'] = smbios_mapping[memory_type]
@@ -3484,14 +3543,15 @@ class ProjectorRecommender:
                 print("6. 480P")
                 res_choice = input("分辨率: ").strip().upper()
                 
-                resolution_map = {
+                mapping_config = UnifiedUtils.get_mapping_config()
+                resolution_map = mapping_config.get('resolution_map', {
                     '1': '8K', '8K': '8K', '7680P': '8K', '7680': '8K',
                     '2': '4K', '4K': '4K', '2160P': '4K', '2160': '4K', '3840': '4K',
                     '3': '2K', '2K': '2K', '1440P': '2K', '1440': '2K', '2560': '2K', 'QHD': '2K',
                     '4': '1080P', '1080P': '1080P', '1080': '1080P', 'FHD': '1080P', '1920': '1080P',
                     '5': '720P', '720P': '720P', '720': '720P', 'HD': '720P', '1280': '720P',
                     '6': '480P', '480P': '480P', '480': '480P', '854': '480P', 'VGA': '480P'
-                }
+                })
                 
                 if res_choice in resolution_map:
                     resolution_preference = resolution_map[res_choice]
@@ -3537,23 +3597,12 @@ class ProjectorRecommender:
         if not input_str:
             return None
         
-        brand_mapping = {
-            '极米': ['xgimi', 'xg', '极米'],
-            '坚果': ['jianguo', 'jmgo', '坚果'],
-            '当贝': ['dangbei', 'db', '当贝'],
-            '明基': ['benq', '明基'],
-            '爱普生': ['epson', '爱普生'],
-            '索尼': ['sony', '索尼'],
-            '松下': ['panasonic', '松下'],
-            '小米': ['xiaomi', 'mi', '小米'],
-            '海尔': ['haier', '海尔'],
-            '联想': ['lenovo', '联想']
-        }
+        mapping_config = UnifiedUtils.get_mapping_config()
+        projector_brands = mapping_config.get('projector_brands', {})
         
         reverse_brand_mapping = {}
-        for chinese_brand, aliases in brand_mapping.items():
-            for alias in aliases:
-                reverse_brand_mapping[alias.lower()] = chinese_brand
+        for brand_name, alias in projector_brands.items():
+            reverse_brand_mapping[alias.lower()] = brand_name
         
         parts = input_str.split()
         result = {}
@@ -3611,86 +3660,23 @@ class EscapeManager:
         # 全局调试标志
         self.debug_mode = False
         
+        # 从配置文件加载映射表
+        mapping_config = UnifiedUtils.get_mapping_config()
+        
         # 网卡型号到最大带宽的映射表（单位：Mbps）
-        self.wifi_bandwidth_map = {
-            # 802.11ax (WiFi 6) 网卡
-            '8812CU': 1200, '8812BU': 1200, '8812AU': 1200, '8812E': 1200,
-            '8811CU': 433, '8811BU': 433, '8811AU': 433,
-            '8821CU': 433, '8821BU': 433, '8821AU': 433,
-            '8822CU': 1200, '8822BU': 1200, '8822AU': 1200,
-            '8852AE': 2400, '8852BE': 2400, '8852CE': 2400,
-            'AX200': 2400, 'AX201': 2400, 'AX210': 2400,
-            'AX3000': 2400, 'AX5400': 4800, 'AX6000': 4800,
-            
-            # 802.11ac (WiFi 5) 网卡
-            '8812': 866, '8814': 1733, '8811': 433,
-            '8821': 433, '8822': 866,
-            'AC1200': 866, 'AC1750': 1300, 'AC1900': 1300,
-            'AC5300': 1733, 'AC5400': 1733, 'AC6000': 1733,
-            
-            # 802.11n (WiFi 4) 网卡
-            '8192': 300, '8188': 150, '8187': 300,
-            'N150': 150, 'N300': 300, 'N600': 600,
-            
-            # 其他常见网卡
-            'RTL8188': 150, 'RTL8192': 300, 'RTL8812': 866,
-            'RTL8821': 433, 'RTL8822': 866,
-            'Intel(R) Wireless-AC': 866,
-            'Intel(R) Wireless-AX': 2400,
-            'Intel(R) Wi-Fi 6': 2400,
-        }
+        self.wifi_bandwidth_map = mapping_config.get('wifi_bandwidth_map', {})
         
         # 国家英文到中文映射
-        self.country_map = {
-            'China': '中国', 'United States': '美国', 'Japan': '日本',
-            'South Korea': '韩国', 'United Kingdom': '英国', 'Germany': '德国',
-            'France': '法国', 'Russia': '俄罗斯', 'Canada': '加拿大',
-            'Australia': '澳大利亚', 'India': '印度', 'Brazil': '巴西',
-            'Italy': '意大利', 'Spain': '西班牙', 'Netherlands': '荷兰',
-            'Singapore': '新加坡', 'Hong Kong': '香港', 'Taiwan': '台湾',
-            'Macau': '澳门'
-        }
+        self.country_map = mapping_config.get('country_map', {})
         
         # ISP英文到中文映射
-        self.isp_map = {
-            'Chinanet': '中国电信',
-            'China Mobile': '中国移动', 'China Telecom': '中国电信', 'China Unicom': '中国联通',
-            'China Netcom': '中国网通', 'China Tietong': '中国铁通', 'China Railcom': '中国铁通',
-            'China Education and Research Network': '中国教育和科研计算机网',
-            'China Science and Technology Network': '中国科技网',
-            'China Broadband': '中国宽带', 'China Telecom Next': '中国电信',
-            'China Unicom Next': '中国联通', 'China Mobile Next': '中国移动',
-            'CMCC': '中国移动', 'CT': '中国电信', 'CU': '中国联通',
-            'Mobile': '中国移动', 'Telecom': '中国电信', 'Unicom': '中国联通'
-        }
+        self.isp_map = mapping_config.get('isp_map', {})
         
         # 省份英文到中文映射
-        self.region_map = {
-            'Anhui': '安徽', 'Beijing': '北京', 'Shanghai': '上海', 'Tianjin': '天津',
-            'Chongqing': '重庆', 'Hebei': '河北', 'Shanxi': '山西', 'Liaoning': '辽宁',
-            'Jilin': '吉林', 'Heilongjiang': '黑龙江', 'Jiangsu': '江苏', 'Zhejiang': '浙江',
-            'Fujian': '福建', 'Jiangxi': '江西', 'Shandong': '山东', 'Henan': '河南',
-            'Hubei': '湖北', 'Hunan': '湖南', 'Guangdong': '广东', 'Hainan': '海南',
-            'Sichuan': '四川', 'Guizhou': '贵州', 'Yunnan': '云南', 'Shaanxi': '陕西',
-            'Gansu': '甘肃', 'Qinghai': '青海', 'Taiwan': '台湾', 'Hong Kong': '香港',
-            'Macau': '澳门', 'Inner Mongolia': '内蒙古', 'Tibet': '西藏', 'Xinjiang': '新疆',
-            'Ningxia': '宁夏'
-        }
+        self.region_map = mapping_config.get('region_map', {})
         
         # 城市英文到中文映射
-        self.city_map = {
-            'Hefei': '合肥', 'Beijing': '北京', 'Shanghai': '上海', 'Tianjin': '天津',
-            'Chongqing': '重庆', 'Guangzhou': '广州', 'Shenzhen': '深圳', 'Hangzhou': '杭州',
-            'Nanjing': '南京', 'Wuhan': '武汉', 'Chengdu': '成都', 'Xi\'an': '西安',
-            'Suzhou': '苏州', 'Dalian': '大连', 'Qingdao': '青岛', 'Xiamen': '厦门',
-            'Changsha': '长沙', 'Zhengzhou': '郑州', 'Jinan': '济南', 'Fuzhou': '福州',
-            'Ningbo': '宁波', 'Wuxi': '无锡', 'Dongguan': '东莞', 'Foshan': '佛山',
-            'Zhuhai': '珠海', 'Huainan': '淮南', 'Shou County': '寿县', 'Shenyang': '沈阳',
-            'Changchun': '长春', 'Harbin': '哈尔滨', 'Nanchang': '南昌', 'Guiyang': '贵阳',
-            'Kunming': '昆明', 'Lhasa': '拉萨', 'Lanzhou': '兰州', 'Xining': '西宁',
-            'Yinchuan': '银川', 'Urumqi': '乌鲁木齐', 'Haikou': '海口', 'Nanning': '南宁',
-            'Shijiazhuang': '石家庄', 'Taiyuan': '太原', 'Hohhot': '呼和浩特'
-        }
+        self.city_map = mapping_config.get('city_map', {})
         
         # 常见WiFi品牌模式映射（用于智能SSID转义）
         self.wifi_brand_patterns = [
@@ -4781,44 +4767,15 @@ class WiFiChannelScanner:
             # 提取关键信息进行搜索
             description_lower = description.lower()
             
-            # 品牌关键词映射
-            brand_keywords = {
-                'tenda': '腾达',
-                '腾达': '腾达',
-                'tp-link': 'TP-LINK',
-                'tplink': 'TP-LINK',
-                'mercury': '水星',
-                '水星': '水星',
-                'd-link': 'D-Link',
-                'dlink': 'D-Link',
-                'lenovo': '联想',
-                '联想': '联想',
-                'terrans force': '机械师',
-                '机械师': '机械师',
-                'mechrevo': '机械革命',
-                '机械革命': '机械革命',
-                'asus': '华硕',
-                '华硕': '华硕',
-                'dell': '戴尔',
-                '戴尔': '戴尔',
-                'hp': '惠普',
-                '惠普': '惠普',
-                'msi': '微星',
-                '微星': '微星',
-                'hasee': '神舟',
-                '神舟': '神舟',
-                'huawei': '华为',
-                '华为': '华为',
-                'xiaomi': '小米',
-                '小米': '小米',
-                'mi': '小米',
-                'acer': '宏碁',
-                '宏碁': '宏碁',
-                'gigabyte': '技嘉',
-                '技嘉': '技嘉',
-                'thunderobot': '雷神',
-                '雷神': '雷神',
-            }
+            # 从配置文件加载品牌关键词映射
+            mapping_config = UnifiedUtils.get_mapping_config()
+            wireless_card_brands = mapping_config.get('wireless_card_brands', {})
+            laptop_brands = mapping_config.get('laptop_brands', {})
+            
+            # 合并品牌映射
+            brand_keywords = {}
+            brand_keywords.update(wireless_card_brands)
+            brand_keywords.update(laptop_brands)
             
             # 提取品牌
             brand = None
@@ -6845,6 +6802,7 @@ def main():
     parser.add_argument('--interactive', action='store_true', help='交互式模式（投影仪推荐）')
     parser.add_argument('--update-projector-db', action='store_true', help='强制更新投影仪数据库')
     parser.add_argument('--update-hardware-db', action='store_true', help='强制更新硬件性能数据库')
+    parser.add_argument('--update-mapping', action='store_true', help='从网络更新映射配置（品牌、带宽、国家、ISP等）')
     parser.add_argument('--budget', type=str, help='投影仪预算范围（例如: 3000-8000）')
     parser.add_argument('--brand', type=str, help='投影仪品牌偏好（例如: 极米,坚果,当贝）')
     parser.add_argument('--resolution', type=str, help='投影仪分辨率偏好（例如: 4K,1080P）')
@@ -6899,6 +6857,16 @@ def main():
         'projector': (ProjectorRecommender, args.update_projector_db,
                       lambda p: p.print_recommendations(budget_range=budget_range, brand_preference=args.brand, resolution_preference=args.resolution))
     }
+
+    # 更新映射配置
+    if args.update_mapping:
+        print("🔄 正在更新映射配置...")
+        success = UnifiedUtils.update_mapping_config()
+        if success:
+            print("✅ 映射配置更新成功！")
+        else:
+            print("❌ 映射配置更新失败，请检查网络连接")
+        return
 
     if args.hardware or args.projector or args.interactive:
         if args.interactive:
