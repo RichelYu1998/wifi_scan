@@ -112,14 +112,15 @@ menu() {
     echo "1. WiFi网络扫描"
     echo "2. 硬件信息检测"
     echo "3. 投影仪推荐"
-    echo "4. 完整系统测试"
-    echo "5. 更新投影仪数据库"
-    echo "6. 更新硬件数据库"
-    echo "7. JSON文件管理"
-    echo "8. 自定义参数运行"
+    echo "4. 交互式投影仪推荐"
+    echo "5. 完整系统测试"
+    echo "6. 更新投影仪数据库"
+    echo "7. 更新硬件数据库"
+    echo "8. JSON文件管理"
+    echo "9. 自定义参数运行"
     echo "0. 退出程序"
     echo "============================================================"
-    read -p "请选择功能 (0-8): " choice
+    read -p "请选择功能 (0-9): " choice
     echo
 }
 
@@ -142,18 +143,22 @@ while true; do
             $PYTHON_EXE wifi_scan.py --projector
             ;;
         4)
+            echo "[信息] 启动交互式投影仪推荐..."
+            $PYTHON_EXE wifi_scan.py --interactive
+            ;;
+        5)
             echo "[信息] 启动完整系统测试..."
             $PYTHON_EXE wifi_scan.py --all-in-one
             ;;
-        5)
+        6)
             echo "[信息] 更新投影仪数据库..."
             $PYTHON_EXE wifi_scan.py --projector --update-projector-db
             ;;
-        6)
+        7)
             echo "[信息] 更新硬件性能数据库..."
             $PYTHON_EXE wifi_scan.py --hardware --update-hardware-db
             ;;
-        7)
+        8)
             echo "[信息] JSON文件管理..."
             echo
             echo "请选择JSON管理功能:"
@@ -177,7 +182,7 @@ while true; do
                     ;;
             esac
             ;;
-        8)
+        9)
             echo "[信息] 使用自定义参数运行"
             echo
             echo "可用参数:"

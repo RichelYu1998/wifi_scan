@@ -96,8 +96,8 @@ echo.
 
 REM Display function menu (using PowerShell for Chinese display)
 :menu
-powershell -NoProfile -ExecutionPolicy Bypass -Command "$OutputEncoding = [System.Text.Encoding]::UTF8; [Console]::OutputEncoding = [System.Text.Encoding]::UTF8; Write-Host '============================================================'; Write-Host 'Please select a function:'; Write-Host '============================================================'; Write-Host '1. WiFi Network Scan'; Write-Host '2. Hardware Detection'; Write-Host '3. Projector Recommendation'; Write-Host '4. Full System Test'; Write-Host '5. Update Projector Database'; Write-Host '6. Update Hardware Database'; Write-Host '7. JSON File Management'; Write-Host '8. Run with Custom Parameters'; Write-Host '0. Exit'; Write-Host '============================================================'"
-set /p choice=Please select a function (0-8):  
+powershell -NoProfile -ExecutionPolicy Bypass -Command "$OutputEncoding = [System.Text.Encoding]::UTF8; [Console]::OutputEncoding = [System.Text.Encoding]::UTF8; Write-Host '============================================================'; Write-Host 'Please select a function:'; Write-Host '============================================================'; Write-Host '1. WiFi Network Scan'; Write-Host '2. Hardware Detection'; Write-Host '3. Projector Recommendation'; Write-Host '4. Interactive Projector Recommendation'; Write-Host '5. Full System Test'; Write-Host '6. Update Projector Database'; Write-Host '7. Update Hardware Database'; Write-Host '8. JSON File Management'; Write-Host '9. Run with Custom Parameters'; Write-Host '0. Exit'; Write-Host '============================================================'"
+set /p choice=Please select a function (0-9):  
 
 echo.
 
@@ -105,11 +105,12 @@ REM Execute corresponding function based on user selection
 if "%choice%"=="1" goto wifi_scan
 if "%choice%"=="2" goto hardware_detect
 if "%choice%"=="3" goto projector_recommend
-if "%choice%"=="4" goto all_in_one
-if "%choice%"=="5" goto update_projector
-if "%choice%"=="6" goto update_hardware
-if "%choice%"=="7" goto json_manage
-if "%choice%"=="8" goto custom_params
+if "%choice%"=="4" goto interactive_projector
+if "%choice%"=="5" goto all_in_one
+if "%choice%"=="6" goto update_projector
+if "%choice%"=="7" goto update_hardware
+if "%choice%"=="8" goto json_manage
+if "%choice%"=="9" goto custom_params
 if "%choice%"=="0" goto exit_program
 echo [ERROR] Invalid selection
 goto menu
@@ -127,6 +128,11 @@ goto end
 :projector_recommend
 echo [INFO] Starting projector recommendation...
 %PYTHON_EXE% wifi_scan.py --projector
+goto end
+
+:interactive_projector
+echo [INFO] Starting interactive projector recommendation...
+%PYTHON_EXE% wifi_scan.py --interactive
 goto end
 
 :all_in_one
