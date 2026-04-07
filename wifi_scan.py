@@ -3432,6 +3432,16 @@ class ProjectorRecommender:
                     budget_range = None
                     print("✅ 预算已设置为: 无限制")
             
+            elif choice.isdigit() and not budget_range and choice not in ['0', '1', '2', '3', '4', '5']:
+                try:
+                    single_budget = int(choice)
+                    min_budget = max(0, single_budget - 500)
+                    max_budget = single_budget + 500
+                    budget_range = (min_budget, max_budget)
+                    print(f"✅ 预算已设置为: ¥{min_budget} - ¥{max_budget}（基于 ¥{single_budget} ± 500）")
+                except ValueError:
+                    print("⚠️ 格式错误，请输入有效的数字")
+            
             elif choice == '2' and not brand_preference:
                 print("\n请输入品牌偏好（多个品牌用逗号分隔，例如: 极米,坚果,当贝）:")
                 print("支持的品牌: 极米,坚果,当贝,明基,爱普生,索尼,松下,小米,海尔,联想")
