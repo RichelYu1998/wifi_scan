@@ -3403,15 +3403,24 @@ class ProjectorRecommender:
             choice = input("\n请选择: ").strip()
             
             if choice == '1' and not budget_range:
-                print("\n请输入预算范围（格式：最小值-最大值，例如 3000-8000）:")
-                budget_input = input("预算范围: ").strip()
+                print("\n请输入预算（支持两种格式：）:")
+                print("  1. 区间格式：最小值-最大值（例如：3000-8000）")
+                print("  2. 单个数字：自动添加±500范围（例如：500 → 0-1000）")
+                budget_input = input("预算: ").strip()
                 if budget_input:
                     try:
-                        min_budget, max_budget = map(int, budget_input.split('-'))
-                        budget_range = (min_budget, max_budget)
-                        print(f"✅ 预算已设置为: ¥{min_budget} - ¥{max_budget}")
+                        if '-' in budget_input:
+                            min_budget, max_budget = map(int, budget_input.split('-'))
+                            budget_range = (min_budget, max_budget)
+                            print(f"✅ 预算已设置为: ¥{min_budget} - ¥{max_budget}")
+                        else:
+                            single_budget = int(budget_input)
+                            min_budget = max(0, single_budget - 500)
+                            max_budget = single_budget + 500
+                            budget_range = (min_budget, max_budget)
+                            print(f"✅ 预算已设置为: ¥{min_budget} - ¥{max_budget}（基于 ¥{single_budget} ± 500）")
                     except ValueError:
-                        print("⚠️ 格式错误，请使用格式: 最小值-最大值")
+                        print("⚠️ 格式错误，请输入有效的数字或区间（如 500 或 3000-8000）")
             
             elif choice == '2' and not brand_preference:
                 print("\n请输入品牌偏好（多个品牌用逗号分隔，例如: 极米,坚果,当贝）:")
