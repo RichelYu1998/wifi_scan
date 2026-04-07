@@ -3537,6 +3537,24 @@ class ProjectorRecommender:
         if not input_str:
             return None
         
+        brand_mapping = {
+            '极米': ['xgimi', 'xg', '极米'],
+            '坚果': ['jianguo', 'jmgo', '坚果'],
+            '当贝': ['dangbei', 'db', '当贝'],
+            '明基': ['benq', '明基'],
+            '爱普生': ['epson', '爱普生'],
+            '索尼': ['sony', '索尼'],
+            '松下': ['panasonic', '松下'],
+            '小米': ['xiaomi', 'mi', '小米'],
+            '海尔': ['haier', '海尔'],
+            '联想': ['lenovo', '联想']
+        }
+        
+        reverse_brand_mapping = {}
+        for chinese_brand, aliases in brand_mapping.items():
+            for alias in aliases:
+                reverse_brand_mapping[alias.lower()] = chinese_brand
+        
         parts = input_str.split()
         result = {}
         
@@ -3563,7 +3581,11 @@ class ProjectorRecommender:
             elif part.upper().endswith('K') or part.upper().endswith('P'):
                 result['resolution'] = part.upper()
             else:
-                result['brand'] = part
+                brand_lower = part.lower()
+                if brand_lower in reverse_brand_mapping:
+                    result['brand'] = reverse_brand_mapping[brand_lower]
+                else:
+                    result['brand'] = part
         
         return result if result else None
     
