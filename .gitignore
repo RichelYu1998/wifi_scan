@@ -69,8 +69,10 @@ Thumbs.db
 *.temp
 
 # Project specific ignores
-wifi_logs/  # 项目日志目录，建议不提交到版本控制
-*.csv       # CSV报告文件，通常是临时生成的文件
+json/logs/    # WiFi扫描日志目录，不提交到版本控制
+json/network/ # 网络信息日志目录，不提交到版本控制
+wifi_logs/    # 项目日志目录，建议不提交到版本控制
+*.csv         # CSV报告文件，通常是临时生成的文件
 
 # 编译文件
 *.pyc
