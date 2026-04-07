@@ -3422,25 +3422,34 @@ class ProjectorRecommender:
                     print(f"✅ 品牌已设置为: {brand_preference}")
             
             elif choice == '3' and not resolution_preference:
-                print("\n请输入分辨率（支持格式：4K, 2K, 1080P, 1080, 720P, 720）或选择:")
-                print("1. 4K")
-                print("2. 1080P")
-                print("3. 720P")
+                print("\n请输入分辨率（支持任意格式，如：8K, 5K, 4K, 2K, 1080P, 720P, 480P 等）:")
+                print("快捷选择:")
+                print("1. 8K")
+                print("2. 4K")
+                print("3. 2K")
+                print("4. 1080P")
+                print("5. 720P")
+                print("6. 480P")
                 res_choice = input("分辨率: ").strip().upper()
                 
                 resolution_map = {
-                    '1': '4K', '4K': '4K', '2160P': '4K', '2160': '4K', '3840': '4K',
-                    '2': '1080P', '1080P': '1080P', '1080': '1080P', 'FHD': '1080P', '1920': '1080P',
-                    '3': '720P', '720P': '720P', '720': '720P', 'HD': '720P', '1280': '720P',
-                    '2K': '2K', '1440P': '2K', '1440': '2K', '2560': '2K', 'QHD': '2K',
-                    '480P': '480P', '480': '480P', '854': '480P', 'VGA': '480P'
+                    '1': '8K', '8K': '8K', '7680P': '8K', '7680': '8K',
+                    '2': '4K', '4K': '4K', '2160P': '4K', '2160': '4K', '3840': '4K',
+                    '3': '2K', '2K': '2K', '1440P': '2K', '1440': '2K', '2560': '2K', 'QHD': '2K',
+                    '4': '1080P', '1080P': '1080P', '1080': '1080P', 'FHD': '1080P', '1920': '1080P',
+                    '5': '720P', '720P': '720P', '720': '720P', 'HD': '720P', '1280': '720P',
+                    '6': '480P', '480P': '480P', '480': '480P', '854': '480P', 'VGA': '480P'
                 }
                 
                 if res_choice in resolution_map:
                     resolution_preference = resolution_map[res_choice]
                     print(f"✅ 分辨率已设置为: {resolution_preference}")
                 else:
-                    print("⚠️ 无效选择，请输入有效的分辨率（如4K,2K,1080P,720P）或选择编号")
+                    if res_choice and (res_choice.endswith('K') or res_choice.endswith('P') or res_choice.isdigit()):
+                        resolution_preference = res_choice
+                        print(f"✅ 分辨率已设置为: {resolution_preference}")
+                    else:
+                        print("⚠️ 无效选择，请输入有效的分辨率（如8K,4K,2K,1080P,720P）或选择编号")
             
             elif choice == '4':
                 search_desc = self._generate_search_description(budget_range, brand_preference, resolution_preference)
