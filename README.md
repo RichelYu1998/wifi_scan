@@ -15,6 +15,28 @@ python wifi_scan.py
 python3 wifi_scan.py
 ```
 
+### 使用启动脚本（推荐）
+
+项目提供了跨平台的启动脚本，会自动检测虚拟环境并运行程序：
+
+**Linux/macOS**:
+```bash
+cd scripts
+./start.sh
+```
+
+**Windows**:
+```cmd
+cd scripts
+start.bat
+```
+
+启动脚本功能：
+- 自动检测虚拟环境（.venv/venv/env）
+- 自动检查并安装依赖库
+- 交互式菜单选择功能
+- 支持自定义参数运行
+
 ## 📋 功能说明
 
 ### 1. 硬件信息检测
