@@ -17,6 +17,7 @@ import gzip
 import tempfile
 import ctypes
 from collections import defaultdict
+from pathlib import Path
 
 import psutil
 from geopy.geocoders import Nominatim
@@ -25,8 +26,14 @@ from geopy.geocoders import Nominatim
 class UnifiedUtils:
     """统一工具类 - 提供所有类共享的基础功能"""
     
-    # 配置文件路径
-    CONFIG_DIR = os.path.join(os.path.dirname(__file__), 'json', 'config')
+    # 使用Path进行跨平台路径管理
+    BASE_DIR = Path(__file__).parent
+    JSON_DIR = BASE_DIR / 'json'
+    CONFIG_DIR = JSON_DIR / 'config'
+    HARDWARE_DIR = JSON_DIR / 'hardware'
+    NETWORK_DIR = JSON_DIR / 'network'
+    PROJECTOR_DIR = JSON_DIR / 'projector'
+    LOGS_DIR = JSON_DIR / 'logs'
     
     # 静态地理位置数据库（基于联网搜索的已知位置）
     KNOWN_LOCATIONS = {
@@ -73,13 +80,75 @@ class UnifiedUtils:
             配置数据字典，如果文件不存在返回空字典
         """
         try:
-            file_path = os.path.join(UnifiedUtils.CONFIG_DIR, filename)
-            if os.path.exists(file_path):
+            file_path = UnifiedUtils.CONFIG_DIR / filename
+            if file_path.exists():
                 with open(file_path, 'r', encoding='utf-8') as f:
                     return json.load(f)
         except Exception:
             pass
         return {}
+    
+    @staticmethod
+    def get_config_path(filename):
+        """获取配置文件路径（跨平台）"""
+        return str(UnifiedUtils.CONFIG_DIR / filename)
+    
+    @staticmethod
+    def get_hardware_path(filename=None):
+        """获取硬件文件路径（跨平台）"""
+        if filename:
+            return str(UnifiedUtils.HARDWARE_DIR / filename)
+        return str(UnifiedUtils.HARDWARE_DIR)
+    
+    @staticmethod
+    def get_network_path(filename=None):
+        """获取网络文件路径（跨平台）"""
+        if filename:
+            return str(UnifiedUtils.NETWORK_DIR / filename)
+        return str(UnifiedUtils.NETWORK_DIR)
+    
+    @staticmethod
+    def get_projector_path(filename=None):
+        """获取投影仪文件路径（跨平台）"""
+        if filename:
+            return str(UnifiedUtils.PROJECTOR_DIR / filename)
+        return str(UnifiedUtils.PROJECTOR_DIR)
+    
+    @staticmethod
+    def get_log_path(filename=None):
+        """获取日志文件路径（跨平台）"""
+        if filename:
+            return str(UnifiedUtils.LOGS_DIR / filename)
+        return str(UnifiedUtils.LOGS_DIR)
+    
+    @staticmethod
+    def sanitize_filename(filename):
+        """清理文件名，移除跨平台非法字符"""
+        if not filename:
+            return "unknown"
+        
+        # 跨平台非法字符
+        illegal_chars = r'[<>:"/\\|?*]'
+        cleaned = re.sub(illegal_chars, '_', filename)
+        
+        # 移除控制字符
+        cleaned = re.sub(r'[\x00-\x1f\x7f-\x9f]', '', cleaned)
+        
+        # 移除Unicode替换字符
+        cleaned = cleaned.replace('�', '')
+        
+        # 限制长度
+        if len(cleaned) > 200:
+            cleaned = cleaned[:200]
+        
+        return cleaned or "unknown"
+    
+    @staticmethod
+    def ensure_dir_exists(path):
+        """确保目录存在（跨平台）"""
+        if isinstance(path, str):
+            path = Path(path)
+        path.mkdir(parents=True, exist_ok=True)
     
     @staticmethod
     def get_gpu_brands():
@@ -245,7 +314,7 @@ class UnifiedUtils:
         """统一的JSON文件保存方法"""
         try:
             # 确保目录存在
-            os.makedirs(os.path.dirname(file_path), exist_ok=True)
+            UnifiedUtils.ensure_dir_exists(os.path.dirname(file_path))
             with open(file_path, 'w', encoding='utf-8') as f:
                 json.dump(data, f, ensure_ascii=False, indent=2)
             return True
@@ -536,30 +605,8 @@ class UnifiedUtils:
     
     @staticmethod
     def clean_filename(filename):
-        """清理文件名中的非法字符"""
-        if not filename:
-            return "unknown"
-        
-        # 移除非法字符
-        illegal_chars = r'[<>:"/\\|?*]'
-        cleaned = re.sub(illegal_chars, '', filename)
-        
-        # 移除控制字符
-        cleaned = re.sub(r'[\x00-\x1f\x7f-\x9f]', '', cleaned)
-        
-        # 移除Unicode替换字符
-        cleaned = cleaned.replace('�', '')
-        
-        # 限制长度
-        if len(cleaned) > 200:
-            cleaned = cleaned[:200]
-        
-        cleaned = cleaned.strip()
-        
-        if not cleaned:
-            cleaned = "unknown"
-        
-        return cleaned
+        """清理文件名中的非法字符（已废弃，使用UnifiedUtils.sanitize_filename）"""
+        return UnifiedUtils.sanitize_filename(filename)
     
     @staticmethod
     def parse_size_string(size_str):
@@ -846,14 +893,12 @@ class UnifiedUtils:
     
     @staticmethod
     def ensure_directory_exists(file_path):
-        """确保文件所在目录存在
+        """确保文件所在目录存在（已废弃，使用UnifiedUtils.ensure_dir_exists）
         
         Args:
             file_path: 文件路径
         """
-        directory = os.path.dirname(file_path)
-        if directory and not os.path.exists(directory):
-            os.makedirs(directory, exist_ok=True)
+        UnifiedUtils.ensure_dir_exists(os.path.dirname(file_path))
     
     @staticmethod
     def save_json_with_append(file_path, data):
@@ -923,7 +968,7 @@ class UnifiedUtils:
         ssid_clean = ssid.strip() if ssid else ""
         if ssid_clean:
             # 移除SSID中的非法字符
-            ssid_clean = UnifiedUtils.clean_filename(ssid_clean)
+            ssid_clean = UnifiedUtils.sanitize_filename(ssid_clean)
         
         # 生成文件名
         if location_clean and ssid_clean:
@@ -2248,7 +2293,7 @@ class OptimizedHardwareDetector:
     
     def _save_hardware_info_to_json(self, hardware_info):
         """保存硬件信息到JSON文件（追加模式）"""
-        hardware_file = os.path.join(os.path.dirname(__file__), 'json', 'hardware', 'hardware_info.json')
+        hardware_file = UnifiedUtils.get_hardware_path('hardware_info.json')
         self._save_to_json_with_append(hardware_file, 'hardware_info', hardware_info)
     
     def _save_bios_info_to_json(self, bios_info, motherboard_name='unknown'):
@@ -2259,10 +2304,10 @@ class OptimizedHardwareDetector:
             motherboard_name: 主板型号名称
         """
         # 清理主板名称中的非法字符
-        motherboard_name_clean = UnifiedUtils.clean_filename(motherboard_name)
+        motherboard_name_clean = UnifiedUtils.sanitize_filename(motherboard_name)
         # 构建文件名：bios_info(主板名称).json
         bios_filename = f"bios_info({motherboard_name_clean}).json"
-        bios_file = os.path.join(os.path.dirname(__file__), 'json', 'config', bios_filename)
+        bios_file = UnifiedUtils.get_config_path(bios_filename)
         self._save_to_json_with_append(bios_file, 'bios_info', bios_info)
     
     def _save_to_json_with_append(self, file_path, info_type, info_data):
@@ -2281,7 +2326,7 @@ class OptimizedHardwareDetector:
             }
             
             # 确保目录存在
-            os.makedirs(os.path.dirname(file_path), exist_ok=True)
+            UnifiedUtils.ensure_dir_exists(os.path.dirname(file_path))
             
             # 读取现有数据
             existing_data = []
@@ -2315,10 +2360,10 @@ class HardwarePerformanceUpdater:
     def __init__(self, escape_manager=None, debug_mode=False):
         self.escape_manager = escape_manager
         self.debug_mode = debug_mode
-        self.data_dir = "json/hardware"
+        self.data_dir = str(UnifiedUtils.HARDWARE_DIR)
         
         # 确保数据目录存在
-        os.makedirs(self.data_dir, exist_ok=True)
+        UnifiedUtils.ensure_dir_exists(self.data_dir)
         
         # 性能数据文件路径
         self.cpu_performance_file = os.path.join(self.data_dir, "cpu_performance.json")
@@ -2625,7 +2670,7 @@ class HardwarePerformanceUpdater:
             import os
             
             # 读取现有数据
-            config_file = os.path.join(os.path.dirname(__file__), 'json', 'config', 'default_performance_data.json')
+            config_file = UnifiedUtils.get_config_path('default_performance_data.json')
             existing_data = {}
             if os.path.exists(config_file):
                 try:
@@ -2800,7 +2845,7 @@ class HardwarePerformanceUpdater:
                 print(f"[DEBUG] 获取GPU性能数据失败: {e}")
         
         # 如果网络获取失败，从本地JSON文件加载数据作为备用
-        local_data = UnifiedUtils.get_default_gpu_performance_data()
+        local_data = UnifiedUtils.get_default_performance_data()
         if local_data:
             if self.debug_mode:
                 print(f"[DEBUG] 网络获取失败，使用本地GPU数据，共 {len(local_data)} 个型号")
@@ -2818,7 +2863,7 @@ class HardwarePerformanceUpdater:
             import os
             
             # 读取现有数据
-            config_file = os.path.join(os.path.dirname(__file__), 'json', 'config', 'default_gpu_performance_data.json')
+            config_file = UnifiedUtils.get_config_path('default_gpu_performance_data.json')
             existing_data = {}
             if os.path.exists(config_file):
                 try:
@@ -3180,7 +3225,7 @@ class HardwarePerformanceUpdater:
             import os
             
             # 读取现有数据
-            config_file = os.path.join(os.path.dirname(__file__), 'json', 'config', 'default_performance_data.json')
+            config_file = UnifiedUtils.get_config_path('default_performance_data.json')
             existing_data = {}
             if os.path.exists(config_file):
                 try:
@@ -3211,7 +3256,7 @@ class HardwarePerformanceUpdater:
             import os
             
             # 读取现有数据
-            config_file = os.path.join(os.path.dirname(__file__), 'json', 'config', 'default_performance_data.json')
+            config_file = UnifiedUtils.get_config_path('default_performance_data.json')
             existing_data = {}
             if os.path.exists(config_file):
                 try:
@@ -3261,7 +3306,7 @@ class ProjectorRecommender:
     
     def __init__(self, debug_mode=False):
         self.debug_mode = debug_mode
-        self.projector_db_path = os.path.join(os.path.dirname(__file__), 'json', 'projector', 'projector_data.json')
+        self.projector_db_path = UnifiedUtils.get_projector_path('projector_data.json')
         self.projectors = []
         self.update_interval_hours = 24  # 每24小时检查一次更新
         self.last_update_check = None
@@ -3541,7 +3586,7 @@ class ProjectorRecommender:
         """保存投影仪推荐信息到JSON文件（追加模式）"""
         try:
             # 投影仪信息文件路径
-            projector_file = os.path.join(os.path.dirname(__file__), 'json', 'projector', 'projector_info.json')
+            projector_file = UnifiedUtils.get_projector_path('projector_info.json')
             
             # 构建投影仪信息数据结构
             projector_data = {
@@ -3556,7 +3601,7 @@ class ProjectorRecommender:
             }
             
             # 确保目录存在
-            os.makedirs(os.path.dirname(projector_file), exist_ok=True)
+            UnifiedUtils.ensure_dir_exists(os.path.dirname(projector_file))
             
             # 读取现有数据
             existing_data = []
@@ -3969,7 +4014,11 @@ class EscapeManager:
     
     def clean_filename(self, filename):
         """清理文件名中的非法字符和乱码"""
-        return UnifiedUtils.clean_filename(filename)
+        return UnifiedUtils.sanitize_filename(filename)
+    
+    def sanitize_filename(self, filename):
+        """清理文件名中的非法字符和乱码（别名方法）"""
+        return UnifiedUtils.sanitize_filename(filename)
     
     def generate_location_prefix(self, location_info):
         """生成地理位置前缀（支持县级行政区和乡镇）"""
@@ -4052,24 +4101,23 @@ class WiFiChannelScanner:
         self.json_manager = JSONFileManager("json")
         
         # 兼容旧代码的日志目录
-        self.log_dir = "json/logs"
+        self.log_dir = str(UnifiedUtils.LOGS_DIR)
         self.escape_manager = EscapeManager()  # 初始化转义管理器
 
-        if not os.path.exists(self.log_dir):
-            os.makedirs(self.log_dir)
+        UnifiedUtils.ensure_dir_exists(self.log_dir)
         
-        # 文件存储路径配置
-        self.json_base_path = os.path.join(os.path.dirname(__file__), 'json')
-        self.config_path = os.path.join(self.json_base_path, 'config')
-        self.hardware_path = os.path.join(self.json_base_path, 'hardware')
-        self.network_path = os.path.join(self.json_base_path, 'network')
-        self.projector_path = os.path.join(self.json_base_path, 'projector')
+        # 文件存储路径配置（使用统一路径管理）
+        self.json_base_path = str(UnifiedUtils.JSON_DIR)
+        self.config_path = str(UnifiedUtils.CONFIG_DIR)
+        self.hardware_path = str(UnifiedUtils.HARDWARE_DIR)
+        self.network_path = str(UnifiedUtils.NETWORK_DIR)
+        self.projector_path = str(UnifiedUtils.PROJECTOR_DIR)
         
         # 确保所有目录存在
-        os.makedirs(self.config_path, exist_ok=True)
-        os.makedirs(self.hardware_path, exist_ok=True)
-        os.makedirs(self.network_path, exist_ok=True)
-        os.makedirs(self.projector_path, exist_ok=True)
+        UnifiedUtils.ensure_dir_exists(self.config_path)
+        UnifiedUtils.ensure_dir_exists(self.hardware_path)
+        UnifiedUtils.ensure_dir_exists(self.network_path)
+        UnifiedUtils.ensure_dir_exists(self.projector_path)
     
     def _safe_print(self, message):
         """安全打印函数，确保中文正确显示"""
@@ -4251,9 +4299,9 @@ class WiFiChannelScanner:
         if not location:
             location = "未知_未知"
         
-        location_path = os.path.join(self.network_path, location)
-        os.makedirs(location_path, exist_ok=True)
-        network_file = os.path.join(location_path, 'network_info.json')
+        location_path = Path(self.network_path) / location
+        location_path.mkdir(parents=True, exist_ok=True)
+        network_file = str(location_path / 'network_info.json')
         
         network_info_with_timestamp = {
             'timestamp': datetime.datetime.now().isoformat(),
@@ -4299,7 +4347,7 @@ class WiFiChannelScanner:
                 info_with_timestamp = info_data
             
             # 确保目录存在
-            os.makedirs(os.path.dirname(full_path), exist_ok=True)
+            UnifiedUtils.ensure_dir_exists(os.path.dirname(full_path))
             
             # 保存到JSON文件
             with open(full_path, 'w', encoding='utf-8') as f:
@@ -5649,7 +5697,7 @@ class WiFiChannelScanner:
             export_dir = os.path.dirname(export_path)
             if export_dir and not os.path.exists(export_dir):
                 try:
-                    os.makedirs(export_dir, exist_ok=True)
+                    UnifiedUtils.ensure_dir_exists(export_dir)
                     self._safe_print(f"📁 创建导出目录: {export_dir}")
                 except Exception as e:
                     self._safe_print(f"❌ 创建导出目录失败: {e}")
@@ -5848,10 +5896,10 @@ class WiFiChannelScanner:
         location_prefix = ""
         if location_info and location_info.get('region') and location_info.get('city'):
             # 清理地理位置信息中的乱码和特殊字符
-            region = self.escape_manager.clean_filename(location_info.get('region', ''))
-            city = self.escape_manager.clean_filename(location_info.get('city', ''))
-            district = self.escape_manager.clean_filename(location_info.get('district', ''))
-            township = self.escape_manager.clean_filename(location_info.get('township', ''))
+            region = self.escape_manager.sanitize_filename(location_info.get('region', ''))
+            city = self.escape_manager.sanitize_filename(location_info.get('city', ''))
+            district = self.escape_manager.sanitize_filename(location_info.get('district', ''))
+            township = self.escape_manager.sanitize_filename(location_info.get('township', ''))
             
             location_prefix = f"{region}省{city}市"
             
@@ -5872,7 +5920,7 @@ class WiFiChannelScanner:
             print(f"文件名生成中修复SSID乱码: {repr(current_ssid)} -> {repr(current_ssid_clean)}")
         
         # 清理文件名中的特殊字符
-        current_ssid_clean = self.escape_manager.clean_filename(current_ssid_clean)
+        current_ssid_clean = self.escape_manager.sanitize_filename(current_ssid_clean)
         
         # 智能文件名生成逻辑
         # 检查SSID是否包含地理位置信息（异常情况）
@@ -5900,7 +5948,7 @@ class WiFiChannelScanner:
         log_path = os.path.join(self.log_dir, log_subdir, log_filename)
         
         # 确保目录存在
-        os.makedirs(os.path.dirname(log_path), exist_ok=True)
+        UnifiedUtils.ensure_dir_exists(os.path.dirname(log_path))
 
         # 智能修复乱码SSID - 基于当前连接的WiFi名称进行转译
         cleaned_networks = []
@@ -6281,11 +6329,11 @@ class WiFiChannelScanner:
             location = self._get_location_for_storage(location_info)
             
             # 创建位置目录
-            location_path = os.path.join(self.json_base_path, 'network', location)
-            os.makedirs(location_path, exist_ok=True)
+            location_path = Path(self.json_base_path) / 'network' / location
+            location_path.mkdir(parents=True, exist_ok=True)
             
             # 网络信息文件路径
-            network_file = os.path.join(location_path, 'network_info.json')
+            network_file = str(location_path / 'network_info.json')
             
             # 构建网络信息数据结构
             network_data = {
@@ -6334,8 +6382,8 @@ class WiFiChannelScanner:
         city = location_info.get('city', '未知')
         
         # 清理特殊字符
-        province = province.replace('/', '_').replace('\\', '_').replace(':', '')
-        city = city.replace('/', '_').replace('\\', '_').replace(':', '')
+        province = UnifiedUtils.sanitize_filename(province)
+        city = UnifiedUtils.sanitize_filename(city)
         
         return f"{province}_{city}"
 
@@ -6364,7 +6412,7 @@ class JSONFileManager:
         
         for directory in directories:
             dir_path = os.path.join(self.base_dir, directory)
-            os.makedirs(dir_path, exist_ok=True)
+            UnifiedUtils.ensure_dir_exists(dir_path)
     
     def get_file_path(self, file_type, filename, subcategory=None):
         """根据文件类型获取标准化的文件路径"""
@@ -6413,7 +6461,7 @@ class JSONFileManager:
         if subcategory:
             # 如果有子分类，创建子目录
             dir_path = os.path.join(self.base_dir, base_type, subcategory)
-            os.makedirs(dir_path, exist_ok=True)
+            UnifiedUtils.ensure_dir_exists(dir_path)
             return os.path.join(dir_path, filename)
         else:
             return os.path.join(self.base_dir, base_type, filename)
@@ -6425,7 +6473,7 @@ class JSONFileManager:
         file_path = self.get_file_path(file_type, filename, subcategory)
         
         # 确保目录存在
-        os.makedirs(os.path.dirname(file_path), exist_ok=True)
+        UnifiedUtils.ensure_dir_exists(os.path.dirname(file_path))
         
         # 保存文件
         with open(file_path, 'w', encoding='utf-8') as f:
@@ -6676,7 +6724,7 @@ class JSONFileManager:
                 if subdirectory:
                     target_dir = os.path.join(target_dir, subdirectory)
                 
-                os.makedirs(target_dir, exist_ok=True)
+                UnifiedUtils.ensure_dir_exists(target_dir)
                 new_path = os.path.join(target_dir, filename)
                 
                 # 如果源文件和目标文件相同，跳过
@@ -6806,7 +6854,7 @@ class NetworkDataUpdater:
         self.ssl_context.verify_mode = ssl.CERT_NONE
         
         # 确保配置目录存在
-        os.makedirs(self.config_dir, exist_ok=True)
+        UnifiedUtils.ensure_dir_exists(self.config_dir)
     
     def update_all_data(self):
         """更新所有网络数据"""
@@ -8271,7 +8319,7 @@ class NetworkDataUpdater:
         """保存JSON文件"""
         try:
             file_path = os.path.join(self.config_dir, filename)
-            os.makedirs(os.path.dirname(file_path), exist_ok=True)
+            UnifiedUtils.ensure_dir_exists(os.path.dirname(file_path))
             
             with open(file_path, 'w', encoding='utf-8') as f:
                 json.dump(data, f, ensure_ascii=False, indent=2)
