@@ -24,70 +24,196 @@ echo WiFi Scanner and Optimization Tool - Windows
 echo ============================================================
 echo.
 
-REM Detect virtual environment
-set VENV_DETECTED=false
-set PYTHON_EXE=python
+hREM Initialize variables
+set PYTHON_CMD=
+set VENV_PATH=
+set VENV_EXISTS=0
+set OS_NAME=Windows
 
-if exist ".venv\Scripts\python.exe" (
-    set PYTHON_EXE=.venv\Scripts\python.exe
-    set VENV_DETECTED=true
-    echo [INFO] Virtual environment detected: .venv
-) else if exist "venv\Scripts\python.exe" (
-    set PYTHON_EXE=venv\Scripts\python.exe
-    set VENV_DETECTED=true
-    echo [INFO] Virtual environment detected: venv
-) else if exist "env\Scripts\python.exe" (
-    set PYTHON_EXE=env\Scripts\python.exe
-    set VENV_DETECTED=true
-    echo [INFO] Virtual environment detected: env
+REM [1/6] Detect Python environment
+echo [1/6] Detecting Python environment...
+
+where python3 >nul 2>&1
+if %errorlevel% equ 0 (
+    set PYTHON_CMD=python3
+    for /f "tokens=2" %%i in ('python3 --version 2^>^&1') do set PYTHON_VERSION=%%i
+    echo [INFO] Python version: %PYTHON_VERSION% (command: python3)
 ) else (
-    echo [INFO] No virtual environment detected, using system Python
-    set PYTHON_EXE=python
+    where python >nul 2>&1
+    if %errorlevel% equ 0 (
+        set PYTHON_CMD=python
+        for /f "tokens=2" %%i in ('python --version 2^>^&1') do set PYTHON_VERSION=%%i
+        echo [INFO] Python version: %PYTHON_VERSION% (command: python)
+    ) else (
+        echo [ERROR] Python environment detection failed
+        echo.
+        echo Please install Python 3.10 or higher:
+        echo   Download from: https://www.python.org/downloads/
+        echo   Please check "Add Python to PATH" during installation
+        echo.
+        pause
+        exit /b 1
+    )
 )
+
+REM [2/6] Detect virtual environment
+echo [2/6] Detecting virtual environment...
+
+if exist "venv\Scripts\activate.bat" (
+    echo [INFO] Virtual environment detected: venv
+    set VENV_EXISTS=1
+    set VENV_PATH=venv
+) else if exist ".venv\Scripts\activate.bat" (
+    echo [INFO] Virtual environment detected: .venv
+    set VENV_EXISTS=1
+    set VENV_PATH=.venv
+) else if exist "env\Scripts\activate.bat" (
+    echo [INFO] Virtual environment detected: env
+    set VENV_EXISTS=1
+    set VENV_PATH=env
+) else (
+    echo [WARNING] No virtual environment detected
+    set VENV_EXISTS=0
+    set VENV_PATH=
+    echo.
+    echo ^💡 Tip: It is recommended to create a virtual environment to isolate project dependencies
+    echo   Create virtual environment command:
+    echo     python -m venv venv
+    echo   Or:
+    echo     python -m venv .venv
+    echo.
+)
+
+REM [3/6] Check dependencies
+echo [3/6] Checking dependencies...
+
+if "%VENV_EXISTS%"=="1" (
+    call "%VENV_PATH%\Scripts\activate.bat"
+    
+    %PYTHON_CMD% -c "import geopy" >nul 2>&1
+    if %errorlevel% equ 0 (
+        echo [INFO] geopy dependency OK
+    ) else (
+        echo [WARNING] geopy not installed
+    )
+    
+    %PYTHON_CMD% -c "import psutil" >nul 2>&1
+    if %errorlevel% equ 0 (
+        echo [INFO] psutil dependency OK
+    ) else (
+        echo [WARNING] psutil not installed
+    )
+    
+    %PYTHON_CMD% -c "import requests" >nul 2>&1
+    if %errorlevel% equ 0 (
+        echo [INFO] requests dependency OK
+    ) else (
+        echo [WARNING] requests not installed
+    )
+    
+    call deactivate
+) else (
+    %PYTHON_CMD% -c "import geopy" >nul 2>&1
+    if %errorlevel% equ 0 (
+        echo [INFO] geopy dependency OK
+    ) else (
+        echo [WARNING] geopy not installed
+    )
+    
+    %PYTHON_CMD% -c "import psutil" >nul 2>&1
+    if %errorlevel% equ 0 (
+        echo [INFO] psutil dependency OK
+    ) else (
+        echo [WARNING] psutil not installed
+    )
+    
+    %PYTHON_CMD% -c "import requests" >nul 2>&1
+    if %errorlevel% equ 0 (
+        echo [INFO] requests dependency OK
+    ) else (
+        echo [WARNING] requests not installed
+    )
+)
+
+REM [4/6] Detect operating system
+echo [4/6] Detecting operating system...
+echo [INFO] Operating system: Windows
+
+REM [5/6] Set Python executable
+echo [5/6] Configuring Python environment...
+
+if "%VENV_EXISTS%"=="1" (
+    set PYTHON_EXE=%VENV_PATH%\Scripts\python.exe
+    echo [INFO] Using virtual environment Python: %PYTHON_EXE%
+) else (
+    set PYTHON_EXE=%PYTHON_CMD%
+    echo [INFO] Using system Python: %PYTHON_EXE%
+)
+
+REM [6/6] Install missing dependencies
+echo [6/6] Installing missing dependencies...
+
+REM Use Alibaba Cloud mirror for acceleration
+set PIP_MIRROR=-i https://mirrors.aliyun.com/pypi/simple/ --trusted-host mirrors.aliyun.com
+
+if "%VENV_EXISTS%"=="1" (
+    call "%VENV_PATH%\Scripts\activate.bat"
+    
+    %PYTHON_CMD% -c "import geopy" >nul 2>&1
+    if %errorlevel% neq 0 (
+        echo [INFO] Installing geopy (using Alibaba Cloud mirror)...
+        %PYTHON_CMD% -m pip install geopy %PIP_MIRROR%
+    )
+    
+    %PYTHON_CMD% -c "import psutil" >nul 2>&1
+    if %errorlevel% neq 0 (
+        echo [INFO] Installing psutil (using Alibaba Cloud mirror)...
+        %PYTHON_CMD% -m pip install psutil %PIP_MIRROR%
+    )
+    
+    %PYTHON_CMD% -c "import requests" >nul 2>&1
+    if %errorlevel% neq 0 (
+        echo [INFO] Installing requests (using Alibaba Cloud mirror)...
+        %PYTHON_CMD% -m pip install requests %PIP_MIRROR%
+    )
+    
+    call deactivate
+) else (
+    %PYTHON_CMD% -c "import geopy" >nul 2>&1
+    if %errorlevel% neq 0 (
+        echo [INFO] Installing geopy (using Alibaba Cloud mirror)...
+        %PYTHON_CMD% -m pip install geopy %PIP_MIRROR%
+    )
+    
+    %PYTHON_CMD% -c "import psutil" >nul 2>&1
+    if %errorlevel% neq 0 (
+        echo [INFO] Installing psutil (using Alibaba Cloud mirror)...
+        %PYTHON_CMD% -m pip install psutil %PIP_MIRROR%
+    )
+    
+    %PYTHON_CMD% -c "import requests" >nul 2>&1
+    if %errorlevel% neq 0 (
+        echo [INFO] Installing requests (using Alibaba Cloud mirror)...
+        %PYTHON_CMD% -m pip install requests %PIP_MIRROR%
+    )
+)
+
+echo [INFO] Dependency installation completed
 
 echo.
-
-REM Check if Python is available
-%PYTHON_EXE% --version >nul 2>&1
-if %errorlevel% neq 0 (
-    echo [ERROR] Python is not available, please install Python 3.7+
-    echo.
-    echo [INFO] Download URL: https://www.python.org/downloads/
-    echo [INFO] Please check "Add Python to PATH" during installation
-    echo.
-    pause
-    exit /b 1
-)
-
-REM Display Python version information
-echo [INFO] Current Python environment:
-%PYTHON_EXE% --version
+echo ============================================================
+echo Environment Detection Completed
+echo ============================================================
 echo.
-
-REM Check if dependency libraries are installed
-echo [INFO] Checking dependency libraries...
-
-REM Check geopy
-%PYTHON_EXE% -c "import geopy" >nul 2>&1
-if %errorlevel% neq 0 (
-    echo [WARNING] geopy not installed, installing...
-    %PYTHON_EXE% -m pip install geopy
+echo Current Configuration:
+echo   Python Command: %PYTHON_CMD%
+echo   Python Executable: %PYTHON_EXE%
+if "%VENV_EXISTS%"=="1" (
+    echo   Virtual Environment: %VENV_PATH%
+) else (
+    echo   Virtual Environment: Not used
 )
-
-REM Check psutil
-%PYTHON_EXE% -c "import psutil" >nul 2>&1
-if %errorlevel% neq 0 (
-    echo [WARNING] psutil not installed, installing...
-    %PYTHON_EXE% -m pip install psutil
-)
-
-REM Check requests
-%PYTHON_EXE% -c "import requests" >nul 2>&1
-if %errorlevel% neq 0 (
-    echo [WARNING] requests not installed, installing...
-    %PYTHON_EXE% -m pip install requests
-)
-
+echo   Operating System: %OS_NAME%
 echo.
 echo ============================================================
 echo Starting WiFi Scanner and Optimization Tool...

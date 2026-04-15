@@ -12,93 +12,245 @@ cd "$SCRIPT_DIR/.."
 export PYTHONIOENCODING=utf-8
 export LANG=en_US.UTF-8
 
+# Logging functions
+log_section() {
+    echo ""
+    echo "============================================================"
+    echo "$1"
+    echo "============================================================"
+}
+
+log_info() {
+    echo "[INFO] $1"
+}
+
+log_warn() {
+    echo "[WARNING] $1"
+}
+
+log_error() {
+    echo "[ERROR] $1"
+}
+
+# Detect Python environment
+detect_python() {
+    log_section "🔍 环境检测与配置"
+    
+    echo "[1/6] 检测Python环境..."
+    PYTHON_CMD=""
+    
+    if command -v python3 &> /dev/null; then
+        PYTHON_CMD="python3"
+        log_info "Python版本：$(python3 --version 2>&1 | awk '{print $2}') (命令: python3)"
+    elif command -v python &> /dev/null; then
+        PYTHON_CMD="python"
+        log_info "Python版本：$(python --version 2>&1 | awk '{print $2}') (命令: python)"
+    else
+        log_error "Python环境检测失败"
+        echo ""
+        echo "请先安装Python 3.10或更高版本："
+        if [[ "$OSTYPE" == "linux-gnu"* ]]; then
+            echo "  Ubuntu/Debian: sudo apt-get install python3 python3-pip"
+            echo "  CentOS/RHEL: sudo yum install python3 python3-pip"
+            echo "  Arch Linux: sudo pacman -S python python-pip"
+        elif [[ "$OSTYPE" == "darwin"* ]]; then
+            echo "  macOS: brew install python3"
+        fi
+        return 1
+    fi
+    
+    return 0
+}
+
+# Detect virtual environment
+detect_venv() {
+    echo "[2/6] 检测虚拟环境..."
+    
+    if [ -d "venv" ] && [ -f "venv/bin/activate" ]; then
+        log_info "检测到虚拟环境：venv"
+        VENV_EXISTS=1
+        VENV_PATH="venv"
+    elif [ -d ".venv" ] && [ -f ".venv/bin/activate" ]; then
+        log_info "检测到虚拟环境：.venv"
+        VENV_EXISTS=1
+        VENV_PATH=".venv"
+    elif [ -d "env" ] && [ -f "env/bin/activate" ]; then
+        log_info "检测到虚拟环境：env"
+        VENV_EXISTS=1
+        VENV_PATH="env"
+    else
+        log_warn "未检测到虚拟环境"
+        VENV_EXISTS=0
+        VENV_PATH=""
+        
+        echo ""
+        echo "💡 提示：建议创建虚拟环境以隔离项目依赖"
+        echo "   创建虚拟环境命令："
+        echo "     python3 -m venv venv"
+        echo "   或者："
+        echo "     python3 -m venv .venv"
+        echo ""
+    fi
+    
+    return 0
+}
+
+# Check dependencies
+check_dependencies() {
+    echo "[3/6] 检测依赖包..."
+    
+    if [ -n "$VENV_PATH" ]; then
+        source "$VENV_PATH/bin/activate"
+        
+        if $PYTHON_CMD -c "import geopy" &> /dev/null; then
+            log_info "geopy依赖正常"
+        else
+            log_warn "geopy未安装"
+        fi
+        
+        if $PYTHON_CMD -c "import psutil" &> /dev/null; then
+            log_info "psutil依赖正常"
+        else
+            log_warn "psutil未安装"
+        fi
+        
+        if $PYTHON_CMD -c "import requests" &> /dev/null; then
+            log_info "requests依赖正常"
+        else
+            log_warn "requests未安装"
+        fi
+        
+        deactivate
+    else
+        if $PYTHON_CMD -c "import geopy" &> /dev/null; then
+            log_info "geopy依赖正常"
+        else
+            log_warn "geopy未安装"
+        fi
+        
+        if $PYTHON_CMD -c "import psutil" &> /dev/null; then
+            log_info "psutil依赖正常"
+        else
+            log_warn "psutil未安装"
+        fi
+        
+        if $PYTHON_CMD -c "import requests" &> /dev/null; then
+            log_info "requests依赖正常"
+        else
+            log_warn "requests未安装"
+        fi
+    fi
+    
+    return 0
+}
+
+# Detect operating system
+detect_os() {
+    echo "[4/6] 检测操作系统..."
+    
+    if [[ "$OSTYPE" == "darwin"* ]]; then
+        OS_NAME="macOS"
+        log_info "操作系统: macOS"
+    elif [[ "$OSTYPE" == "linux-gnu"* ]]; then
+        OS_NAME="Linux"
+        log_info "操作系统: Linux"
+    else
+        OS_NAME="Unknown"
+        log_warn "操作系统: 未知"
+    fi
+    
+    return 0
+}
+
+# Set Python executable
+set_python_executable() {
+    echo "[5/6] 配置Python环境..."
+    
+    if [ -n "$VENV_PATH" ]; then
+        PYTHON_EXE="$VENV_PATH/bin/python3"
+        log_info "使用虚拟环境Python: $PYTHON_EXE"
+    else
+        PYTHON_EXE="$PYTHON_CMD"
+        log_info "使用系统Python: $PYTHON_EXE"
+    fi
+    
+    return 0
+}
+
+# Install missing dependencies
+install_dependencies() {
+    echo "[6/6] 安装缺失的依赖..."
+    
+    # 使用阿里云镜像加速
+    PIP_MIRROR="-i https://mirrors.aliyun.com/pypi/simple/ --trusted-host mirrors.aliyun.com"
+    
+    if [ -n "$VENV_PATH" ]; then
+        source "$VENV_PATH/bin/activate"
+        
+        if ! $PYTHON_CMD -c "import geopy" &> /dev/null; then
+            log_info "正在安装geopy（使用阿里云镜像加速）..."
+            $PYTHON_CMD -m pip install geopy $PIP_MIRROR
+        fi
+        
+        if ! $PYTHON_CMD -c "import psutil" &> /dev/null; then
+            log_info "正在安装psutil（使用阿里云镜像加速）..."
+            $PYTHON_CMD -m pip install psutil $PIP_MIRROR
+        fi
+        
+        if ! $PYTHON_CMD -c "import requests" &> /dev/null; then
+            log_info "正在安装requests（使用阿里云镜像加速）..."
+            $PYTHON_CMD -m pip install requests $PIP_MIRROR
+        fi
+        
+        deactivate
+    else
+        if ! $PYTHON_CMD -c "import geopy" &> /dev/null; then
+            log_info "正在安装geopy（使用阿里云镜像加速）..."
+            $PYTHON_CMD -m pip install geopy $PIP_MIRROR
+        fi
+        
+        if ! $PYTHON_CMD -c "import psutil" &> /dev/null; then
+            log_info "正在安装psutil（使用阿里云镜像加速）..."
+            $PYTHON_CMD -m pip install psutil $PIP_MIRROR
+        fi
+        
+        if ! $PYTHON_CMD -c "import requests" &> /dev/null; then
+            log_info "正在安装requests（使用阿里云镜像加速）..."
+            $PYTHON_CMD -m pip install requests $PIP_MIRROR
+        fi
+    fi
+    
+    log_info "依赖安装完成"
+    return 0
+}
+
 echo "============================================================"
 echo "WiFi扫描与优化工具 - Linux/macOS启动脚本"
 echo "============================================================"
 echo
 
-# 检测操作系统
-if [[ "$OSTYPE" == "darwin"* ]]; then
-    OS_NAME="macOS"
-elif [[ "$OSTYPE" == "linux-gnu"* ]]; then
-    OS_NAME="Linux"
-else
-    OS_NAME="Unknown"
-fi
-
-echo "[信息] 检测到操作系统: $OS_NAME"
-
-# 检测虚拟环境
-VENV_DETECTED=false
-PYTHON_EXE="python3"
-
-if [ -f ".venv/bin/python3" ]; then
-    PYTHON_EXE=".venv/bin/python3"
-    VENV_DETECTED=true
-    echo "[信息] 检测到虚拟环境: .venv"
-elif [ -f "venv/bin/python3" ]; then
-    PYTHON_EXE="venv/bin/python3"
-    VENV_DETECTED=true
-    echo "[信息] 检测到虚拟环境: venv"
-elif [ -f "env/bin/python3" ]; then
-    PYTHON_EXE="env/bin/python3"
-    VENV_DETECTED=true
-    echo "[信息] 检测到虚拟环境: env"
-else
-    echo "[信息] 未检测到虚拟环境，使用系统Python"
-    if command -v python3 &> /dev/null; then
-        PYTHON_EXE="python3"
-    elif command -v python &> /dev/null; then
-        PYTHON_EXE="python"
-    fi
-fi
-
-echo
-
-# 检查Python是否可用
-if ! $PYTHON_EXE --version &> /dev/null; then
-    echo "[错误] Python不可用，请先安装Python 3.7+"
-    echo
-    echo "[信息] 推荐安装方式:"
-    if [[ "$OS_NAME" == "macOS" ]]; then
-        echo "  使用Homebrew安装: brew install python3"
-    elif [[ "$OS_NAME" == "Linux" ]]; then
-        echo "  Ubuntu/Debian: sudo apt update && sudo apt install python3 python3-venv"
-        echo "  CentOS/RHEL: sudo yum install python3"
-        echo "  Arch Linux: sudo pacman -S python"
-    fi
-    echo "  从官网下载: https://www.python.org/downloads/"
-    echo
+# Run environment detection
+if ! detect_python; then
     exit 1
 fi
 
-# 显示Python版本信息
-echo "[信息] 当前Python环境:"
-$PYTHON_EXE --version
-echo
+detect_venv
+check_dependencies
+detect_os
+set_python_executable
+install_dependencies
 
-# 检查依赖库是否安装
-echo "[信息] 检查依赖库..."
-
-# 检查geopy
-if ! $PYTHON_EXE -c "import geopy" &> /dev/null; then
-    echo "[警告] geopy未安装，正在安装..."
-    $PYTHON_EXE -m pip install geopy
-fi
-
-# 检查psutil
-if ! $PYTHON_EXE -c "import psutil" &> /dev/null; then
-    echo "[警告] psutil未安装，正在安装..."
-    $PYTHON_EXE -m pip install psutil
-fi
-
-# 检查requests
-if ! $PYTHON_EXE -c "import requests" &> /dev/null; then
-    echo "[警告] requests未安装，正在安装..."
-    $PYTHON_EXE -m pip install requests
-fi
-
-echo
+echo ""
+echo "============================================================"
+echo "✅ 环境检测完成"
+echo "============================================================"
+echo ""
+echo "当前配置："
+echo "  Python命令: $PYTHON_CMD"
+echo "  Python可执行文件: $PYTHON_EXE"
+echo "  虚拟环境: $([ -n "$VENV_PATH" ] && echo "$VENV_PATH" || echo "未使用")"
+echo "  操作系统: $OS_NAME"
+echo ""
 echo "============================================================"
 echo "正在启动WiFi扫描与优化工具..."
 echo "============================================================"
