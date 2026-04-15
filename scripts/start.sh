@@ -80,16 +80,20 @@ detect_venv() {
         VENV_PATH="env"
     else
         log_warn "未检测到虚拟环境"
-        VENV_EXISTS=0
-        VENV_PATH=""
+        echo ""
+        log_info "正在自动创建虚拟环境..."
         
-        echo ""
-        echo "💡 提示：建议创建虚拟环境以隔离项目依赖"
-        echo "   创建虚拟环境命令："
-        echo "     python3 -m venv venv"
-        echo "   或者："
-        echo "     python3 -m venv .venv"
-        echo ""
+        if $PYTHON_CMD -m venv venv; then
+            log_info "虚拟环境创建成功：venv"
+            VENV_EXISTS=1
+            VENV_PATH="venv"
+            echo ""
+        else
+            log_error "虚拟环境创建失败"
+            VENV_EXISTS=0
+            VENV_PATH=""
+            echo ""
+        fi
     fi
     
     return 0

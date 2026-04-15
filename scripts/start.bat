@@ -1,4 +1,5 @@
 @echo off
+setlocal enabledelayedexpansion
 REM WiFi Scanner and Optimization Tool - Windows Startup Script
 REM Version: v2.0.0
 REM Update Date: 2026-03-29
@@ -24,7 +25,7 @@ echo WiFi Scanner and Optimization Tool - Windows
 echo ============================================================
 echo.
 
-hREM Initialize variables
+REM Initialize variables
 set PYTHON_CMD=
 set VENV_PATH=
 set VENV_EXISTS=0
@@ -33,85 +34,127 @@ set OS_NAME=Windows
 REM [1/6] Detect Python environment
 echo [1/6] Detecting Python environment...
 
+set "PYTHON_CMD="
+set "PYTHON_VERSION="
+
+REM Try to find Python in PATH first
 where python3 >nul 2>&1
 if %errorlevel% equ 0 (
-    set PYTHON_CMD=python3
-    for /f "tokens=2" %%i in ('python3 --version 2^>^&1') do set PYTHON_VERSION=%%i
-    echo [INFO] Python version: %PYTHON_VERSION% (command: python3)
-) else (
-    where python >nul 2>&1
-    if %errorlevel% equ 0 (
-        set PYTHON_CMD=python
-        for /f "tokens=2" %%i in ('python --version 2^>^&1') do set PYTHON_VERSION=%%i
-        echo [INFO] Python version: %PYTHON_VERSION% (command: python)
-    ) else (
-        echo [ERROR] Python environment detection failed
-        echo.
-        echo Please install Python 3.10 or higher:
-        echo   Download from: https://www.python.org/downloads/
-        echo   Please check "Add Python to PATH" during installation
-        echo.
-        pause
-        exit /b 1
-    )
+    set "PYTHON_CMD=python3"
+    goto check_version
 )
+
+where python >nul 2>&1
+if %errorlevel% equ 0 (
+    set "PYTHON_CMD=python"
+    goto check_version
+)
+
+REM Check common Python installation paths
+if exist "C:\Users\Administrator\AppData\Local\Programs\Python\Python314\python.exe" (
+    set "PYTHON_CMD=C:\Users\Administrator\AppData\Local\Programs\Python\Python314\python.exe"
+    goto check_version
+)
+
+if exist "C:\Users\Administrator\AppData\Local\Programs\Python\Python39\python.exe" (
+    set "PYTHON_CMD=C:\Users\Administrator\AppData\Local\Programs\Python\Python39\python.exe"
+    goto check_version
+)
+
+if exist "C:\Python314\python.exe" (
+    set "PYTHON_CMD=C:\Python314\python.exe"
+    goto check_version
+)
+
+if exist "C:\Python39\python.exe" (
+    set "PYTHON_CMD=C:\Python39\python.exe"
+    goto check_version
+)
+
+REM Python not found
+echo [ERROR] Python environment detection failed
+echo.
+echo Please install Python 3.10 or higher:
+echo   Download from: https://www.python.org/downloads/
+echo   Please check "Add Python to PATH" during installation
+echo.
+pause
+exit /b 1
+
+:check_version
+for /f "tokens=2" %%i in ('"%PYTHON_CMD%" --version 2^>^&1') do set "PYTHON_VERSION=%%i"
+echo [INFO] Python version: %PYTHON_VERSION% (command: %PYTHON_CMD%)
 
 REM [2/6] Detect virtual environment
 echo [2/6] Detecting virtual environment...
 
+set VENV_EXISTS=0
+set VENV_PATH=
+
 if exist "venv\Scripts\activate.bat" (
     echo [INFO] Virtual environment detected: venv
-    set VENV_EXISTS=1
-    set VENV_PATH=venv
-) else if exist ".venv\Scripts\activate.bat" (
+    set "VENV_EXISTS=1"
+    set "VENV_PATH=venv"
+    goto venv_found
+)
+
+if exist ".venv\Scripts\activate.bat" (
     echo [INFO] Virtual environment detected: .venv
-    set VENV_EXISTS=1
-    set VENV_PATH=.venv
-) else if exist "env\Scripts\activate.bat" (
+    set "VENV_EXISTS=1"
+    set "VENV_PATH=.venv"
+    goto venv_found
+)
+
+if exist "env\Scripts\activate.bat" (
     echo [INFO] Virtual environment detected: env
-    set VENV_EXISTS=1
-    set VENV_PATH=env
-) else (
-    echo [WARNING] No virtual environment detected
-    set VENV_EXISTS=0
-    set VENV_PATH=
+    set "VENV_EXISTS=1"
+    set "VENV_PATH=env"
+    goto venv_found
+)
+
+echo [WARNING] No virtual environment detected
+echo [INFO] Creating virtual environment automatically...
+echo.
+
+"%PYTHON_CMD%" -m venv venv
+if %errorlevel% equ 0 (
+    echo [INFO] Virtual environment created successfully: venv
+    set "VENV_EXISTS=1"
+    set "VENV_PATH=venv"
     echo.
-    echo ^💡 Tip: It is recommended to create a virtual environment to isolate project dependencies
-    echo   Create virtual environment command:
-    echo     python -m venv venv
-    echo   Or:
-    echo     python -m venv .venv
+) else (
+    echo [ERROR] Failed to create virtual environment
+    set "VENV_EXISTS=0"
+    set "VENV_PATH="
     echo.
 )
+
+:venv_found
 
 REM [3/6] Check dependencies
 echo [3/6] Checking dependencies...
 
 if "%VENV_EXISTS%"=="1" (
-    call "%VENV_PATH%\Scripts\activate.bat"
-    
-    %PYTHON_CMD% -c "import geopy" >nul 2>&1
+    "%VENV_PATH%\Scripts\python.exe" -c "import geopy" >nul 2>&1
     if %errorlevel% equ 0 (
         echo [INFO] geopy dependency OK
     ) else (
         echo [WARNING] geopy not installed
     )
     
-    %PYTHON_CMD% -c "import psutil" >nul 2>&1
+    "%VENV_PATH%\Scripts\python.exe" -c "import psutil" >nul 2>&1
     if %errorlevel% equ 0 (
         echo [INFO] psutil dependency OK
     ) else (
         echo [WARNING] psutil not installed
     )
     
-    %PYTHON_CMD% -c "import requests" >nul 2>&1
+    "%VENV_PATH%\Scripts\python.exe" -c "import requests" >nul 2>&1
     if %errorlevel% equ 0 (
         echo [INFO] requests dependency OK
     ) else (
         echo [WARNING] requests not installed
     )
-    
-    call deactivate
 ) else (
     %PYTHON_CMD% -c "import geopy" >nul 2>&1
     if %errorlevel% equ 0 (
@@ -143,58 +186,51 @@ REM [5/6] Set Python executable
 echo [5/6] Configuring Python environment...
 
 if "%VENV_EXISTS%"=="1" (
-    set PYTHON_EXE=%VENV_PATH%\Scripts\python.exe
-    echo [INFO] Using virtual environment Python: %PYTHON_EXE%
+    set "PYTHON_EXE=%VENV_PATH%\Scripts\python.exe"
+    echo [INFO] Using virtual environment Python: !PYTHON_EXE!
 ) else (
-    set PYTHON_EXE=%PYTHON_CMD%
-    echo [INFO] Using system Python: %PYTHON_EXE%
+    set "PYTHON_EXE=%PYTHON_CMD%"
+    echo [INFO] Using system Python: !PYTHON_EXE!
 )
 
 REM [6/6] Install missing dependencies
 echo [6/6] Installing missing dependencies...
 
-REM Use Alibaba Cloud mirror for acceleration
-set PIP_MIRROR=-i https://mirrors.aliyun.com/pypi/simple/ --trusted-host mirrors.aliyun.com
-
 if "%VENV_EXISTS%"=="1" (
-    call "%VENV_PATH%\Scripts\activate.bat"
-    
-    %PYTHON_CMD% -c "import geopy" >nul 2>&1
+    "%VENV_PATH%\Scripts\python.exe" -c "import geopy" >nul 2>&1
     if %errorlevel% neq 0 (
-        echo [INFO] Installing geopy (using Alibaba Cloud mirror)...
-        %PYTHON_CMD% -m pip install geopy %PIP_MIRROR%
+        echo [INFO] Installing geopy...
+        "%VENV_PATH%\Scripts\python.exe" -m pip install geopy -i https://mirrors.aliyun.com/pypi/simple/
     )
     
-    %PYTHON_CMD% -c "import psutil" >nul 2>&1
+    "%VENV_PATH%\Scripts\python.exe" -c "import psutil" >nul 2>&1
     if %errorlevel% neq 0 (
-        echo [INFO] Installing psutil (using Alibaba Cloud mirror)...
-        %PYTHON_CMD% -m pip install psutil %PIP_MIRROR%
+        echo [INFO] Installing psutil...
+        "%VENV_PATH%\Scripts\python.exe" -m pip install psutil -i https://mirrors.aliyun.com/pypi/simple/
     )
     
-    %PYTHON_CMD% -c "import requests" >nul 2>&1
+    "%VENV_PATH%\Scripts\python.exe" -c "import requests" >nul 2>&1
     if %errorlevel% neq 0 (
-        echo [INFO] Installing requests (using Alibaba Cloud mirror)...
-        %PYTHON_CMD% -m pip install requests %PIP_MIRROR%
+        echo [INFO] Installing requests...
+        "%VENV_PATH%\Scripts\python.exe" -m pip install requests -i https://mirrors.aliyun.com/pypi/simple/
     )
-    
-    call deactivate
 ) else (
     %PYTHON_CMD% -c "import geopy" >nul 2>&1
     if %errorlevel% neq 0 (
-        echo [INFO] Installing geopy (using Alibaba Cloud mirror)...
-        %PYTHON_CMD% -m pip install geopy %PIP_MIRROR%
+        echo [INFO] Installing geopy...
+        %PYTHON_CMD% -m pip install geopy -i https://mirrors.aliyun.com/pypi/simple/
     )
     
     %PYTHON_CMD% -c "import psutil" >nul 2>&1
     if %errorlevel% neq 0 (
-        echo [INFO] Installing psutil (using Alibaba Cloud mirror)...
-        %PYTHON_CMD% -m pip install psutil %PIP_MIRROR%
+        echo [INFO] Installing psutil...
+        %PYTHON_CMD% -m pip install psutil -i https://mirrors.aliyun.com/pypi/simple/
     )
     
     %PYTHON_CMD% -c "import requests" >nul 2>&1
     if %errorlevel% neq 0 (
-        echo [INFO] Installing requests (using Alibaba Cloud mirror)...
-        %PYTHON_CMD% -m pip install requests %PIP_MIRROR%
+        echo [INFO] Installing requests...
+        %PYTHON_CMD% -m pip install requests -i https://mirrors.aliyun.com/pypi/simple/
     )
 )
 

@@ -2518,5 +2518,437 @@
       },
       "performance_score": 85
     }
+  },
+  {
+    "timestamp": "2026-04-15T18:20:48.469462",
+    "hardware_info": {
+      "cpu": {
+        "名称": "Intel(R) Core(TM) i5-9400F CPU @ 2.90GHz",
+        "架构": "x86_64 (Intel)",
+        "核心数": 6,
+        "频率_MHz": 2900
+      },
+      "gpu": {
+        "名称": "NVIDIA GeForce GTX 1050 Ti",
+        "品牌": "七彩虹",
+        "型号": "GTX 1050 Ti",
+        "GPU芯片": "NVIDIA GeForce GTX 1050 Ti",
+        "显存_GB": 4.0,
+        "类型": "独立"
+      },
+      "memory": {
+        "总容量_GB": 15.9,
+        "可用_GB": 1.2,
+        "使用率_%": 92.7,
+        "频率_MHz": 2400,
+        "DDR类型": "DDR4"
+      },
+      "system": {
+        "操作系统": "Windows",
+        "版本": "11",
+        "架构": "AMD64",
+        "主机名": "yu-colorful-xxesj",
+        "启动时间": "2026-04-15 10:03:45"
+      },
+      "bios": {
+        "版本": "3202",
+        "发布日期": "2021年07月10日",
+        "制造商": "American Megatrends Inc.",
+        "是否最新": "是"
+      },
+      "motherboard": {
+        "制造商": "ASUSTeK COMPUTER INC.",
+        "型号": "TUF B360M-PLUS GAMING S",
+        "芯片组": "Rev X.0x",
+        "序列号": "190****24"
+      },
+      "disk": {
+        "总数": 2,
+        "总容量_TB": 1.13,
+        "硬盘列表": [
+          {
+            "名称": "KINGSTON SA400S37240G",
+            "类型": "SSD",
+            "接口类型": "SCSI",
+            "容量_GB": 223.6,
+            "容量_TB": 0.22
+          },
+          {
+            "名称": "WDC WD10EZEX-21WN4A0",
+            "类型": "SSD",
+            "接口类型": "SCSI",
+            "容量_GB": 931.5,
+            "容量_TB": 0.91
+          }
+        ],
+        "读写速率": {
+          "读取速率_MB/s": 500,
+          "写入速率_MB/s": 61.48,
+          "理论读取速率_MB/s": 500,
+          "理论写入速率_MB/s": 400
+        }
+      },
+      "performance_score": 90.0
+    }
+  },
+  {
+    "timestamp": "2026-04-15T18:21:20.291232",
+    "hardware_info": {
+      "cpu": {
+        "名称": "Intel(R) Core(TM) i5-9400F CPU @ 2.90GHz",
+        "架构": "x86_64 (Intel)",
+        "核心数": 6,
+        "频率_MHz": 2900
+      },
+      "gpu": {
+        "名称": "NVIDIA GeForce GTX 1050 Ti",
+        "品牌": "七彩虹",
+        "型号": "GTX 1050 Ti",
+        "GPU芯片": "NVIDIA GeForce GTX 1050 Ti",
+        "显存_GB": 4.0,
+        "类型": "独立"
+      },
+      "memory": {
+        "总容量_GB": 15.9,
+        "可用_GB": 1.0,
+        "使用率_%": 93.9,
+        "频率_MHz": 2400,
+        "DDR类型": "DDR4"
+      },
+      "system": {
+        "操作系统": "Windows",
+        "版本": "11",
+        "架构": "AMD64",
+        "主机名": "yu-colorful-xxesj",
+        "启动时间": "2026-04-15 10:03:45"
+      },
+      "bios": {
+        "版本": "3202",
+        "发布日期": "2021年07月10日",
+        "制造商": "American Megatrends Inc.",
+        "是否最新": "是"
+      },
+      "motherboard": {
+        "制造商": "ASUSTeK COMPUTER INC.",
+        "型号": "TUF B360M-PLUS GAMING S",
+        "芯片组": "Rev X.0x",
+        "序列号": "190****24"
+      },
+      "disk": {
+        "总数": 2,
+        "总容量_TB": 1.13,
+        "硬盘列表": [
+          {
+            "名称": "KINGSTON SA400S37240G",
+            "类型": "SSD",
+            "接口类型": "SCSI",
+            "容量_GB": 223.6,
+            "容量_TB": 0.22
+          },
+          {
+            "名称": "WDC WD10EZEX-21WN4A0",
+            "类型": "SSD",
+            "接口类型": "SCSI",
+            "容量_GB": 931.5,
+            "容量_TB": 0.91
+          }
+        ],
+        "读写速率": {
+          "读取速率_MB/s": 500,
+          "写入速率_MB/s": 400,
+          "理论读取速率_MB/s": 500,
+          "理论写入速率_MB/s": 400
+        }
+      },
+      "performance_score": 90.0
+    }
+  },
+  {
+    "timestamp": "2026-04-15T18:23:56.021118",
+    "hardware_info": {
+      "cpu": {
+        "名称": "Intel(R) Core(TM) i5-9400F CPU @ 2.90GHz",
+        "架构": "x86_64 (Intel)",
+        "核心数": 6,
+        "频率_MHz": 2900
+      },
+      "gpu": {
+        "名称": "NVIDIA GeForce GTX 1050 Ti",
+        "品牌": "七彩虹",
+        "型号": "GTX 1050 Ti",
+        "GPU芯片": "NVIDIA GeForce GTX 1050 Ti",
+        "显存_GB": 4.0,
+        "类型": "独立"
+      },
+      "memory": {
+        "总容量_GB": 15.9,
+        "可用_GB": 2.2,
+        "使用率_%": 86.1,
+        "频率_MHz": 2400,
+        "DDR类型": "DDR4"
+      },
+      "system": {
+        "操作系统": "Windows",
+        "版本": "11",
+        "架构": "AMD64",
+        "主机名": "yu-colorful-xxesj",
+        "启动时间": "2026-04-15 10:03:45"
+      },
+      "bios": {
+        "版本": "3202",
+        "发布日期": "2021年07月10日",
+        "制造商": "American Megatrends Inc.",
+        "是否最新": "是"
+      },
+      "motherboard": {
+        "制造商": "ASUSTeK COMPUTER INC.",
+        "型号": "TUF B360M-PLUS GAMING S",
+        "芯片组": "Rev X.0x",
+        "序列号": "190****24"
+      },
+      "disk": {
+        "总数": 2,
+        "总容量_TB": 1.13,
+        "硬盘列表": [
+          {
+            "名称": "KINGSTON SA400S37240G",
+            "类型": "SSD",
+            "接口类型": "SCSI",
+            "容量_GB": 223.6,
+            "容量_TB": 0.22
+          },
+          {
+            "名称": "WDC WD10EZEX-21WN4A0",
+            "类型": "SSD",
+            "接口类型": "SCSI",
+            "容量_GB": 931.5,
+            "容量_TB": 0.91
+          }
+        ],
+        "读写速率": {
+          "读取速率_MB/s": 500,
+          "写入速率_MB/s": 400,
+          "理论读取速率_MB/s": 500,
+          "理论写入速率_MB/s": 400
+        }
+      },
+      "performance_score": 90.0
+    }
+  },
+  {
+    "timestamp": "2026-04-15T18:52:00.673569",
+    "hardware_info": {
+      "cpu": {
+        "名称": "Intel(R) Core(TM) i5-9400F CPU @ 2.90GHz",
+        "架构": "x86_64 (Intel)",
+        "核心数": 6,
+        "频率_MHz": 2900
+      },
+      "gpu": {
+        "名称": "NVIDIA GeForce GTX 1050 Ti",
+        "品牌": "七彩虹",
+        "型号": "GTX 1050 Ti",
+        "GPU芯片": "NVIDIA GeForce GTX 1050 Ti",
+        "显存_GB": 4.0,
+        "类型": "独立"
+      },
+      "memory": {
+        "总容量_GB": 15.9,
+        "可用_GB": 1.9,
+        "使用率_%": 87.8,
+        "频率_MHz": 2400,
+        "DDR类型": "DDR4"
+      },
+      "system": {
+        "操作系统": "Windows",
+        "版本": "11",
+        "架构": "AMD64",
+        "主机名": "yu-colorful-xxesj",
+        "启动时间": "2026-04-15 10:03:45"
+      },
+      "bios": {
+        "版本": "3202",
+        "发布日期": "2021年07月10日",
+        "制造商": "American Megatrends Inc.",
+        "是否最新": "是"
+      },
+      "motherboard": {
+        "制造商": "ASUSTeK COMPUTER INC.",
+        "型号": "TUF B360M-PLUS GAMING S",
+        "芯片组": "Rev X.0x",
+        "序列号": "190****24"
+      },
+      "disk": {
+        "总数": 2,
+        "总容量_TB": 1.13,
+        "硬盘列表": [
+          {
+            "名称": "KINGSTON SA400S37240G",
+            "类型": "SSD",
+            "接口类型": "SCSI",
+            "容量_GB": 223.6,
+            "容量_TB": 0.22
+          },
+          {
+            "名称": "WDC WD10EZEX-21WN4A0",
+            "类型": "SSD",
+            "接口类型": "SCSI",
+            "容量_GB": 931.5,
+            "容量_TB": 0.91
+          }
+        ],
+        "读写速率": {
+          "读取速率_MB/s": 500,
+          "写入速率_MB/s": 400,
+          "理论读取速率_MB/s": 500,
+          "理论写入速率_MB/s": 400
+        }
+      },
+      "performance_score": 90.0
+    }
+  },
+  {
+    "timestamp": "2026-04-15T18:55:04.098317",
+    "hardware_info": {
+      "cpu": {
+        "名称": "Intel(R) Core(TM) i5-9400F CPU @ 2.90GHz",
+        "架构": "x86_64 (Intel)",
+        "核心数": 6,
+        "频率_MHz": 2900
+      },
+      "gpu": {
+        "名称": "NVIDIA GeForce GTX 1050 Ti",
+        "品牌": "七彩虹",
+        "型号": "GTX 1050 Ti",
+        "GPU芯片": "NVIDIA GeForce GTX 1050 Ti",
+        "显存_GB": 4.0,
+        "类型": "独立"
+      },
+      "memory": {
+        "总容量_GB": 15.9,
+        "可用_GB": 2.0,
+        "使用率_%": 87.4,
+        "频率_MHz": 2400,
+        "DDR类型": "DDR4"
+      },
+      "system": {
+        "操作系统": "Windows",
+        "版本": "11",
+        "架构": "AMD64",
+        "主机名": "yu-colorful-xxesj",
+        "启动时间": "2026-04-15 10:03:45"
+      },
+      "bios": {
+        "版本": "3202",
+        "发布日期": "2021年07月10日",
+        "制造商": "American Megatrends Inc.",
+        "是否最新": "是"
+      },
+      "motherboard": {
+        "制造商": "ASUSTeK COMPUTER INC.",
+        "型号": "TUF B360M-PLUS GAMING S",
+        "芯片组": "Rev X.0x",
+        "序列号": "190****24"
+      },
+      "disk": {
+        "总数": 2,
+        "总容量_TB": 1.13,
+        "硬盘列表": [
+          {
+            "名称": "KINGSTON SA400S37240G",
+            "类型": "SSD",
+            "接口类型": "SCSI",
+            "容量_GB": 223.6,
+            "容量_TB": 0.22
+          },
+          {
+            "名称": "WDC WD10EZEX-21WN4A0",
+            "类型": "SSD",
+            "接口类型": "SCSI",
+            "容量_GB": 931.5,
+            "容量_TB": 0.91
+          }
+        ],
+        "读写速率": {
+          "读取速率_MB/s": 500,
+          "写入速率_MB/s": 400,
+          "理论读取速率_MB/s": 500,
+          "理论写入速率_MB/s": 400
+        }
+      },
+      "performance_score": 90.0
+    }
+  },
+  {
+    "timestamp": "2026-04-15T19:01:40.548638",
+    "hardware_info": {
+      "cpu": {
+        "名称": "Intel(R) Core(TM) i5-9400F CPU @ 2.90GHz",
+        "架构": "x86_64 (Intel)",
+        "核心数": 6,
+        "频率_MHz": 2900
+      },
+      "gpu": {
+        "名称": "NVIDIA GeForce GTX 1050 Ti",
+        "品牌": "七彩虹",
+        "型号": "GTX 1050 Ti",
+        "GPU芯片": "NVIDIA GeForce GTX 1050 Ti",
+        "显存_GB": 4.0,
+        "类型": "独立"
+      },
+      "memory": {
+        "总容量_GB": 15.9,
+        "可用_GB": 3.0,
+        "使用率_%": 80.9,
+        "频率_MHz": 2400,
+        "DDR类型": "DDR4"
+      },
+      "system": {
+        "操作系统": "Windows",
+        "版本": "11",
+        "架构": "AMD64",
+        "主机名": "yu-colorful-xxesj",
+        "启动时间": "2026-04-15 10:03:45"
+      },
+      "bios": {
+        "版本": "3202",
+        "发布日期": "2021年07月10日",
+        "制造商": "American Megatrends Inc.",
+        "是否最新": "是"
+      },
+      "motherboard": {
+        "制造商": "ASUSTeK COMPUTER INC.",
+        "型号": "TUF B360M-PLUS GAMING S",
+        "芯片组": "Rev X.0x",
+        "序列号": "190****24"
+      },
+      "disk": {
+        "总数": 2,
+        "总容量_TB": 1.13,
+        "硬盘列表": [
+          {
+            "名称": "KINGSTON SA400S37240G",
+            "类型": "SSD",
+            "接口类型": "SCSI",
+            "容量_GB": 223.6,
+            "容量_TB": 0.22
+          },
+          {
+            "名称": "WDC WD10EZEX-21WN4A0",
+            "类型": "SSD",
+            "接口类型": "SCSI",
+            "容量_GB": 931.5,
+            "容量_TB": 0.91
+          }
+        ],
+        "读写速率": {
+          "读取速率_MB/s": 500,
+          "写入速率_MB/s": 400,
+          "理论读取速率_MB/s": 500,
+          "理论写入速率_MB/s": 400
+        }
+      },
+      "performance_score": 90.0
+    }
   }
 ]
