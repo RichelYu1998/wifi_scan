@@ -39,7 +39,6 @@ class UnifiedUtils:
     CONFIG_DIR = JSON_DIR / 'config'
     HARDWARE_DIR = JSON_DIR / 'hardware'
     NETWORK_DIR = JSON_DIR / 'network'
-    PROJECTOR_DIR = JSON_DIR / 'projector'
     LOGS_DIR = JSON_DIR / 'logs'
     
     # 静态地理位置数据库（基于联网搜索的已知位置）
@@ -113,13 +112,6 @@ class UnifiedUtils:
         if filename:
             return str(UnifiedUtils.NETWORK_DIR / filename)
         return str(UnifiedUtils.NETWORK_DIR)
-    
-    @staticmethod
-    def get_projector_path(filename=None):
-        """获取投影仪文件路径（跨平台）"""
-        if filename:
-            return str(UnifiedUtils.PROJECTOR_DIR / filename)
-        return str(UnifiedUtils.PROJECTOR_DIR)
     
     @staticmethod
     def get_log_path(filename=None):
@@ -218,7 +210,6 @@ class UnifiedUtils:
             'resolution_map': config.get('resolution_map', {}),
             'wireless_card_brands': config.get('wireless_card_brands', {}),
             'laptop_brands': config.get('laptop_brands', {}),
-            'projector_brands': config.get('projector_brands', {}),
             'gpu_brands': config.get('gpu_brands', {}),
             'cpu_brands': config.get('cpu_brands', {}),
             'network_isp': config.get('network_isp', {}),
@@ -367,7 +358,6 @@ class UnifiedUtils:
                 'www.hp.com': 'www.hp.com.cn',
                 'www.samsung.com': 'www.samsung.com.cn',
                 
-                # 投影仪数据（国内网站，无需CDN）
                 'search.jd.com': 'search.jd.com',
                 's.taobao.com': 's.taobao.com',
                 'search.suning.com': 'search.suning.com',
@@ -3556,13 +3546,11 @@ class WiFiChannelScanner:
         self.config_path = str(UnifiedUtils.CONFIG_DIR)
         self.hardware_path = str(UnifiedUtils.HARDWARE_DIR)
         self.network_path = str(UnifiedUtils.NETWORK_DIR)
-        self.projector_path = str(UnifiedUtils.PROJECTOR_DIR)
         
         # 确保所有目录存在
         UnifiedUtils.ensure_dir_exists(self.config_path)
         UnifiedUtils.ensure_dir_exists(self.hardware_path)
         UnifiedUtils.ensure_dir_exists(self.network_path)
-        UnifiedUtils.ensure_dir_exists(self.projector_path)
     
     def _safe_print(self, message):
         """安全打印函数，确保中文正确显示"""
@@ -3756,14 +3744,6 @@ class WiFiChannelScanner:
         
         self._save_info_to_json(network_file, None, 'network_info', network_info_with_timestamp, False)
     
-    def _save_projector_info(self, projector_info):
-        """保存投影仪信息到JSON文件"""
-        projector_file = os.path.join(self.projector_path, 'projector_info.json')
-        projector_info_with_timestamp = {
-            'timestamp': datetime.datetime.now().isoformat(),
-            'projector_info': projector_info
-        }
-        self._save_info_to_json(projector_file, None, 'projector_info', projector_info_with_timestamp, False)
     
     def _save_info_to_json(self, file_path, filename, info_type, info_data, add_timestamp=True):
         """通用方法：保存信息到JSON文件
@@ -5849,7 +5829,6 @@ class JSONFileManager:
             "config",           # 配置文件
             "hardware",         # 硬件性能数据
             "logs",             # 日志文件
-            "projector",        # 投影仪数据
             "network",          # 网络配置数据
             "system",           # 系统信息
             "backup"            # 备份文件
@@ -5882,11 +5861,7 @@ class JSONFileManager:
             "scan_log": "logs",
             "wifi_log": "logs",
             
-            # 投影仪数据
-            "projector": "projector",
-            "projector_data": "projector",
-            "projector_price": "projector",
-            
+                
             # 网络数据
             "network_config": "network",
             "wifi_config": "network",
@@ -6019,15 +5994,7 @@ class JSONFileManager:
             "naming_pattern": "*基于周围WiFi信道优化推荐*.json"
         },
         
-        # 投影仪数据
-        "projector": {
-            "description": "投影仪推荐数据",
-            "files": [
-                "projector_data.json",           # 投影仪数据
-                "projector_price_data.json",     # 投影仪价格数据
-            ],
-            "subdirectories": []
-        },
+
         
         # 网络配置数据
         "network": {
@@ -6084,8 +6051,6 @@ class JSONFileManager:
             (["network_performance", "network_"], "hardware"),
             (["disk_performance", "disk_"], "hardware"),
             
-            # 投影仪数据
-            (["projector_data", "projector_price"], "projector"),
             
             # 日志文件（基于文件名模式）
             (["基于周围WiFi信道优化推荐", "wifi_scan", "scan_log"], "logs"),
@@ -6310,7 +6275,6 @@ class NetworkDataUpdater:
             'network_card_models': self.update_network_card_models(),
             'gpu_performance': self.update_gpu_performance_data(),
             'cpu_performance': self.update_cpu_performance_data(),
-            'projector_data': self.update_projector_data(),
             'gpu_patterns': self.update_gpu_patterns(),
             'cpu_patterns': self.update_cpu_patterns(),
             'wifi_brand_patterns': self.update_wifi_brand_patterns()
@@ -6322,7 +6286,6 @@ class NetworkDataUpdater:
         print(f"  - 网卡型号数据: {'✅ 成功' if results['network_card_models'] else '❌ 失败'}")
         print(f"  - GPU性能数据: {'✅ 成功' if results['gpu_performance'] else '❌ 失败'}")
         print(f"  - CPU性能数据: {'✅ 成功' if results['cpu_performance'] else '❌ 失败'}")
-        print(f"  - 投影仪数据: {'✅ 成功' if results['projector_data'] else '❌ 失败'}")
         print(f"  - GPU模式配置: {'✅ 成功' if results['gpu_patterns'] else '❌ 失败'}")
         print(f"  - CPU模式配置: {'✅ 成功' if results['cpu_patterns'] else '❌ 失败'}")
         print(f"  - WiFi品牌配置: {'✅ 成功' if results['wifi_brand_patterns'] else '❌ 失败'}")
@@ -6456,31 +6419,6 @@ class NetworkDataUpdater:
                 traceback.print_exc()
             return False
     
-    def update_projector_data(self):
-        """从网络更新投影仪数据"""
-        try:
-            print("\n📡 正在更新投影仪数据...")
-            
-            # 加载现有配置
-            existing_config = self._load_json_file('../projector/projector_data.json', [])
-            
-            # 从网络搜索最新的投影仪数据
-            new_projectors = self._fetch_projector_data_from_web()
-            
-            if new_projectors:
-                # 合并新旧数据
-                merged_projectors = self._merge_projector_data(existing_config, new_projectors)
-                
-                # 保存更新后的配置
-                self._save_json_file('../projector/projector_data.json', merged_projectors)
-                print(f"✅ 投影仪数据更新成功！新增 {len(new_projectors)} 个投影仪型号")
-                return True
-            else:
-                print("⚠️  未获取到新的投影仪数据")
-                return False
-                
-        except Exception as e:
-            print(f"❌ 更新投影仪数据失败: {e}")
             if self.debug_mode:
                 import traceback
                 traceback.print_exc()
@@ -7291,72 +7229,11 @@ class NetworkDataUpdater:
                 print(f"  从TechPowerUp获取GPU数据失败: {e}")
             return None
     
-    def _fetch_projector_data_from_web(self):
-        """从网络获取投影仪数据"""
-        new_projectors = []
-        
-        # 从多个来源搜索投影仪数据
-        sources = [
-            self._fetch_projector_from_jd(),
-            self._fetch_projector_from_tmall(),
-            self._fetch_projector_from_suning()
-        ]
-        
-        for source_data in sources:
-            if source_data:
-                new_projectors.extend(source_data)
-        
-        return new_projectors
     
-    def _fetch_projector_from_jd(self):
-        """从京东获取投影仪数据"""
-        try:
-            url = 'https://search.jd.com/Search?keyword=投影仪'
-            html = self._fetch_url(url)
-            
-            if html:
-                # 解析投影仪数据
-                projectors = self._parse_jd_projectors(html)
-                return projectors
-            return None
-            
-        except Exception as e:
-            if self.debug_mode:
-                print(f"  从京东获取投影仪数据失败: {e}")
             return None
     
-    def _fetch_projector_from_tmall(self):
-        """从天猫获取投影仪数据"""
-        try:
-            url = 'https://s.taobao.com/search?q=投影仪'
-            html = self._fetch_url(url)
-            
-            if html:
-                # 解析投影仪数据
-                projectors = self._parse_tmall_projectors(html)
-                return projectors
-            return None
-            
-        except Exception as e:
-            if self.debug_mode:
-                print(f"  从天猫获取投影仪数据失败: {e}")
             return None
     
-    def _fetch_projector_from_suning(self):
-        """从苏宁获取投影仪数据"""
-        try:
-            url = 'https://search.suning.com/%E6%8A%95%E5%BD%B1%E4%BB%AA/'
-            html = self._fetch_url(url)
-            
-            if html:
-                # 解析投影仪数据
-                projectors = self._parse_suning_projectors(html)
-                return projectors
-            return None
-            
-        except Exception as e:
-            if self.debug_mode:
-                print(f"  从苏宁获取投影仪数据失败: {e}")
             return None
     
     def _fetch_url(self, url, timeout=10):
@@ -7385,7 +7262,6 @@ class NetworkDataUpdater:
                 'www.hp.com': 'www.hp.com.cn',
                 'www.samsung.com': 'www.samsung.com.cn',
                 
-                # 投影仪数据（国内网站，无需CDN）
                 'search.jd.com': 'search.jd.com',
                 's.taobao.com': 's.taobao.com',
                 'search.suning.com': 'search.suning.com',
@@ -7649,60 +7525,8 @@ class NetworkDataUpdater:
         
         return gpu_data
     
-    def _parse_jd_projectors(self, html):
-        """解析京东投影仪数据"""
-        projectors = []
-        
-        # 提取投影仪信息
-        # 京东格式：品牌、型号、价格、分辨率等
-        pattern = r'"brand":"([^"]+)","skuName":"([^"]+)","price":(\d+)'
-        matches = re.findall(pattern, html)
-        
-        for brand, model, price in matches:
-            projectors.append({
-                'brand': brand,
-                'model': model,
-                'price': int(price),
-                'source': '京东'
-            })
-        
-        return projectors
     
-    def _parse_tmall_projectors(self, html):
-        """解析天猫投影仪数据"""
-        projectors = []
-        
-        # 提取投影仪信息
-        pattern = r'"brand":"([^"]+)","title":"([^"]+)","price":(\d+)'
-        matches = re.findall(pattern, html)
-        
-        for brand, model, price in matches:
-            projectors.append({
-                'brand': brand,
-                'model': model,
-                'price': int(price),
-                'source': '天猫'
-            })
-        
-        return projectors
     
-    def _parse_suning_projectors(self, html):
-        """解析苏宁投影仪数据"""
-        projectors = []
-        
-        # 提取投影仪信息
-        pattern = r'"brand":"([^"]+)","title":"([^"]+)","price":(\d+)'
-        matches = re.findall(pattern, html)
-        
-        for brand, model, price in matches:
-            projectors.append({
-                'brand': brand,
-                'model': model,
-                'price': int(price),
-                'source': '苏宁'
-            })
-        
-        return projectors
     
     def _merge_network_card_models(self, existing, new):
         """合并网卡型号数据"""
@@ -7732,19 +7556,6 @@ class NetworkDataUpdater:
         
         return merged
     
-    def _merge_projector_data(self, existing, new):
-        """合并投影仪数据"""
-        # 创建现有投影仪的字典（基于型号）
-        existing_dict = {}
-        for projector in existing:
-            key = f"{projector.get('brand', '')}_{projector.get('model', '')}"
-            existing_dict[key] = projector
-        
-        # 合并新数据
-        for projector in new:
-            key = f"{projector.get('brand', '')}_{projector.get('model', '')}"
-            if key not in existing_dict:
-                existing.append(projector)
         
         return existing
     
@@ -7783,9 +7594,9 @@ def main():
     parser.add_argument('--hardware', action='store_true', help='检测硬件信息')
     parser.add_argument('--update-hardware-db', action='store_true', help='强制更新硬件性能数据库')
     parser.add_argument('--update-mapping', action='store_true', help='从网络更新映射配置（品牌、带宽、国家、ISP等）')
-    parser.add_argument('--update-all', action='store_true', help='强制更新所有数据库（硬件+投影仪+映射配置）')
+    parser.add_argument('--update-all', action='store_true', help='强制更新所有数据库')
     parser.add_argument('--enable-network-update', action='store_true', help='启用网络更新（默认禁用，快速启动）')
-    parser.add_argument('--all-in-one', action='store_true', help='运行完整系统测试（WiFi扫描+硬件检测+投影仪推荐）')
+    parser.add_argument('--all-in-one', action='store_true', help='运行完整系统测试')
     
     parser.add_argument('--json-stats', action='store_true', help='显示JSON文件统计信息')
     parser.add_argument('--organize-json', action='store_true', help='重新组织JSON文件到标准目录结构')
@@ -7831,9 +7642,7 @@ def main():
     detectors = {
         'hardware': (OptimizedHardwareDetector, args.update_hardware_db, 
                      lambda d: (d.print_hardware_info(), 
-                                HardwarePerformanceUpdater(debug_mode=args.debug).update_all_performance_data(force_update=True) or print("✅ 硬件性能数据库更新完成！"))),
-        'projector': (ProjectorRecommender, args.update_projector_db,
-                      lambda p: p.print_recommendations(budget_range=budget_range, brand_preference=args.brand, resolution_preference=args.resolution))
+                                HardwarePerformanceUpdater(debug_mode=args.debug).update_all_performance_data(force_update=True) or print("✅ 硬件性能数据库更新完成！")))
     }
 
     # 更新映射配置
