@@ -1,0 +1,874 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WiFi扫描与硬件检测系统</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📡</text></svg>">
+    <link rel="stylesheet" href="https://unpkg.com/element-plus@2.4.4/dist/index.css">
+    <link rel="stylesheet" href="https://unpkg.com/@element-plus/icons-vue@2.3.1/dist/index.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Hiragino Sans GB', 'Microsoft YaHei', 'Helvetica Neue', Helvetica, Arial, sans-serif;
+            background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+            min-height: 100vh;
+        }
+        
+        .app-container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, rgba(255, 255, 255, 0.95) 0%, rgba(245, 247, 250, 0.95) 100%);
+            border-radius: 16px;
+            padding: 30px;
+            margin-bottom: 24px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+        
+        .logo {
+            width: 60px;
+            height: 60px;
+            background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 32px;
+        }
+        
+        .header h1 {
+            font-size: 28px;
+            color: #303133;
+            font-weight: 600;
+        }
+        
+        .header p {
+            color: #909399;
+            margin-top: 4px;
+        }
+        
+        .status-badge {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: #f0f9eb;
+            color: #67c23a;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-size: 14px;
+        }
+        
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            background: #67c23a;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        
+        .nav-cards {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            margin-bottom: 24px;
+        }
+        
+        .nav-card {
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 16px;
+            padding: 24px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+            border: 2px solid transparent;
+        }
+        
+        .nav-card:hover {
+            transform: translateY(-4px);
+            border-color: #667eea;
+            box-shadow: 0 12px 32px rgba(102, 126, 234, 0.3);
+        }
+        
+        .nav-card.active {
+            border-color: #667eea;
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+        }
+        
+        .nav-card-icon {
+            width: 56px;
+            height: 56px;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            margin-bottom: 16px;
+        }
+        
+        .nav-card:nth-child(1) .nav-card-icon { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+        .nav-card:nth-child(2) .nav-card-icon { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); }
+        .nav-card:nth-child(3) .nav-card-icon { background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); }
+        .nav-card:nth-child(4) .nav-card-icon { background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); }
+        
+        .nav-card h3 {
+            font-size: 18px;
+            color: #303133;
+            margin-bottom: 8px;
+        }
+        
+        .nav-card p {
+            color: #909399;
+            font-size: 14px;
+        }
+        
+        .content-card {
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 16px;
+            padding: 24px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+            min-height: 500px;
+        }
+        
+        .section-title {
+            font-size: 20px;
+            color: #303133;
+            font-weight: 600;
+            margin-bottom: 20px;
+            padding-bottom: 12px;
+            border-bottom: 2px solid #f0f0f0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .info-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+        
+        .info-item {
+            background: #f5f7fa;
+            border-radius: 12px;
+            padding: 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .info-card {
+            background: #fff;
+            border-radius: 16px;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+            transition: all 0.3s ease;
+        }
+        
+        .info-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+        }
+        
+        .info-card-icon {
+            width: 56px;
+            height: 56px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            margin: 0 auto 12px;
+        }
+        
+        .info-card-title {
+            font-size: 14px;
+            color: #909399;
+            margin-bottom: 8px;
+        }
+        
+        .info-card-value {
+            font-size: 16px;
+            font-weight: 600;
+            color: #303133;
+            margin-bottom: 4px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+        
+        .info-card-sub {
+            font-size: 12px;
+            color: #909399;
+        }
+        
+        .info-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 22px;
+        }
+        
+        .info-icon.cpu { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+        .info-icon.gpu { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); }
+        .info-icon.memory { background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%); }
+        .info-icon.disk { background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%); }
+        .info-icon.system { background: linear-gradient(135deg, #fa709a 0%, #fee140 100%); }
+        
+        .info-content h4 {
+            font-size: 12px;
+            color: #909399;
+            margin-bottom: 4px;
+        }
+        
+        .info-content p {
+            font-size: 16px;
+            color: #303133;
+            font-weight: 500;
+        }
+        
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 16px;
+        }
+        
+        .data-table th {
+            background: #f5f7fa;
+            padding: 14px 16px;
+            text-align: left;
+            font-weight: 600;
+            color: #606266;
+            font-size: 14px;
+        }
+        
+        .data-table td {
+            padding: 14px 16px;
+            border-bottom: 1px solid #f0f0f0;
+            color: #606266;
+            font-size: 14px;
+        }
+        
+        .data-table tr:hover td {
+            background: #f5f7fa;
+        }
+        
+        .tag {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            margin-right: 8px;
+        }
+        
+        .tag-primary { background: #ecf5ff; color: #409eff; }
+        .tag-success { background: #f0f9eb; color: #67c23a; }
+        .tag-warning { background: #fdf6ec; color: #e6a23c; }
+        .tag-danger { background: #fef0f0; color: #f56c6c; }
+        
+        .loading-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 400px;
+            gap: 16px;
+        }
+        
+        .loading-text {
+            color: #909399;
+            font-size: 14px;
+        }
+        
+        .empty-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 400px;
+            gap: 16px;
+            color: #909399;
+        }
+        
+        .recommend-channels {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+            margin: 16px 0;
+        }
+        
+        .channel-tag {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 8px 20px;
+            border-radius: 20px;
+            font-size: 14px;
+            font-weight: 500;
+        }
+        
+        .projector-card {
+            background: #f5f7fa;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 16px;
+            transition: all 0.3s ease;
+        }
+        
+        .projector-card:hover {
+            background: #fff;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
+            transform: translateX(4px);
+        }
+        
+        .projector-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+        }
+        
+        .projector-name {
+            font-size: 16px;
+            font-weight: 600;
+            color: #303133;
+        }
+        
+        .projector-price {
+            font-size: 20px;
+            font-weight: 700;
+            color: #f56c6c;
+        }
+        
+        .projector-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 12px;
+        }
+        
+        .filter-section {
+            background: #f5f7fa;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        
+        .filter-title {
+            font-size: 14px;
+            color: #909399;
+            margin-bottom: 12px;
+        }
+        
+        .el-button-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border: none;
+        }
+        
+        .el-button-primary:hover {
+            background: linear-gradient(135deg, #5a6fd6 0%, #6a4190 100%);
+        }
+        
+        @media (max-width: 768px) {
+            .header {
+                flex-direction: column;
+                text-align: center;
+                gap: 16px;
+            }
+            
+            .header-left {
+                flex-direction: column;
+            }
+            
+            .nav-cards {
+                grid-template-columns: 1fr;
+            }
+            
+            .info-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="app" class="app-container">
+        <div class="header">
+            <div class="header-left">
+                <div class="logo">📡</div>
+                <div>
+                    <h1>WiFi扫描与硬件检测系统</h1>
+                    <p>WiFi Scan & Hardware Detection System</p>
+                </div>
+            </div>
+            <div class="status-badge">
+                <span class="status-dot"></span>
+                <span>系统正常</span>
+            </div>
+        </div>
+        
+        <div class="nav-cards">
+            <div class="nav-card" :class="{ active: activeTab === 'wifi' }" @click="switchTab('wifi')">
+                <div class="nav-card-icon">📶</div>
+                <h3>WiFi 网络扫描</h3>
+                <p>扫描周围WiFi网络，分析信道拥堵情况，提供优化建议</p>
+            </div>
+            <div class="nav-card" :class="{ active: activeTab === 'hardware' }" @click="switchTab('hardware')">
+                <div class="nav-card-icon">💻</div>
+                <h3>硬件信息检测</h3>
+                <p>检测CPU、GPU、内存、硬盘等硬件详细信息</p>
+            </div>
+            <div class="nav-card" :class="{ active: activeTab === 'projector' }" @click="switchTab('projector')">
+                <div class="nav-card-icon">📽️</div>
+                <h3>投影仪推荐</h3>
+                <p>智能推荐投影仪，支持按预算、品牌、分辨率筛选</p>
+            </div>
+            <div class="nav-card" :class="{ active: activeTab === 'all' }" @click="switchTab('all')">
+                <div class="nav-card-icon">🚀</div>
+                <h3>完整系统测试</h3>
+                <p>一键运行所有功能模块，生成综合测试报告</p>
+            </div>
+        </div>
+        
+        <div class="content-card">
+            <div v-if="loading" class="loading-container">
+                <el-icon class="is-loading" size="48"><Loading /></el-icon>
+                <span class="loading-text">正在加载数据...</span>
+            </div>
+            
+            <div v-else-if="error" class="empty-container">
+                <el-icon size="64"><WarningFilled /></el-icon>
+                <p>{{ error }}</p>
+                <el-button type="primary" @click="loadData">重新加载</el-button>
+            </div>
+            
+            <div v-else>
+                <template v-if="activeTab === 'wifi'">
+                    <div class="section-title">
+                        <el-icon><Monitor /></el-icon>
+                        WiFi 网络扫描结果
+                    </div>
+                    
+                    <el-row :gutter="20" style="margin-bottom: 20px;" v-if="wifiData.location">
+                        <el-col :span="8">
+                            <div class="info-card">
+                                <div class="info-card-icon" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">📍</div>
+                                <div class="info-card-title">地理位置</div>
+                                <div class="info-card-value">{{ wifiData.location.full || '未知' }}</div>
+                            </div>
+                        </el-col>
+                        <el-col :span="8">
+                            <div class="info-card">
+                                <div class="info-card-icon" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">🌐</div>
+                                <div class="info-card-title">运营商</div>
+                                <div class="info-card-value">{{ wifiData.location.isp || '未知' }}</div>
+                            </div>
+                        </el-col>
+                        <el-col :span="8">
+                            <div class="info-card">
+                                <div class="info-card-icon" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">🔗</div>
+                                <div class="info-card-title">IP地址</div>
+                                <div class="info-card-value">{{ wifiData.location.ip || '未知' }}</div>
+                            </div>
+                        </el-col>
+                    </el-row>
+                    
+                    <el-row :gutter="20" style="margin-bottom: 20px;" v-if="wifiData.history && wifiData.history.channels && wifiData.history.channels.length">
+                        <el-col :span="12">
+                            <div class="info-card">
+                                <div class="info-card-icon" style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);">📊</div>
+                                <div class="info-card-title">历史使用信道</div>
+                                <div class="info-card-value" style="font-size: 14px;">
+                                    <span v-for="(ch, idx) in wifiData.history.channels" :key="idx" style="margin-right: 8px;">{{ ch }}</span>
+                                </div>
+                            </div>
+                        </el-col>
+                        <el-col :span="12">
+                            <div class="info-card">
+                                <div class="info-card-icon" style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);">📡</div>
+                                <div class="info-card-title">推荐信道</div>
+                                <div class="info-card-value">
+                                    <span class="channel-tag" v-for="ch in wifiData.recommendation?.channels" :key="ch" style="margin-right: 6px;">
+                                        {{ ch }}
+                                    </span>
+                                </div>
+                            </div>
+                        </el-col>
+                    </el-row>
+                    
+                    <el-empty v-if="!wifiData.location" description="暂无WiFi数据"></el-empty>
+                </template>
+                
+                <template v-if="activeTab === 'hardware'">
+                    <div class="section-title">
+                        <el-icon><Cpu /></el-icon>
+                        硬件信息检测结果
+                    </div>
+                    
+                    <el-row :gutter="20" style="margin-bottom: 20px;">
+                        <el-col :span="6">
+                            <div class="info-card">
+                                <div class="info-card-icon" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">💻</div>
+                                <div class="info-card-title">CPU</div>
+                                <div class="info-card-value">{{ hardwareData.cpu?.name || '未知' }}</div>
+                                <div class="info-card-sub">{{ hardwareData.cpu?.cores || '-' }}核 / {{ hardwareData.cpu?.frequency || '-' }}</div>
+                            </div>
+                        </el-col>
+                        <el-col :span="6">
+                            <div class="info-card">
+                                <div class="info-card-icon" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">🎮</div>
+                                <div class="info-card-title">显卡</div>
+                                <div class="info-card-value">{{ hardwareData.gpu?.name || '未知' }}</div>
+                                <div class="info-card-sub">{{ hardwareData.gpu?.memory || '-' }}</div>
+                            </div>
+                        </el-col>
+                        <el-col :span="6">
+                            <div class="info-card">
+                                <div class="info-card-icon" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">🧠</div>
+                                <div class="info-card-title">内存</div>
+                                <div class="info-card-value">{{ hardwareData.memory?.total || '未知' }}</div>
+                                <div class="info-card-sub">使用 {{ hardwareData.memory?.usage || '-' }}</div>
+                            </div>
+                        </el-col>
+                        <el-col :span="6">
+                            <div class="info-card">
+                                <div class="info-card-icon" style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);">💾</div>
+                                <div class="info-card-title">系统</div>
+                                <div class="info-card-value">{{ hardwareData.system?.os || '未知' }}</div>
+                                <div class="info-card-sub">{{ hardwareData.system?.version || '-' }}</div>
+                            </div>
+                        </el-col>
+                    </el-row>
+                    
+                    <el-row :gutter="20" style="margin-bottom: 20px;" v-if="hardwareData.network">
+                        <el-col :span="24">
+                            <div class="info-card" style="background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);">
+                                <div class="info-card-icon" style="background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);">📶</div>
+                                <div class="info-card-title">无线网卡</div>
+                                <div class="info-card-value">{{ hardwareData.network.name || '未知' }}</div>
+                                <div class="info-card-sub">
+                                    {{ hardwareData.network.type || '-' }} | 
+                                    最大速度: {{ hardwareData.network.max_speed || '-' }} | 
+                                    频段: {{ hardwareData.network.band || '-' }}
+                                </div>
+                            </div>
+                        </el-col>
+                    </el-row>
+                    
+                    <el-table :data="hardwareTableData" stripe style="width: 100%" v-if="hardwareTableData.length">
+                        <el-table-column prop="category" label="类别" width="120"></el-table-column>
+                        <el-table-column prop="name" label="名称"></el-table-column>
+                        <el-table-column prop="value" label="详情"></el-table-column>
+                    </el-table>
+                    
+                    <el-empty v-if="!hardwareData.cpu" description="暂无硬件数据"></el-empty>
+                </template>
+                
+                <template v-if="activeTab === 'projector'">
+                    <div class="section-title">
+                        <el-icon><VideoCamera /></el-icon>
+                        投影仪推荐
+                    </div>
+                    
+                    <div class="filter-section">
+                        <div class="filter-title">筛选条件</div>
+                        <el-row :gutter="16">
+                            <el-col :span="8">
+                                <el-input v-model="filters.budget" placeholder="预算范围，如: 3000-8000"></el-input>
+                            </el-col>
+                            <el-col :span="8">
+                                <el-input v-model="filters.brand" placeholder="品牌，如: 极米,坚果,小米">
+                                    <template #append>
+                                        <el-tooltip content="支持模糊搜索，如输入'米'可匹配'极米'、'米家'" placement="top">
+                                            <el-icon><QuestionFilled /></el-icon>
+                                        </el-tooltip>
+                                    </template>
+                                </el-input>
+                            </el-col>
+                            <el-col :span="8">
+                                <el-select v-model="filters.resolution" placeholder="分辨率" clearable>
+                                    <el-option label="4K" value="4K"></el-option>
+                                    <el-option label="1080P" value="1080P"></el-option>
+                                    <el-option label="720P" value="720P"></el-option>
+                                </el-select>
+                            </el-col>
+                        </el-row>
+                        <el-button type="primary" style="margin-top: 16px;" @click="loadProjectors">搜索投影仪</el-button>
+                        <div style="margin-top: 12px; color: #909399; font-size: 12px;">
+                            💡 提示：支持模糊搜索，如输入"米"可匹配"极米"、"米家"；支持品牌：极米、坚果、当贝、明基、爱普生、索尼、米家、峰米、优派、宏碁等
+                        </div>
+                    </div>
+                    
+                    <div v-if="projectorData.projectors && projectorData.projectors.length">
+                        <div class="projector-card" v-for="(p, index) in projectorData.projectors" :key="index">
+                            <div class="projector-header">
+                                <span class="projector-name">{{ index + 1 }}. {{ p.name }}</span>
+                                <span class="projector-price">¥{{ p.price }}</span>
+                            </div>
+                            <div class="projector-tags">
+                                <span class="tag tag-primary" v-if="p.brand">{{ p.brand }}</span>
+                                <span class="tag tag-success" v-if="p.resolution">{{ p.resolution }}</span>
+                                <span class="tag tag-warning" v-if="p.brightness">{{ p.brightness }}</span>
+                                <span class="tag tag-danger" v-if="p.contrast">{{ p.contrast }}</span>
+                                <span class="tag tag-primary" v-if="p.scenario">{{ p.scenario }}</span>
+                            </div>
+                            <div v-if="p.reason" style="margin-top: 12px; color: #909399; font-size: 13px;">
+                                💡 {{ p.reason }}
+                            </div>
+                            <div style="margin-top: 12px;">
+                                <el-button type="danger" size="small" @click="openUrl(p.jd_url)">
+                                    🛒 京东
+                                </el-button>
+                                <el-button type="warning" size="small" @click="openUrl(p.tb_url)">
+                                    🛍️ 淘宝
+                                </el-button>
+                                <el-button type="primary" size="small" @click="openUrl(p.tmall_url)">
+                                    📦 天猫
+                                </el-button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <el-empty v-else description="暂无投影仪数据"></el-empty>
+                </template>
+                
+                <template v-if="activeTab === 'all'">
+                    <div class="section-title">
+                        <el-icon><DataAnalysis /></el-icon>
+                        完整系统测试报告
+                    </div>
+                    
+                    <el-row :gutter="20" style="margin-bottom: 20px;">
+                        <el-col :span="6">
+                            <div class="info-card">
+                                <div class="info-card-icon" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">📶</div>
+                                <div class="info-card-title">WiFi扫描</div>
+                                <div class="info-card-value">{{ wifiData.location?.full || '未知' }}</div>
+                                <div class="info-card-sub">{{ wifiData.location?.isp || '-' }}</div>
+                            </div>
+                        </el-col>
+                        <el-col :span="6">
+                            <div class="info-card">
+                                <div class="info-card-icon" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">💻</div>
+                                <div class="info-card-title">硬件信息</div>
+                                <div class="info-card-value">{{ hardwareData.cpu?.name || '未知' }}</div>
+                                <div class="info-card-sub">{{ hardwareData.memory?.total || '-' }}</div>
+                            </div>
+                        </el-col>
+                        <el-col :span="6">
+                            <div class="info-card">
+                                <div class="info-card-icon" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">📽️</div>
+                                <div class="info-card-title">投影仪</div>
+                                <div class="info-card-value">{{ projectorData.projectors?.length || 0 }} 台</div>
+                                <div class="info-card-sub">推荐设备</div>
+                            </div>
+                        </el-col>
+                        <el-col :span="6">
+                            <div class="info-card">
+                                <div class="info-card-icon" style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);">✅</div>
+                                <div class="info-card-title">状态</div>
+                                <div class="info-card-value">全部正常</div>
+                                <div class="info-card-sub">系统运行中</div>
+                            </div>
+                        </el-col>
+                    </el-row>
+                    
+                    <el-button type="primary" @click="switchTab('wifi')" style="margin-right: 10px;">查看WiFi扫描</el-button>
+                    <el-button @click="switchTab('hardware')" style="margin-right: 10px;">查看硬件信息</el-button>
+                    <el-button @click="switchTab('projector')">查看投影仪推荐</el-button>
+                </template>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://unpkg.com/vue@3.4.15/dist/vue.global.prod.js"></script>
+    <script src="https://unpkg.com/element-plus@2.4.4/dist/index.full.js"></script>
+    <script src="https://unpkg.com/@element-plus/icons-vue@2.3.1/dist/index.iife.min.js"></script>
+    <script>
+        const { createApp, ref, computed, onMounted, watch } = Vue;
+        
+        const app = createApp({
+            setup() {
+                const activeTab = ref('wifi');
+                const loading = ref(false);
+                const error = ref('');
+                const wifiData = ref({});
+                const hardwareData = ref({});
+                const projectorData = ref({});
+                const filters = ref({
+                    budget: '',
+                    brand: '',
+                    resolution: ''
+                });
+                
+                const openUrl = (url) => {
+                    if (url) window.open(url, '_blank');
+                };
+                
+                const API_BASE = 'http://localhost:5001/api';
+                
+                const hardwareTableData = computed(() => {
+                    const data = hardwareData.value;
+                    if (!data.cpu) return [];
+                    
+                    const rows = [];
+                    if (data.cpu.name) rows.push({ category: 'CPU', name: '名称', value: data.cpu.name });
+                    if (data.cpu.architecture) rows.push({ category: 'CPU', name: '架构', value: data.cpu.architecture });
+                    if (data.cpu.cores) rows.push({ category: 'CPU', name: '核心数', value: data.cpu.cores });
+                    if (data.cpu.frequency) rows.push({ category: 'CPU', name: '频率', value: data.cpu.frequency });
+                    
+                    if (data.gpu?.name) rows.push({ category: 'GPU', name: '名称', value: data.gpu.name });
+                    if (data.gpu?.brand) rows.push({ category: 'GPU', name: '品牌', value: data.gpu.brand });
+                    if (data.gpu?.memory) rows.push({ category: 'GPU', name: '显存', value: data.gpu.memory });
+                    
+                    if (data.memory?.total) rows.push({ category: '内存', name: '总容量', value: data.memory.total });
+                    if (data.memory?.usage) rows.push({ category: '内存', name: '使用率', value: data.memory.usage });
+                    
+                    if (data.system?.os) rows.push({ category: '系统', name: '操作系统', value: data.system.os });
+                    if (data.system?.version) rows.push({ category: '系统', name: '版本', value: data.system.version });
+                    
+                    if (data.motherboard?.manufacturer) rows.push({ category: '主板', name: '制造商', value: data.motherboard.manufacturer });
+                    if (data.motherboard?.model) rows.push({ category: '主板', name: '型号', value: data.motherboard.model });
+                    
+                    if (data.network?.name) rows.push({ category: '网络', name: '网卡名称', value: data.network.name });
+                    if (data.network?.brand) rows.push({ category: '网络', name: '品牌', value: data.network.brand });
+                    if (data.network?.model) rows.push({ category: '网络', name: '型号', value: data.network.model });
+                    if (data.network?.type) rows.push({ category: '网络', name: 'WiFi标准', value: data.network.type });
+                    if (data.network?.max_speed) rows.push({ category: '网络', name: '最大速度', value: data.network.max_speed });
+                    if (data.network?.band) rows.push({ category: '网络', name: '频段', value: data.network.band });
+                    
+                    if (data.wireless_card_types?.length) rows.push({ category: '网络', name: '支持WiFi类型', value: data.wireless_card_types.join(', ') });
+                    
+                    if (data.available_network_cards?.length) {
+                        const cards = data.available_network_cards.map(c => `${c.brand}(${c.type})`).join(', ');
+                        rows.push({ category: '网络', name: '可选网卡', value: cards });
+                    }
+                    
+                    if (data.performance_score) rows.push({ category: '性能', name: '评分', value: data.performance_score + '/100' });
+                    
+                    return rows;
+                });
+                
+                const switchTab = async (tab) => {
+                    activeTab.value = tab;
+                    await loadData();
+                };
+                
+                const loadData = async () => {
+                    loading.value = true;
+                    error.value = '';
+                    
+                    try {
+                        if (activeTab.value === 'wifi') {
+                            const res = await fetch(`${API_BASE}/wifi-scan`);
+                            const json = await res.json();
+                            if (json.success) {
+                                wifiData.value = json.data;
+                            } else {
+                                error.value = json.error || 'WiFi扫描失败';
+                            }
+                        } else if (activeTab.value === 'hardware') {
+                            const res = await fetch(`${API_BASE}/hardware`);
+                            const json = await res.json();
+                            if (json.success) {
+                                hardwareData.value = json.data;
+                            } else {
+                                error.value = json.error || '硬件检测失败';
+                            }
+                        } else if (activeTab.value === 'projector') {
+                            await loadProjectors();
+                        } else if (activeTab.value === 'all') {
+                            const res = await fetch(`${API_BASE}/all-in-one`);
+                            const json = await res.json();
+                            if (json.success) {
+                                wifiData.value = json.data;
+                            } else {
+                                error.value = json.error || '系统测试失败';
+                            }
+                        }
+                    } catch (e) {
+                        error.value = '请求失败: ' + e.message;
+                    } finally {
+                        loading.value = false;
+                    }
+                };
+                
+                const loadProjectors = async () => {
+                    loading.value = true;
+                    error.value = '';
+                    
+                    try {
+                        let url = `${API_BASE}/projector?`;
+                        if (filters.value.budget) url += `budget=${filters.value.budget}&`;
+                        if (filters.value.brand) url += `brand=${encodeURIComponent(filters.value.brand)}&`;
+                        if (filters.value.resolution) url += `resolution=${filters.value.resolution}&`;
+                        
+                        const res = await fetch(url);
+                        const json = await res.json();
+                        if (json.success) {
+                            projectorData.value = json.data;
+                        } else {
+                            error.value = json.error || '投影仪加载失败';
+                        }
+                    } catch (e) {
+                        error.value = '请求失败: ' + e.message;
+                    } finally {
+                        loading.value = false;
+                    }
+                };
+                
+                onMounted(() => {
+                    loadData();
+                });
+                
+                return {
+                    activeTab,
+                    loading,
+                    error,
+                    wifiData,
+                    hardwareData,
+                    projectorData,
+                    filters,
+                    hardwareTableData,
+                    switchTab,
+                    loadData,
+                    loadProjectors,
+                    openUrl
+                };
+            }
+        });
+        
+        for (const [key, component] of Object.entries(ElementPlusIconsVue)) {
+            app.component(key, component);
+        }
+        
+        app.use(ElementPlus);
+        app.mount('#app');
+    </script>
+</body>
+</html>
