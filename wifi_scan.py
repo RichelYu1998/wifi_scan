@@ -7036,33 +7036,35 @@ def get_wifi_data():
     return data
 
 def get_hardware_data():
-    info = load_json(JSON_DIR / 'hardware' / 'hardware_info.json', [])
-    data = {'cpu': {}, 'gpu': {}, 'memory': {}, 'system': {}, 'motherboard': {}, 'network': {}}
+    detector = OptimizedHardwareDetector(debug_mode=False)
+    hw = detector.detect_hardware_info()
+    
+    cpu, gpu = hw.get('cpu', {}), hw.get('gpu', {})
+    mem, sys_info = hw.get('memory', {}), hw.get('system', {})
+    mb = hw.get('motherboard', {})
 
-    if info:
-        hw = info[-1].get('hardware_info', {})
-        cpu, gpu = hw.get('cpu', {}), hw.get('gpu', {})
-        mem, sys_info = hw.get('memory', {}), hw.get('system', {})
-        mb = hw.get('motherboard', {})
+    data = {
+        'cpu': {'name': cpu.get('名称', 'Apple M2 Pro'), 'architecture': cpu.get('架构', 'arm64'), 'cores': str(cpu.get('核心数', 10)), 'frequency': f"{cpu.get('频率_MHz', 3200)} MHz"},
+        'gpu': {'name': gpu.get('名称', 'Apple M2 Pro'), 'memory': f"{gpu.get('显存_GB', gpu.get('总容量_GB', 8))} GB"},
+        'memory': {'total': f"{mem.get('总容量_GB', 16)} GB", 'usage': f"{mem.get('使用率_%', 70)}%"},
+        'system': {'os': sys_info.get('操作系统', 'macOS'), 'version': sys_info.get('版本', '14.0')},
+        'motherboard': {'manufacturer': mb.get('制造商', mb.get('manufacturer', 'Apple')), 'model': mb.get('型号', mb.get('model', 'Mac14,9'))},
+        'performance_score': str(hw.get('performance_score', 85))
+    }
 
-        data['cpu'] = {'name': cpu.get('name', 'Apple M2 Pro'), 'architecture': cpu.get('architecture', 'arm64'), 'cores': str(cpu.get('cores', 10)), 'frequency': cpu.get('frequency', '3200 MHz')}
-        data['gpu'] = {'name': gpu.get('name', 'Apple M2 Pro'), 'memory': gpu.get('memory', '8.0 GB')}
-        data['memory'] = {'total': mem.get('total', '16.0 GB'), 'usage': mem.get('usage', '70%')}
-        data['system'] = {'os': sys_info.get('操作系统', 'macOS'), 'version': sys_info.get('版本', '13.7.8')}
-        data['motherboard'] = {'manufacturer': mb.get('manufacturer', mb.get('制造商', 'Apple')), 'model': mb.get('model', mb.get('型号', 'Mac14,9'))}
+    os_name = sys_info.get('操作系统', '')
+    is_apple = 'Apple' in os_name or 'macOS' in os_name or 'Darwin' in os_name
+    if is_apple:
+        data['network'] = {'name': 'AirPort (Wi-Fi)', 'type': 'WiFi 6E (802.11ax)', 'max_speed': '2.4 Gbps', 'band': '2.4GHz / 5GHz / 6GHz', 'brand': 'Apple', 'model': 'M2 Pro 集成'}
+    else:
+        data['network'] = {'name': '以太网', 'type': '千兆', 'max_speed': '1 Gbps', 'band': '有线', 'brand': '未知', 'model': '未知'}
 
-        os_name = sys_info.get('操作系统', '')
-        is_apple = 'Apple' in os_name or 'macOS' in os_name or 'Mac' in os_name
-        if is_apple:
-            data['network'] = {'name': 'AirPort (Wi-Fi)', 'type': 'WiFi 6 (802.11ax)', 'max_speed': '2.4 Gbps', 'band': '2.4GHz / 5GHz', 'brand': 'Apple', 'model': 'M2 Pro 集成'}
-        else:
-            data['network'] = {'name': '以太网', 'type': '千兆', 'max_speed': '1 Gbps', 'band': '有线', 'brand': '未知', 'model': '未知'}
-
-        card_cfg, card_models = load_config('wireless_card_brands.json'), load_config('network_card_models.json')
-        data['wireless_card_types'] = list(card_cfg.get('wireless_card_types', {}).keys())
-        data['network_card_brands'] = list(card_cfg.get('wireless_card_brands', {}).keys())
-        data['available_network_cards'] = [{'brand': v.get('brand', k), 'type': '外置USB网卡' if v.get('models') else '内置无线网卡'} for k,v in card_models.get('network_card_models', {}).items() if isinstance(v, dict)][:10]
-        data['performance_score'] = hw.get('performance_score', '85')
+    card_cfg = UnifiedUtils.load_config_file('wireless_card_brands.json')
+    card_models = UnifiedUtils.load_config_file('network_card_models.json')
+    data['wireless_card_types'] = list(card_cfg.get('wireless_card_types', {}).keys())
+    data['network_card_brands'] = list(card_cfg.get('wireless_card_brands', {}).keys())
+    data['available_network_cards'] = [{'brand': v.get('brand', k), 'type': '外置USB网卡' if v.get('models') else '内置无线网卡'} for k,v in card_models.get('network_card_models', {}).items() if isinstance(v, dict)][:10]
+    
     return data
 
 def run_flask_server():
