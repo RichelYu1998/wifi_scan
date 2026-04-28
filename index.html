@@ -333,46 +333,6 @@
             font-weight: 500;
         }
         
-        .projector-card {
-            background: #f5f7fa;
-            border-radius: 12px;
-            padding: 20px;
-            margin-bottom: 16px;
-            transition: all 0.3s ease;
-        }
-        
-        .projector-card:hover {
-            background: #fff;
-            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.1);
-            transform: translateX(4px);
-        }
-        
-        .projector-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 12px;
-        }
-        
-        .projector-name {
-            font-size: 16px;
-            font-weight: 600;
-            color: #303133;
-        }
-        
-        .projector-price {
-            font-size: 20px;
-            font-weight: 700;
-            color: #f56c6c;
-        }
-        
-        .projector-tags {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 8px;
-            margin-top: 12px;
-        }
-        
         .filter-section {
             background: #f5f7fa;
             border-radius: 12px;
@@ -442,11 +402,6 @@
                 <div class="nav-card-icon">💻</div>
                 <h3>硬件信息检测</h3>
                 <p>检测CPU、GPU、内存、硬盘等硬件详细信息</p>
-            </div>
-            <div class="nav-card" :class="{ active: activeTab === 'projector' }" @click="switchTab('projector')">
-                <div class="nav-card-icon">📽️</div>
-                <h3>投影仪推荐</h3>
-                <p>智能推荐投影仪，支持按预算、品牌、分辨率筛选</p>
             </div>
             <div class="nav-card" :class="{ active: activeTab === 'all' }" @click="switchTab('all')">
                 <div class="nav-card-icon">🚀</div>
@@ -589,74 +544,6 @@
                     <el-empty v-if="!hardwareData.cpu" description="暂无硬件数据"></el-empty>
                 </template>
                 
-                <template v-if="activeTab === 'projector'">
-                    <div class="section-title">
-                        <el-icon><VideoCamera /></el-icon>
-                        投影仪推荐
-                    </div>
-                    
-                    <div class="filter-section">
-                        <div class="filter-title">筛选条件</div>
-                        <el-row :gutter="16">
-                            <el-col :span="8">
-                                <el-input v-model="filters.budget" placeholder="预算范围，如: 3000-8000"></el-input>
-                            </el-col>
-                            <el-col :span="8">
-                                <el-input v-model="filters.brand" placeholder="品牌，如: 极米,坚果,小米">
-                                    <template #append>
-                                        <el-tooltip content="支持模糊搜索，如输入'米'可匹配'极米'、'米家'" placement="top">
-                                            <el-icon><QuestionFilled /></el-icon>
-                                        </el-tooltip>
-                                    </template>
-                                </el-input>
-                            </el-col>
-                            <el-col :span="8">
-                                <el-select v-model="filters.resolution" placeholder="分辨率" clearable>
-                                    <el-option label="4K" value="4K"></el-option>
-                                    <el-option label="1080P" value="1080P"></el-option>
-                                    <el-option label="720P" value="720P"></el-option>
-                                </el-select>
-                            </el-col>
-                        </el-row>
-                        <el-button type="primary" style="margin-top: 16px;" @click="loadProjectors">搜索投影仪</el-button>
-                        <div style="margin-top: 12px; color: #909399; font-size: 12px;">
-                            💡 提示：支持模糊搜索，如输入"米"可匹配"极米"、"米家"；支持品牌：极米、坚果、当贝、明基、爱普生、索尼、米家、峰米、优派、宏碁等
-                        </div>
-                    </div>
-                    
-                    <div v-if="projectorData.projectors && projectorData.projectors.length">
-                        <div class="projector-card" v-for="(p, index) in projectorData.projectors" :key="index">
-                            <div class="projector-header">
-                                <span class="projector-name">{{ index + 1 }}. {{ p.name }}</span>
-                                <span class="projector-price">¥{{ p.price }}</span>
-                            </div>
-                            <div class="projector-tags">
-                                <span class="tag tag-primary" v-if="p.brand">{{ p.brand }}</span>
-                                <span class="tag tag-success" v-if="p.resolution">{{ p.resolution }}</span>
-                                <span class="tag tag-warning" v-if="p.brightness">{{ p.brightness }}</span>
-                                <span class="tag tag-danger" v-if="p.contrast">{{ p.contrast }}</span>
-                                <span class="tag tag-primary" v-if="p.scenario">{{ p.scenario }}</span>
-                            </div>
-                            <div v-if="p.reason" style="margin-top: 12px; color: #909399; font-size: 13px;">
-                                💡 {{ p.reason }}
-                            </div>
-                            <div style="margin-top: 12px;">
-                                <el-button type="danger" size="small" @click="openUrl(p.jd_url)">
-                                    🛒 京东
-                                </el-button>
-                                <el-button type="warning" size="small" @click="openUrl(p.tb_url)">
-                                    🛍️ 淘宝
-                                </el-button>
-                                <el-button type="primary" size="small" @click="openUrl(p.tmall_url)">
-                                    📦 天猫
-                                </el-button>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <el-empty v-else description="暂无投影仪数据"></el-empty>
-                </template>
-                
                 <template v-if="activeTab === 'all'">
                     <div class="section-title">
                         <el-icon><DataAnalysis /></el-icon>
@@ -680,15 +567,7 @@
                                 <div class="info-card-sub">{{ hardwareData.memory?.total || '-' }}</div>
                             </div>
                         </el-col>
-                        <el-col :span="6">
-                            <div class="info-card">
-                                <div class="info-card-icon" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">📽️</div>
-                                <div class="info-card-title">投影仪</div>
-                                <div class="info-card-value">{{ projectorData.projectors?.length || 0 }} 台</div>
-                                <div class="info-card-sub">推荐设备</div>
-                            </div>
-                        </el-col>
-                        <el-col :span="6">
+                        <el-col :span="8">
                             <div class="info-card">
                                 <div class="info-card-icon" style="background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);">✅</div>
                                 <div class="info-card-title">状态</div>
@@ -699,8 +578,7 @@
                     </el-row>
                     
                     <el-button type="primary" @click="switchTab('wifi')" style="margin-right: 10px;">查看WiFi扫描</el-button>
-                    <el-button @click="switchTab('hardware')" style="margin-right: 10px;">查看硬件信息</el-button>
-                    <el-button @click="switchTab('projector')">查看投影仪推荐</el-button>
+                    <el-button @click="switchTab('hardware')">查看硬件信息</el-button>
                 </template>
             </div>
         </div>
@@ -719,12 +597,6 @@
                 const error = ref('');
                 const wifiData = ref({});
                 const hardwareData = ref({});
-                const projectorData = ref({});
-                const filters = ref({
-                    budget: '',
-                    brand: '',
-                    resolution: ''
-                });
                 
                 const openUrl = (url) => {
                     if (url) window.open(url, '_blank');
@@ -800,8 +672,6 @@
                             } else {
                                 error.value = json.error || '硬件检测失败';
                             }
-                        } else if (activeTab.value === 'projector') {
-                            await loadProjectors();
                         } else if (activeTab.value === 'all') {
                             const res = await fetch(`${API_BASE}/all-in-one`);
                             const json = await res.json();
@@ -810,30 +680,6 @@
                             } else {
                                 error.value = json.error || '系统测试失败';
                             }
-                        }
-                    } catch (e) {
-                        error.value = '请求失败: ' + e.message;
-                    } finally {
-                        loading.value = false;
-                    }
-                };
-                
-                const loadProjectors = async () => {
-                    loading.value = true;
-                    error.value = '';
-                    
-                    try {
-                        let url = `${API_BASE}/projector?`;
-                        if (filters.value.budget) url += `budget=${filters.value.budget}&`;
-                        if (filters.value.brand) url += `brand=${encodeURIComponent(filters.value.brand)}&`;
-                        if (filters.value.resolution) url += `resolution=${filters.value.resolution}&`;
-                        
-                        const res = await fetch(url);
-                        const json = await res.json();
-                        if (json.success) {
-                            projectorData.value = json.data;
-                        } else {
-                            error.value = json.error || '投影仪加载失败';
                         }
                     } catch (e) {
                         error.value = '请求失败: ' + e.message;
@@ -852,12 +698,9 @@
                     error,
                     wifiData,
                     hardwareData,
-                    projectorData,
-                    filters,
                     hardwareTableData,
                     switchTab,
                     loadData,
-                    loadProjectors,
                     openUrl
                 };
             }

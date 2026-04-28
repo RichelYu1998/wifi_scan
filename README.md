@@ -1,4 +1,4 @@
-# WiFi扫描与投影仪推荐系统
+# WiFi扫描与硬件扫描系统
 
 ## 🚀 快速启动
 
@@ -55,21 +55,13 @@ start.bat
 - 信道优化建议
 - CSV导出功能
 
-### 3. 投影仪推荐系统（交互式）
-- **按预算推荐**：智能预算范围计算，支持国补价格对比
-- **按品牌搜索**：支持32个主流投影仪品牌搜索
-- **联网搜索**：模拟电商API搜索最新投影仪信息
-- **多维度性价比评估**：价格、显示性能、智能功能、使用体验、能效环保
-- **详细商品信息**：显示完整的商品技术参数
-- **京东链接跳转**：直接跳转到京东商品页面
-
-### 4. 网络速度测试
+### 3. 网络速度测试
 - 上传速度测试（Mbps）
 - 下载速度测试（Mbps）
 - 网络延迟测试（ms）
 - 网络质量评估和使用建议
 
-### 5. 完整系统测试
+### 4. 完整系统测试
 - 一键运行所有功能模块
 - 生成综合测试报告
 
@@ -120,21 +112,6 @@ python wifi_scan.py --wifi
 python wifi_scan.py --speed-test
 ```
 
-### 投影仪推荐
-```bash
-# 按预算推荐
-python wifi_scan.py --projector --budget 3000-8000
-
-# 按品牌搜索
-python wifi_scan.py --projector --brand 极米
-
-# 按分辨率推荐
-python wifi_scan.py --projector --resolution 4K
-
-# 组合条件
-python wifi_scan.py --projector --budget 3000-8000 --brand 极米 --resolution 4K
-```
-
 ### 完整系统测试
 ```bash
 python wifi_scan.py --all-in-one
@@ -157,7 +134,7 @@ wifi_scan/
 │   │   ├── gpu_performance.json
 │   │   └── memory_performance.json
 │   ├── logs/                  # 日志文件
-│   └── projector/             # 投影仪数据
+│   └── projector/             # 投影仪数据（已移除）
 │       └── projector_database.json
 ├── scripts/                   # 脚本文件
 │   ├── start.sh              # Linux/macOS启动脚本
@@ -193,6 +170,24 @@ wifi_scan/
 
 ## 📝 版本信息
 
+### v3.4.0 (2026-04-28) - 代码精简与模块移除
+
+#### 🔧 代码优化
+1. **移除投影仪模块**
+   - 删除 `ProjectorRecommender` 类（约560行代码）
+   - 移除前端投影仪相关代码
+   - 简化命令行参数
+   - 更新README文档
+
+2. **前端修复**
+   - 修复JavaScript语法错误（乱码问题）
+   - 移除未定义的 `filters` 变量引用
+
+#### ✅ 测试通过
+- ✅ WiFi扫描API正常
+- ✅ 硬件信息API正常
+- ✅ 前端页面加载正常
+
 ### v3.3.0 (2026-04-28) - Web界面与API服务
 
 #### ✨ 新增功能
@@ -216,13 +211,8 @@ wifi_scan/
    - 无线网卡信息展示（名称、WiFi标准、最大速度、频段）
    - 支持WiFi类型和可选网卡品牌展示
 
-5. **投影仪推荐页面**
-   - 预算、品牌、分辨率筛选
-   - 模糊搜索支持
-   - 京东/淘宝/天猫一键跳转链接
-
-6. **完整报告页面**
-   - 四大模块统计卡片
+5. **完整报告页面**
+   - 各大模块统计卡片
    - 快速导航按钮
 
 #### 🔧 代码优化
@@ -244,7 +234,6 @@ wifi_scan/
 #### ✅ 测试通过
 - ✅ WiFi扫描API正常
 - ✅ 硬件信息API正常
-- ✅ 投影仪推荐API正常
 - ✅ 前端页面加载正常
 
 ### v3.2.0 (2026-04-15) - 跨平台路径管理系统
@@ -296,7 +285,6 @@ wifi_scan/
 #### ✅ 测试通过
 - ✅ `--help` 命令正常
 - ✅ `--hardware` 硬件检测正常
-- ✅ `--projector` 投影仪推荐正常
 - ✅ `--export` CSV导出正常
 - ✅ `--all-in-one` 完整系统测试正常
 - ✅ `--json-stats` 统计功能正常
