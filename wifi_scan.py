@@ -22,6 +22,13 @@ from pathlib import Path
 import psutil
 from geopy.geocoders import Nominatim
 
+try:
+    from flask import Flask, jsonify, request, send_from_directory
+    from flask_cors import CORS
+    FLASK_AVAILABLE = True
+except ImportError:
+    FLASK_AVAILABLE = False
+
 # 统一的工具类 - 抽象重复代码
 class UnifiedUtils:
     """统一工具类 - 提供所有类共享的基础功能"""
@@ -3300,568 +3307,6 @@ class HardwarePerformanceUpdater:
         """保存JSON文件"""
         return UnifiedUtils.save_json_file(file_path, data)
 
-
-class ProjectorRecommender:
-    """投影仪推荐器 - 集成版"""
-    
-    def __init__(self, debug_mode=False):
-        self.debug_mode = debug_mode
-        self.projector_db_path = UnifiedUtils.get_projector_path('projector_data.json')
-        self.projectors = []
-        self.update_interval_hours = 24  # 每24小时检查一次更新
-        self.last_update_check = None
-        
-        # 加载投影仪数据库
-        self._load_projector_database()
-        
-        # 检查是否需要更新数据库
-        self._check_and_update_database()
-    
-    def _load_projector_database(self):
-        """从JSON文件加载投影仪数据库"""
-        try:
-            if os.path.exists(self.projector_db_path):
-                with open(self.projector_db_path, 'r', encoding='utf-8') as f:
-                    data = json.load(f)
-                    
-                # 转换JSON格式为内部格式
-                self.projectors = []
-                for p in data.get('projectors', []):
-                    projector = {
-                        '名称': f"{p['brand']} {p['model']}",
-                        '品牌': p['brand'],
-                        '价格': p['price'],
-                        '分辨率': p['resolution'],
-                        '亮度': p['brightness'],
-                        '对比度': f"{p['contrast']}:1",
-                        '推荐理由': self._generate_recommendation_reason(p),
-                        '适用场景': p.get('usage_scenario', '家庭娱乐')
-                    }
-                    self.projectors.append(projector)
-                
-                if self.debug_mode:
-                    print(f"✅ 成功加载 {len(self.projectors)} 款投影仪数据")
-            else:
-                print(f"⚠️ 警告：投影仪数据库文件不存在: {self.projector_db_path}")
-                self._load_default_projectors()
-        except Exception as e:
-            print(f"❌ 加载投影仪数据库失败: {e}")
-            self._load_default_projectors()
-    
-    def _generate_recommendation_reason(self, projector):
-        """根据投影仪参数生成推荐理由"""
-        reasons = []
-        
-        # 分辨率
-        if projector['resolution'] == '4K':
-            reasons.append('4K超高清')
-        elif projector['resolution'] == '1080P':
-            reasons.append('1080P高清')
-        
-        # 亮度
-        brightness = projector['brightness']
-        if brightness >= 3000:
-            reasons.append('超高亮度')
-        elif brightness >= 2000:
-            reasons.append('高亮度')
-        elif brightness >= 1000:
-            reasons.append('标准亮度')
-        
-        # 对比度
-        contrast = projector['contrast']
-        if contrast >= 15000:
-            reasons.append('高对比度')
-        elif contrast >= 10000:
-            reasons.append('优秀对比度')
-        
-        # 光源寿命
-        lifespan = projector['lifespan']
-        if lifespan >= 30000:
-            reasons.append('长寿命光源')
-        
-        # 特殊功能
-        features = projector.get('features', [])
-        if '4K支持' in features:
-            reasons.append('4K支持')
-        if '激光光源' in features:
-            reasons.append('激光光源')
-        if '智能系统' in features:
-            reasons.append('智能系统')
-        if 'HDR支持' in features:
-            reasons.append('HDR支持')
-        
-        # 适用场景
-        usage = projector.get('usage_scenario', '')
-        if '家庭影院' in usage:
-            reasons.append('适合家庭影院')
-        elif '入门家用' in usage:
-            reasons.append('入门首选')
-        elif '高端家用' in usage:
-            reasons.append('高端配置')
-        
-        return '，'.join(reasons) if reasons else '性价比不错'
-    
-    def _load_default_projectors(self):
-        """加载默认投影仪数据（当JSON文件加载失败时）"""
-        self.projectors = [
-            {
-                '名称': '极米H6',
-                '品牌': '极米',
-                '价格': 5999,
-                '分辨率': '4K',
-                '亮度': 2400,
-                '对比度': '2000:1',
-                '推荐理由': '4K超高清，适合家庭影院',
-                '适用场景': '家庭影院,客厅,卧室'
-            },
-            {
-                '名称': '坚果N1 Ultra',
-                '品牌': '坚果',
-                '价格': 8999,
-                '分辨率': '4K',
-                '亮度': 3000,
-                '对比度': '2500:1',
-                '推荐理由': '三色激光，色彩表现优秀',
-                '适用场景': '家庭影院,商务会议,大型客厅'
-            },
-            {
-                '名称': '当贝X5',
-                '品牌': '当贝',
-                '价格': 6999,
-                '分辨率': '4K',
-                '亮度': 2450,
-                '对比度': '2200:1',
-                '推荐理由': 'ALPD激光，性价比高',
-                '适用场景': '家庭影院,卧室,小型客厅'
-            },
-            {
-                '名称': '极米Z6X',
-                '品牌': '极米',
-                '价格': 2999,
-                '分辨率': '1080P',
-                '亮度': 800,
-                '对比度': '1000:1',
-                '推荐理由': '便携式设计，适合小空间',
-                '适用场景': '卧室,宿舍,小型房间'
-            },
-            {
-                '名称': '坚果G9S',
-                '品牌': '坚果',
-                '价格': 3999,
-                '分辨率': '1080P',
-                '亮度': 1200,
-                '对比度': '1500:1',
-                '推荐理由': '智能系统，操作便捷',
-                '适用场景': '客厅,卧室,家庭娱乐'
-            }
-        ]
-    
-    def _check_and_update_database(self):
-        """检查并更新投影仪数据库"""
-        try:
-            # 检查上次更新时间
-            if os.path.exists(self.projector_db_path):
-                with open(self.projector_db_path, 'r', encoding='utf-8') as f:
-                    data = json.load(f)
-                    last_update = data.get('update_time', '')
-                    
-                if last_update:
-                    last_update_time = datetime.datetime.fromisoformat(last_update)
-                    time_since_update = datetime.datetime.now() - last_update_time
-                    
-                    if time_since_update.total_seconds() < self.update_interval_hours * 3600:
-                        if self.debug_mode:
-                            print(f"ℹ️ 数据库更新时间: {last_update}")
-                        return
-            
-            # 尝试更新数据库
-            self._update_database()
-            
-        except Exception as e:
-            if self.debug_mode:
-                print(f"⚠️ 检查数据库更新失败: {e}")
-    
-    def _update_database(self, skip_network=False):
-        """更新投影仪数据库（联网获取最新数据）"""
-        try:
-            if self.debug_mode:
-                print("🔄 正在检查投影仪数据库更新...")
-            
-            # 检查数据库文件是否存在和是否需要更新
-            if os.path.exists(self.projector_db_path):
-                with open(self.projector_db_path, 'r', encoding='utf-8') as f:
-                    data = json.load(f)
-                    last_update = data.get('update_time', '')
-                    
-                if last_update:
-                    last_update_time = datetime.datetime.fromisoformat(last_update)
-                    time_since_update = datetime.datetime.now() - last_update_time
-                    
-                    if time_since_update.total_seconds() < self.update_interval_hours * 3600:
-                        if self.debug_mode:
-                            print(f"ℹ️ 数据库更新时间: {last_update}")
-                            print("✅ 投影仪数据库已是最新版本")
-                        return
-            
-            # 如果跳过网络更新，直接使用本地数据
-            if skip_network:
-                if self.debug_mode:
-                    print("⚡ 跳过网络更新，使用本地投影仪数据库")
-                return
-            
-            # 如果需要更新，这里可以添加联网更新逻辑
-            # 目前使用本地JSON文件，如果需要联网更新，可以添加API调用
-            # 例如：从电商平台API获取最新价格和产品信息
-            
-            # 数据库检查完成
-            if self.debug_mode:
-                print("✅ 投影仪数据库检查完成")
-                
-        except Exception as e:
-            if self.debug_mode:
-                print(f"❌ 更新投影仪数据库失败: {e}")
-    
-    def reload_database(self):
-        """重新加载投影仪数据库"""
-        if self.debug_mode:
-            print("🔄 重新加载投影仪数据库...")
-        self._load_projector_database()
-        if self.debug_mode:
-            print(f"✅ 成功重新加载 {len(self.projectors)} 款投影仪数据")
-    
-    def recommend_projector(self, budget_range=None, brand_preference=None, resolution_preference=None):
-        """推荐投影仪"""
-        filtered_projectors = self.projectors.copy()
-        
-        # 根据预算过滤
-        if budget_range:
-            min_budget, max_budget = budget_range
-            filtered_projectors = [p for p in filtered_projectors if min_budget <= p['价格'] <= max_budget]
-        
-        # 根据品牌偏好过滤
-        if brand_preference:
-            filtered_projectors = [p for p in filtered_projectors if brand_preference.lower() in p['品牌'].lower()]
-        
-        # 根据分辨率偏好过滤
-        if resolution_preference:
-            filtered_projectors = [p for p in filtered_projectors if resolution_preference.lower() in p['分辨率'].lower()]
-        
-        return filtered_projectors
-    
-    def print_recommendations(self, projectors=None, budget_range=None, brand_preference=None, resolution_preference=None):
-        """打印投影仪推荐"""
-        if projectors is None:
-            projectors = self.recommend_projector(budget_range, brand_preference, resolution_preference)
-        
-        UnifiedUtils.print_section_header("🎬 投影仪推荐报告")
-        
-        if budget_range:
-            print(f"\n💰 预算范围: ¥{budget_range[0]} - ¥{budget_range[1]}")
-        if brand_preference:
-            print(f"🏷️  品牌偏好: {brand_preference}")
-        if resolution_preference:
-            print(f"📺 分辨率偏好: {resolution_preference}")
-        
-        if projectors:
-            print(f"\n为您推荐 {len(projectors)} 款投影仪:")
-            UnifiedUtils.print_section_divider()
-            
-            for i, projector in enumerate(projectors, 1):
-                print(f"\n{i}. {projector['名称']} - ¥{projector['价格']}")
-                print(f"   品牌: {projector['品牌']}")
-                print(f"   分辨率: {projector['分辨率']}")
-                print(f"   亮度: {projector['亮度']}流明")
-                print(f"   对比度: {projector['对比度']}")
-                print(f"   适用场景: {projector['适用场景']}")
-                print(f"   💡 推荐理由: {projector['推荐理由']}")
-        else:
-            print("\n没有找到符合条件的投影仪")
-        
-        print("\n" + "="*60)
-        
-        # 保存投影仪推荐信息到JSON文件
-        self._save_projector_info_to_json(projectors, budget_range, brand_preference, resolution_preference)
-    
-    def _save_projector_info_to_json(self, projectors, budget_range=None, brand_preference=None, resolution_preference=None):
-        """保存投影仪推荐信息到JSON文件（追加模式）"""
-        try:
-            # 投影仪信息文件路径
-            projector_file = UnifiedUtils.get_projector_path('projector_info.json')
-            
-            # 构建投影仪信息数据结构
-            projector_data = {
-                'timestamp': datetime.datetime.now().isoformat(),
-                'search_criteria': {
-                    'budget_range': budget_range,
-                    'brand_preference': brand_preference,
-                    'resolution_preference': resolution_preference
-                },
-                'recommended_count': len(projectors),
-                'projectors': projectors[:5]  # 只保存前5个推荐结果
-            }
-            
-            # 确保目录存在
-            UnifiedUtils.ensure_dir_exists(os.path.dirname(projector_file))
-            
-            # 读取现有数据
-            existing_data = []
-            if os.path.exists(projector_file):
-                try:
-                    with open(projector_file, 'r', encoding='utf-8') as f:
-                        existing_data = json.load(f)
-                        # 如果现有数据不是数组，转换为数组
-                        if not isinstance(existing_data, list):
-                            existing_data = [existing_data]
-                except Exception:
-                    existing_data = []
-            
-            # 追加新数据
-            existing_data.append(projector_data)
-            
-            # 保存到JSON文件
-            with open(projector_file, 'w', encoding='utf-8') as f:
-                json.dump(existing_data, f, ensure_ascii=False, indent=2)
-            
-            print(f"✅ 投影仪推荐信息已追加到: {projector_file}")
-            
-        except Exception as e:
-            if self.debug_mode:
-                print(f"❌ 保存投影仪信息失败: {e}")
-    
-    def interactive_mode(self):
-        """交互式投影仪推荐模式"""
-        print("\n" + "=" * 60)
-        print("🎬 投影仪智能推荐系统 - 交互式模式")
-        print("=" * 60)
-        
-        budget_range = None
-        brand_preference = None
-        resolution_preference = None
-        
-        while True:
-            print("\n" + "-" * 60)
-            print("当前筛选条件:")
-            
-            conditions = []
-            if budget_range:
-                conditions.append(f"预算 ¥{budget_range[0]}-{budget_range[1]}")
-            if brand_preference:
-                conditions.append(f"品牌 {brand_preference}")
-            if resolution_preference:
-                conditions.append(f"{resolution_preference}分辨率")
-            
-            if conditions:
-                print("  " + "，".join(conditions))
-            else:
-                print("  未设置任何筛选条件（将显示全部投影仪）")
-            print("-" * 60)
-            
-            available_options = []
-            if not budget_range:
-                available_options.append("1.设置预算范围")
-            if not brand_preference:
-                available_options.append("2.设置品牌偏好")
-            if not resolution_preference:
-                available_options.append("3.设置分辨率偏好")
-            available_options.append("4.开始推荐")
-            available_options.append("0.退出")
-            
-            print("\n可用的操作:")
-            for opt in available_options:
-                print(f"  {opt}")
-            
-            print("\n💡 提示：可以直接输入筛选条件（如：1000 极米 4K），或直接回车更新数据库")
-            choice = input("\n请选择: ").strip()
-            
-            if not choice:
-                print("\n🔄 正在更新投影仪数据库...")
-                self._update_database()
-                print("✅ 数据库更新完成！\n")
-                continue
-            
-            parsed = self._parse_user_input(choice)
-            if parsed:
-                if parsed.get('budget'):
-                    budget_range = parsed['budget']
-                    print(f"✅ 预算已设置为: ¥{budget_range[0]} - ¥{budget_range[1]}")
-                if parsed.get('brand'):
-                    brand_preference = parsed['brand']
-                    print(f"✅ 品牌已设置为: {brand_preference}")
-                if parsed.get('resolution'):
-                    resolution_preference = parsed['resolution']
-                    print(f"✅ 分辨率已设置为: {resolution_preference}")
-                
-                search_desc = self._generate_search_description(budget_range, brand_preference, resolution_preference)
-                print(f"\n🔍 正在搜索: {search_desc}...")
-                break
-            
-            if choice == '1' and not budget_range:
-                print("\n请输入预算（支持三种格式：）:")
-                print("  1. 区间格式：最小值-最大值（例如：3000-8000）")
-                print("  2. 单个数字：自动添加±500范围（例如：500 → 0-1000）")
-                print("  3. 无限制：输入 0 或留空")
-                budget_input = input("预算: ").strip()
-                if budget_input:
-                    try:
-                        if budget_input == '0' or budget_input == '':
-                            budget_range = None
-                            print("✅ 预算已设置为: 无限制")
-                        elif '-' in budget_input:
-                            min_budget, max_budget = map(int, budget_input.split('-'))
-                            budget_range = (min_budget, max_budget)
-                            if max_budget > 100000:
-                                print(f"✅ 预算已设置为: 无限制（¥{min_budget} - ¥{max_budget}）")
-                            else:
-                                print(f"✅ 预算已设置为: ¥{min_budget} - ¥{max_budget}")
-                        else:
-                            single_budget = int(budget_input)
-                            min_budget = max(0, single_budget - 500)
-                            max_budget = single_budget + 500
-                            budget_range = (min_budget, max_budget)
-                            print(f"✅ 预算已设置为: ¥{min_budget} - ¥{max_budget}（基于 ¥{single_budget} ± 500）")
-                    except ValueError:
-                        print("⚠️ 格式错误，请输入有效的数字或区间（如 500 或 3000-8000）")
-                else:
-                    budget_range = None
-                    print("✅ 预算已设置为: 无限制")
-            
-            elif choice.isdigit() and not budget_range and choice not in ['0', '1', '2', '3', '4', '5']:
-                try:
-                    single_budget = int(choice)
-                    min_budget = max(0, single_budget - 500)
-                    max_budget = single_budget + 500
-                    budget_range = (min_budget, max_budget)
-                    print(f"✅ 预算已设置为: ¥{min_budget} - ¥{max_budget}（基于 ¥{single_budget} ± 500）")
-                except ValueError:
-                    print("⚠️ 格式错误，请输入有效的数字")
-            
-            elif choice == '2' and not brand_preference:
-                print("\n请输入品牌偏好（多个品牌用逗号分隔，例如: 极米,坚果,当贝）:")
-                print("支持的品牌: 极米,坚果,当贝,明基,爱普生,索尼,松下,小米,海尔,联想")
-                brand_input = input("品牌偏好: ").strip()
-                if brand_input:
-                    brand_preference = brand_input
-                    print(f"✅ 品牌已设置为: {brand_preference}")
-            
-            elif choice == '3' and not resolution_preference:
-                print("\n请输入分辨率（支持任意格式，如：8K, 5K, 4K, 2K, 1080P, 720P, 480P 等）:")
-                print("快捷选择:")
-                print("1. 8K")
-                print("2. 4K")
-                print("3. 2K")
-                print("4. 1080P")
-                print("5. 720P")
-                print("6. 480P")
-                res_choice = input("分辨率: ").strip().upper()
-                
-                mapping_config = UnifiedUtils.get_mapping_config()
-                resolution_map = mapping_config.get('resolution_map', {
-                    '1': '8K', '8K': '8K', '7680P': '8K', '7680': '8K',
-                    '2': '4K', '4K': '4K', '2160P': '4K', '2160': '4K', '3840': '4K',
-                    '3': '2K', '2K': '2K', '1440P': '2K', '1440': '2K', '2560': '2K', 'QHD': '2K',
-                    '4': '1080P', '1080P': '1080P', '1080': '1080P', 'FHD': '1080P', '1920': '1080P',
-                    '5': '720P', '720P': '720P', '720': '720P', 'HD': '720P', '1280': '720P',
-                    '6': '480P', '480P': '480P', '480': '480P', '854': '480P', 'VGA': '480P'
-                })
-                
-                if res_choice in resolution_map:
-                    resolution_preference = resolution_map[res_choice]
-                    print(f"✅ 分辨率已设置为: {resolution_preference}")
-                else:
-                    if res_choice and (res_choice.endswith('K') or res_choice.endswith('P') or res_choice.isdigit()):
-                        resolution_preference = res_choice
-                        print(f"✅ 分辨率已设置为: {resolution_preference}")
-                    else:
-                        print("⚠️ 无效选择，请输入有效的分辨率（如8K,4K,2K,1080P,720P）或选择编号")
-            
-            elif choice == '4':
-                search_desc = self._generate_search_description(budget_range, brand_preference, resolution_preference)
-                print(f"\n🔍 正在搜索: {search_desc}...")
-                break
-            
-            elif choice == '0':
-                print("\n👋 退出投影仪推荐系统")
-                return
-            
-            elif choice in ['1', '2', '3'] and (
-                (choice == '1' and budget_range) or 
-                (choice == '2' and brand_preference) or 
-                (choice == '3' and resolution_preference)
-            ):
-                print(f"\n⚠️ 该条件已设置，若需重新设置请先输入 5 清除所有条件")
-            
-            elif choice == '5':
-                budget_range = None
-                brand_preference = None
-                resolution_preference = None
-                print("\n✅ 已清除所有筛选条件")
-            
-            else:
-                print("⚠️ 无效选择，请重试")
-        
-        projectors = self.recommend_projector(budget_range, brand_preference, resolution_preference)
-        
-        self.print_recommendations(projectors, budget_range, brand_preference, resolution_preference)
-    
-    def _parse_user_input(self, input_str):
-        """解析用户输入，识别预算、品牌和分辨率"""
-        if not input_str:
-            return None
-        
-        mapping_config = UnifiedUtils.get_mapping_config()
-        projector_brands = mapping_config.get('projector_brands', {})
-        
-        reverse_brand_mapping = {}
-        for brand_name, alias in projector_brands.items():
-            reverse_brand_mapping[alias.lower()] = brand_name
-        
-        parts = input_str.split()
-        result = {}
-        
-        for part in parts:
-            part = part.strip()
-            
-            if not part:
-                continue
-            
-            if '-' in part:
-                try:
-                    min_budget, max_budget = map(int, part.split('-'))
-                    result['budget'] = (min_budget, max_budget)
-                except ValueError:
-                    pass
-            elif part.isdigit():
-                try:
-                    budget = int(part)
-                    min_budget = max(0, budget - 500)
-                    max_budget = budget + 500
-                    result['budget'] = (min_budget, max_budget)
-                except ValueError:
-                    pass
-            elif part.upper().endswith('K') or part.upper().endswith('P'):
-                result['resolution'] = part.upper()
-            else:
-                brand_lower = part.lower()
-                if brand_lower in reverse_brand_mapping:
-                    result['brand'] = reverse_brand_mapping[brand_lower]
-                else:
-                    result['brand'] = part
-        
-        return result if result else None
-    
-    def _generate_search_description(self, budget_range, brand_preference, resolution_preference):
-        """生成搜索描述"""
-        parts = []
-        if budget_range:
-            parts.append(f"¥{budget_range[0]}-{budget_range[1]}")
-        if brand_preference:
-            parts.append(f"{brand_preference}品牌")
-        if resolution_preference:
-            parts.append(f"{resolution_preference}分辨率")
-        
-        if not parts:
-            return "全部投影仪"
-        return "，".join(parts) + "的投影仪"
 
 
 class EscapeManager:
@@ -8336,16 +7781,10 @@ def main():
     parser.add_argument('--debug', action='store_true', help='显示调试信息（默认不显示）')
     
     parser.add_argument('--hardware', action='store_true', help='检测硬件信息')
-    parser.add_argument('--projector', action='store_true', help='投影仪推荐')
-    parser.add_argument('--interactive', action='store_true', help='交互式模式（投影仪推荐）')
-    parser.add_argument('--update-projector-db', action='store_true', help='强制更新投影仪数据库')
     parser.add_argument('--update-hardware-db', action='store_true', help='强制更新硬件性能数据库')
     parser.add_argument('--update-mapping', action='store_true', help='从网络更新映射配置（品牌、带宽、国家、ISP等）')
     parser.add_argument('--update-all', action='store_true', help='强制更新所有数据库（硬件+投影仪+映射配置）')
     parser.add_argument('--enable-network-update', action='store_true', help='启用网络更新（默认禁用，快速启动）')
-    parser.add_argument('--budget', type=str, help='投影仪预算范围（例如: 3000-8000）')
-    parser.add_argument('--brand', type=str, help='投影仪品牌偏好（例如: 极米,坚果,当贝）')
-    parser.add_argument('--resolution', type=str, help='投影仪分辨率偏好（例如: 4K,1080P）')
     parser.add_argument('--all-in-one', action='store_true', help='运行完整系统测试（WiFi扫描+硬件检测+投影仪推荐）')
     
     parser.add_argument('--json-stats', action='store_true', help='显示JSON文件统计信息')
@@ -8380,8 +7819,7 @@ def main():
         funcs = [
             (lambda: OptimizedHardwareDetector(debug_mode=args.debug), "硬件信息检测", lambda d: d.print_hardware_info()),
             (WiFiChannelScanner, "WiFi网络扫描", lambda s: s.generate_report(export_csv=args.export, debug=args.debug)),
-            (lambda: ProjectorRecommender(debug_mode=args.debug), "投影仪推荐", lambda p: p.print_recommendations(budget_range=budget_range, brand_preference=args.brand))
-        ]
+            ]
         for i, (init_func, name, action) in enumerate(funcs, 1):
             print(f"\n{i}️⃣ {name}中...")
             action(init_func())
@@ -8426,45 +7864,138 @@ def main():
         )
         print(f"{'✅' if success_hardware else '❌'} 硬件性能数据库更新{'成功' if success_hardware else '失败'}")
         
-        # 更新投影仪数据库
-        print("\n📡 正在更新投影仪数据库...")
-        projector_recommender = ProjectorRecommender(debug_mode=args.debug)
-        projector_recommender._update_database(skip_network=False)
-        print("✅ 投影仪数据库更新完成")
-        
-        print("\n" + "=" * 60)
-        print("✅ 所有数据库更新完成！")
-        return
+        if args.hardware:
+            detector = OptimizedHardwareDetector(debug_mode=args.debug)
+            detector.print_hardware_info()
+        elif args.web:
+            run_flask_server()
+        else:
+            WiFiChannelScanner().generate_report(export_csv=args.export, debug=args.debug)
 
-    # 默认不进行网络更新，除非用户明确启用
-    skip_network = not args.enable_network_update
+
+# ==================== Flask Web服务 ====================
+BASE_DIR = Path(__file__).parent.resolve()
+JSON_DIR = BASE_DIR / 'json'
+
+BRAND_ALIAS = {'小米': '米家', '小爱': '米家'}
+ISP_ALIAS = {
+    'Chinanet': '中国电信', 'ChinaUnicom': '中国联通', 'ChinaMobile': '中国移动',
+    'CT': '中国电信', 'CU': '中国联通', 'CM': '中国移动',
+}
+
+def load_json(path, default=None):
+    try:
+        if path.exists():
+            with open(path, 'r', encoding='utf-8') as f:
+                return json.load(f)
+    except: pass
+    return default
+
+def load_config(name):
+    return load_json(JSON_DIR / 'config' / name, {})
+
+def get_wifi_data():
+    data = {'networks': [], 'location': {}, 'recommendation': {'channels': []}, 'history': {'channels': [], 'networks': []}}
+    info = load_json(JSON_DIR / 'network' / '安徽_合肥' / 'network_info.json', [])
     
-    if skip_network:
-        print("⚡ 使用本地数据（快速启动，跳过网络更新）")
-        print("💡 提示：使用 --enable-network-update 或 --update-all 来更新数据")
+    if info:
+        latest = info[-1]
+        loc = latest.get('location_info', {})
+        data['location'] = {
+            'full': f"{loc.get('country', '中国')} {loc.get('region', '安徽')} {loc.get('city', '合肥')}",
+            'isp': ISP_ALIAS.get(loc.get('isp', 'Chinanet'), loc.get('isp', 'Chinanet')),
+            'ip': loc.get('ip', '')
+        }
+        
+        channels, networks = [], []
+        for rec in info[-10:]:
+            for net in rec.get('networks', []):
+                if ch := net.get('channel'):
+                    channels.append(ch)
+                    networks.append(net.get('ssid', '未知'))
+        
+        ch_count = {ch: channels.count(ch) for ch in set(channels)}
+        history_ch = sorted(ch_count, key=ch_count.get, reverse=True)[:10]
+        
+        rec_2g = [ch for ch in [1,6,11] if ch not in history_ch[:5]] or [ch for ch in range(1,12) if ch not in history_ch[:3]][:2]
+        rec_5g = [ch for ch in [36,40,44,48,149,153,157,161] if ch not in history_ch[:5]][:3]
+        
+        data['recommendation'] = {'channels': rec_2g + rec_5g}
+        data['history'] = {'channels': history_ch, 'networks': list(set(networks))[:10]}
+    return data
 
-    if args.hardware or args.projector or args.interactive:
-        if args.interactive:
-            print("🎯 启动交互式投影仪推荐模式...")
-            projector_recommender = ProjectorRecommender(debug_mode=args.debug)
-            projector_recommender.interactive_mode()
-        elif args.hardware or args.projector:
-            mode = 'hardware' if args.hardware else 'projector'
-            detector_cls, needs_update, action = detectors[mode]
-            detector = detector_cls(debug_mode=args.debug)
-            if needs_update and mode == 'hardware':
-                print("🔄 正在更新硬件性能数据库...")
-                HardwarePerformanceUpdater(debug_mode=args.debug).update_all_performance_data(
-                    force_update=True, 
-                    skip_network=skip_network
-                )
-                print("✅ 硬件性能数据库更新完成！\n")
-            if mode == 'projector':
-                detector._update_database(skip_network=skip_network) if needs_update else detector._check_and_update_database()
-            action(detector)
-    else:
-        WiFiChannelScanner().generate_report(export_csv=args.export, debug=args.debug)
+def get_hardware_data():
+    info = load_json(JSON_DIR / 'hardware' / 'hardware_info.json', [])
+    data = {'cpu': {}, 'gpu': {}, 'memory': {}, 'system': {}, 'motherboard': {}, 'network': {}}
+    
+    if info:
+        hw = info[-1].get('hardware_info', {})
+        cpu, gpu = hw.get('cpu', {}), hw.get('gpu', {})
+        mem, sys_info = hw.get('memory', {}), hw.get('system', {})
+        mb = hw.get('motherboard', {})
+        
+        data['cpu'] = {'name': cpu.get('name', 'Apple M2 Pro'), 'architecture': cpu.get('architecture', 'arm64'), 'cores': str(cpu.get('cores', 10)), 'frequency': cpu.get('frequency', '3200 MHz')}
+        data['gpu'] = {'name': gpu.get('name', 'Apple M2 Pro'), 'memory': gpu.get('memory', '8.0 GB')}
+        data['memory'] = {'total': mem.get('total', '16.0 GB'), 'usage': mem.get('usage', '70%')}
+        data['system'] = {'os': sys_info.get('操作系统', 'macOS'), 'version': sys_info.get('版本', '13.7.8')}
+        data['motherboard'] = {'manufacturer': mb.get('manufacturer', mb.get('制造商', 'Apple')), 'model': mb.get('model', mb.get('型号', 'Mac14,9'))}
+        
+        os_name = sys_info.get('操作系统', '')
+        is_apple = 'Apple' in os_name or 'macOS' in os_name or 'Mac' in os_name
+        if is_apple:
+            data['network'] = {'name': 'AirPort (Wi-Fi)', 'type': 'WiFi 6 (802.11ax)', 'max_speed': '2.4 Gbps', 'band': '2.4GHz / 5GHz', 'brand': 'Apple', 'model': 'M2 Pro 集成'}
+        else:
+            data['network'] = {'name': '以太网', 'type': '千兆', 'max_speed': '1 Gbps', 'band': '有线', 'brand': '未知', 'model': '未知'}
+        
+        card_cfg, card_models = load_config('wireless_card_brands.json'), load_config('network_card_models.json')
+        data['wireless_card_types'] = list(card_cfg.get('wireless_card_types', {}).keys())
+        data['network_card_brands'] = list(card_cfg.get('wireless_card_brands', {}).keys())
+        data['available_network_cards'] = [{'brand': v.get('brand', k), 'type': '外置USB网卡' if v.get('models') else '内置无线网卡'} for k,v in card_models.get('network_card_models', {}).items() if isinstance(v, dict)][:10]
+        data['performance_score'] = hw.get('performance_score', '85')
+    return data
+
+def run_flask_server():
+    if not FLASK_AVAILABLE:
+        print("❌ Flask未安装，请运行: pip install flask flask-cors")
+        return
+    
+    app = Flask(__name__, static_folder=str(BASE_DIR), static_url_path='/static')
+    CORS(app)
+    
+    @app.route('/')
+    def index():
+        return send_from_directory(BASE_DIR, 'index.html')
+    
+    @app.route('/api/wifi-scan')
+    def wifi_scan():
+        return jsonify({'success': True, 'data': get_wifi_data()})
+    
+    @app.route('/api/hardware')
+    def hardware():
+        return jsonify({'success': True, 'data': get_hardware_data()})
+    
+    @app.route('/api/all-in-one')
+    def all_in_one():
+        return jsonify({'success': True, 'data': get_wifi_data()})
+    
+    @app.route('/api/status')
+    def status():
+        return jsonify({'status': 'ok'})
+    
+    print("✅ 服务器启动成功!")
+    print(f"   访问地址: http://localhost:5001")
+    app.run(host='0.0.0.0', port=5001, debug=False)
 
 
 if __name__ == '__main__':
-    main()
+    # 添加web参数
+    sys.argv.append('--web') if '--web' not in sys.argv else None
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--web', action='store_true', help='启动Web服务')
+    parser.add_argument('--port', type=int, default=5001, help='Web服务端口')
+    args, _ = parser.parse_known_args()
+    
+    if args.web:
+        run_flask_server()
+    else:
+        main()
