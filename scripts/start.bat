@@ -17,6 +17,31 @@ set LANG=zh_CN.UTF-8
 REM Set code page to UTF-8 to support Chinese display
 chcp 65001 >nul 2>&1
 
+REM Check command line arguments
+set START_MODE=menu
+set CUSTOM_PARAMS=
+set ARG_INDEX=0
+:parse_args
+set ARG_INDEX=0
+set "arg=%~1"
+if "%arg%"=="" goto args_done
+if "%arg%"=="--web" (
+    set START_MODE=web
+    shift
+    goto parse_args
+)
+if "%arg%"=="--menu" (
+    set START_MODE=menu
+    shift
+    goto parse_args
+)
+shift
+goto parse_args
+:args_done
+
+REM Decide whether to show menu or start web directly
+if "%START_MODE%"=="web" goto web_init
+
 REM Clear console
 cls
 
@@ -30,6 +55,119 @@ set PYTHON_CMD=
 set VENV_PATH=
 set VENV_EXISTS=0
 set OS_NAME=Windows
+
+REM ============================================================================
+REM Web Mode Quick Start - Initialize Python and Virtual Environment
+REM ============================================================================
+:web_init
+echo ============================================================
+echo WiFi Scanner Web Interface - Quick Start
+echo ============================================================
+echo.
+
+REM [1/3] Detect Python environment for Web Mode
+echo [1/3] Detecting Python environment...
+
+set "PYTHON_CMD="
+set "PYTHON_VERSION="
+
+where python >nul 2>&1
+if %errorlevel% equ 0 (
+    set "PYTHON_CMD=python"
+    goto web_check_version
+)
+
+where python3 >nul 2>&1
+if %errorlevel% equ 0 (
+    set "PYTHON_CMD=python3"
+    goto web_check_version
+)
+
+if exist "C:\Users\Administrator\AppData\Local\Programs\Python\Python314\python.exe" (
+    set "PYTHON_CMD=C:\Users\Administrator\AppData\Local\Programs\Python\Python314\python.exe"
+    goto web_check_version
+)
+
+if exist "C:\Users\Administrator\AppData\Local\Programs\Python\Python39\python.exe" (
+    set "PYTHON_CMD=C:\Users\Administrator\AppData\Local\Programs\Python\Python39\python.exe"
+    goto web_check_version
+)
+
+echo [ERROR] Python environment detection failed
+pause
+exit /b 1
+
+:web_check_version
+for /f "tokens=2" %%i in ('"%PYTHON_CMD%" --version 2^>^&1') do set "PYTHON_VERSION=%%i"
+echo [INFO] Python version: %PYTHON_VERSION%
+
+REM [2/3] Detect or create virtual environment for Web Mode
+echo [2/3] Detecting virtual environment...
+
+if exist "venv\Scripts\python.exe" (
+    set "VENV_EXISTS=1"
+    set "VENV_PATH=venv"
+    echo [INFO] Virtual environment detected: venv
+    goto web_venv_found
+)
+
+if exist ".venv\Scripts\python.exe" (
+    set "VENV_EXISTS=1"
+    set "VENV_PATH=.venv"
+    echo [INFO] Virtual environment detected: .venv
+    goto web_venv_found
+)
+
+if exist "env\Scripts\python.exe" (
+    set "VENV_EXISTS=1"
+    set "VENV_PATH=env"
+    echo [INFO] Virtual environment detected: env
+    goto web_venv_found
+)
+
+echo [INFO] Creating virtual environment automatically...
+"%PYTHON_CMD%" -m venv venv
+if %errorlevel% equ 0 (
+    set "VENV_EXISTS=1"
+    set "VENV_PATH=venv"
+    echo [INFO] Virtual environment created: venv
+) else (
+    echo [ERROR] Failed to create virtual environment
+    pause
+    exit /b 1
+)
+
+:web_venv_found
+set "PYTHON_EXE=%VENV_PATH%\Scripts\python.exe"
+
+REM [3/3] Ensure Flask is installed
+echo [3/3] Checking Flask dependencies...
+
+"%PYTHON_EXE%" -c "import flask" >nul 2>&1
+if %errorlevel% equ 0 (
+    echo [INFO] Flask installed
+) else (
+    echo [INFO] Flask not found, installing...
+    echo [INFO] Upgrading pip...
+    "%PYTHON_EXE%" -m pip install --upgrade pip -i https://mirrors.aliyun.com/pypi/simple/
+    echo.
+    echo [INFO] Installing Flask and flask-cors...
+    "%PYTHON_EXE%" -m pip install flask flask-cors -i https://mirrors.aliyun.com/pypi/simple/
+    if %errorlevel% neq 0 (
+        echo [INFO] Trying alternative method...
+        "%PYTHON_EXE%" -m pip install flask==2.3.0 flask-cors==4.0.0 -i https://mirrors.aliyun.com/pypi/simple/
+    )
+)
+
+REM Now jump to web_interface to start the server
+goto web_interface
+
+REM ============================================================================
+REM End of Web Mode Quick Start
+REM ============================================================================
+
+REM Normal Menu Mode Starts Here
+REM ============================================================================
 
 REM [1/6] Detect Python environment
 echo [1/6] Detecting Python environment...
@@ -182,6 +320,9 @@ REM [4/6] Detect operating system
 echo [4/6] Detecting operating system...
 echo [INFO] Operating system: Windows
 
+REM Web mode quick init
+goto web_setup
+
 REM [5/6] Set Python executable
 echo [5/6] Configuring Python environment...
 
@@ -256,10 +397,13 @@ echo Starting WiFi Scanner and Optimization Tool...
 echo ============================================================
 echo.
 
+REM Check if we should start web directly
+if "%START_MODE%"=="web" goto web_interface
+
 REM Display function menu (using PowerShell for Chinese display)
 :menu
-powershell -NoProfile -ExecutionPolicy Bypass -Command "$OutputEncoding = [System.Text.Encoding]::UTF8; [Console]::OutputEncoding = [System.Text.Encoding]::UTF8; Write-Host '============================================================'; Write-Host 'Please select a function:'; Write-Host '============================================================'; Write-Host '1. WiFi Network Scan'; Write-Host '2. Hardware Detection'; Write-Host '3. Projector Recommendation'; Write-Host '4. Interactive Projector Recommendation'; Write-Host '5. Full System Test'; Write-Host '6. Update Projector Database'; Write-Host '7. Update Hardware Database'; Write-Host '8. Update Hardware Data (Network Card, GPU, Projector)'; Write-Host '9. JSON File Management'; Write-Host '10. Run with Custom Parameters'; Write-Host '0. Exit'; Write-Host '============================================================'"
-set /p choice=Please select a function (0-10):  
+powershell -NoProfile -ExecutionPolicy Bypass -Command "$OutputEncoding = [System.Text.Encoding]::UTF8; [Console]::OutputEncoding = [System.Text.Encoding]::UTF8; Write-Host '============================================================'; Write-Host 'Please select a function:'; Write-Host '============================================================'; Write-Host '1. WiFi Network Scan'; Write-Host '2. Hardware Detection'; Write-Host '3. Projector Recommendation'; Write-Host '4. Interactive Projector Recommendation'; Write-Host '5. Full System Test'; Write-Host '6. Update Projector Database'; Write-Host '7. Update Hardware Database'; Write-Host '8. Update Hardware Data (Network Card, GPU, Projector)'; Write-Host '9. JSON File Management'; Write-Host '10. Run with Custom Parameters'; Write-Host '11. Start Web Interface'; Write-Host '0. Exit'; Write-Host '============================================================'"
+set /p choice=Please select a function (0-11):  
 
 echo.
 
@@ -274,6 +418,7 @@ if "%choice%"=="7" goto update_hardware
 if "%choice%"=="8" goto update_mapping
 if "%choice%"=="9" goto json_manage
 if "%choice%"=="10" goto custom_params
+if "%choice%"=="11" goto web_interface
 if "%choice%"=="0" goto exit_program
 echo [ERROR] Invalid selection
 goto menu
@@ -350,6 +495,7 @@ echo   --all-in-one        Run full system test
 echo   --json-stats        Show JSON file statistics
 echo   --organize-json     Reorganize JSON files
 echo   --show-json-rules   Show JSON classification rules
+echo   --web               Start web interface
 echo.
 set /p custom_params=Enter parameters (e.g., --hardware --debug): 
 if "%custom_params%"=="" (
@@ -357,6 +503,43 @@ if "%custom_params%"=="" (
     goto menu
 )
 %PYTHON_EXE% wifi_scan.py %custom_params%
+goto end
+
+:web_interface
+echo [INFO] Checking Flask dependencies for Web Interface...
+echo.
+REM Check and install Flask
+"%PYTHON_EXE%" -c "import flask" >nul 2>&1
+if %errorlevel% neq 0 (
+    echo [INFO] Upgrading pip...
+    "%PYTHON_EXE%" -m pip install --upgrade pip -i https://mirrors.aliyun.com/pypi/simple/
+    echo.
+    echo [INFO] Installing Flask and flask-cors...
+    "%PYTHON_EXE%" -m pip install flask flask-cors -i https://mirrors.aliyun.com/pypi/simple/
+    if %errorlevel% neq 0 (
+        echo [ERROR] Failed to install Flask, trying alternative method...
+        "%PYTHON_EXE%" -m pip install flask==2.3.0 flask-cors==4.0.0 -i https://mirrors.aliyun.com/pypi/simple/
+        if %errorlevel% neq 0 (
+            echo [ERROR] Flask installation failed
+            pause
+            goto end
+        )
+    )
+)
+echo.
+echo ============================================================
+echo Starting Web Interface
+echo ============================================================
+echo.
+echo Please open your browser and visit:
+echo   http://localhost:5001
+echo   or
+echo   http://127.0.0.1:5001
+echo.
+echo Press Ctrl+C to stop the server
+echo ============================================================
+echo.
+%PYTHON_EXE% wifi_scan.py --web
 goto end
 
 :exit_program

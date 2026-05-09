@@ -4279,6 +4279,230 @@ class WiFiChannelScanner:
             print(f"macOS扫描异常: {e}")
             return []
 
+    def _scan_linux(self):
+        """Linux系统WiFi扫描"""
+        networks = []
+        try:
+            wifi_interface = self._detect_linux_wifi_interface()
+            if not wifi_interface:
+                print("未检测到无线网卡接口")
+                return []
+
+            current_wifi = self.get_current_wifi_info()
+            current_bssid = None
+            current_ssid_correct = None
+            if current_wifi and 'SSID' in current_wifi:
+                current_ssid_correct = current_wifi['SSID']
+                self.escape_manager.debug_log(f"当前连接的WiFi: {current_ssid_correct}")
+            if current_wifi and 'BSSID' in current_wifi:
+                current_bssid = current_wifi['BSSID']
+
+            scanned = self._scan_linux_nmcli(wifi_interface)
+            if scanned:
+                networks.extend(scanned)
+            else:
+                scanned = self._scan_linux_iwlist(wifi_interface)
+                if scanned:
+                    networks.extend(scanned)
+                else:
+                    scanned = self._scan_linux_iw(wifi_interface)
+                    if scanned:
+                        networks.extend(scanned)
+
+            if current_ssid_correct and current_bssid:
+                for net in networks:
+                    if net.get('bssid') == current_bssid and net.get('ssid') != current_ssid_correct:
+                        net['ssid'] = current_ssid_correct
+                        self.escape_manager.debug_log(f"通过BSSID匹配修复SSID: {net.get('ssid')} -> {current_ssid_correct}")
+
+            print(f"Linux扫描发现 {len(networks)} 个WiFi网络")
+            return networks
+
+        except Exception as e:
+            print(f"Linux扫描异常: {e}")
+            return []
+
+    def _detect_linux_wifi_interface(self):
+        """检测Linux无线网卡接口"""
+        try:
+            result = self.run_command(['nmcli', '-t', '-f', 'DEVICE,TYPE', 'device'])
+            if result:
+                for line in result.strip().split('\n'):
+                    if 'wifi' in line.lower() or 'wlan' in line.lower():
+                        interface = line.split(':')[0]
+                        if interface:
+                            return interface
+
+            result = self.run_command(['ls', '/sys/class/net/'])
+            if result:
+                for iface in result.strip().split('\n'):
+                    if iface.startswith('wl') or iface.startswith('wifi'):
+                        return iface
+
+            result = self.run_command(['ip', 'link', 'show'])
+            if result:
+                for line in result.strip().split('\n'):
+                    if ':' in line:
+                        iface = line.split(':')[1].strip()
+                        if iface.startswith('wl') or iface.startswith('wlan'):
+                            return iface
+        except:
+            pass
+        return 'wlan0'
+
+    def _scan_linux_nmcli(self, interface):
+        """使用nmcli扫描Linux WiFi"""
+        try:
+            self.run_command(['nmcli', 'device', 'wifi', 'rescan', 'ifname', interface])
+            time.sleep(2)
+
+            result = self.run_command(['nmcli', '-t', '-f', 'SSID,BSSID,CHAN,SIGNAL,SECURITY', 'device', 'wifi', 'list', 'ifname', interface])
+            if not result:
+                return []
+
+            networks = []
+            for line in result.strip().split('\n'):
+                if not line:
+                    continue
+                parts = line.split(':')
+                if len(parts) >= 4:
+                    ssid = parts[0].strip()
+                    bssid = parts[1].strip() if len(parts) > 1 else ''
+                    channel_str = parts[2].strip() if len(parts) > 2 else '0'
+                    signal_str = parts[3].strip() if len(parts) > 3 else '-100'
+
+                    if not ssid:
+                        continue
+
+                    try:
+                        channel = int(channel_str) if channel_str.isdigit() else 0
+                        signal = int(signal_str) if signal_str.lstrip('-').isdigit() else -100
+                        rssi = -100 + (signal * 0.6) if 0 <= signal <= 100 else signal
+                    except (ValueError, TypeError):
+                        channel = 0
+                        rssi = -100
+
+                    network = {'ssid': ssid, 'channel': channel, 'rssi_dbm': rssi}
+                    if bssid:
+                        network['bssid'] = bssid
+                    networks.append(network)
+
+            return networks
+        except Exception as e:
+            self.escape_manager.debug_log(f"nmcli扫描失败: {e}")
+            return []
+
+    def _scan_linux_iwlist(self, interface):
+        """使用iwlist扫描Linux WiFi"""
+        try:
+            result = self.run_command(['sudo', 'iwlist', interface, 'scan'])
+            if not result:
+                result = self.run_command(['iwlist', interface, 'scan'])
+            if not result:
+                return []
+
+            networks = []
+            current_network = {}
+
+            for line in result.split('\n'):
+                line = line.strip()
+
+                if 'Cell' in line and 'Address:' in line:
+                    if current_network.get('ssid'):
+                        networks.append(current_network)
+                    bssid = line.split('Address:')[-1].strip()
+                    current_network = {'bssid': bssid, 'ssid': '', 'channel': 0, 'rssi_dbm': -100}
+
+                elif 'ESSID:' in line:
+                    ssid = line.split('ESSID:')[-1].strip('"')
+                    if ssid:
+                        current_network['ssid'] = ssid
+
+                elif 'Channel:' in line:
+                    try:
+                        channel = int(line.split('Channel:')[-1].strip())
+                        current_network['channel'] = channel
+                    except ValueError:
+                        pass
+
+                elif 'Signal level' in line or 'Signal level=' in line:
+                    try:
+                        signal_str = re.search(r'Signal[_\s]*(?:level)?[=:]([+-]?\d+)', line)
+                        if signal_str:
+                            rssi = int(signal_str.group(1))
+                            current_network['rssi_dbm'] = rssi
+                    except ValueError:
+                        pass
+
+            if current_network.get('ssid'):
+                networks.append(current_network)
+
+            return networks
+        except Exception as e:
+            self.escape_manager.debug_log(f"iwlist扫描失败: {e}")
+            return []
+
+    def _scan_linux_iw(self, interface):
+        """使用iw扫描Linux WiFi"""
+        try:
+            result = self.run_command(['sudo', 'iw', interface, 'scan'])
+            if not result:
+                result = self.run_command(['iw', interface, 'scan'])
+            if not result:
+                return []
+
+            networks = []
+            current_network = {}
+
+            for line in result.split('\n'):
+                line = line.strip()
+
+                if 'BSS' in line and '(' in line:
+                    if current_network.get('ssid'):
+                        networks.append(current_network)
+                    bssid = line.split('(')[0].replace('BSS', '').strip()
+                    current_network = {'bssid': bssid, 'ssid': '', 'channel': 0, 'rssi_dbm': -100}
+
+                elif 'SSID:' in line:
+                    ssid = line.split('SSID:')[-1].strip()
+                    if ssid:
+                        current_network['ssid'] = ssid
+
+                elif 'freq:' in line:
+                    try:
+                        freq_str = re.search(r'freq:(\d+)', line)
+                        if freq_str:
+                            freq = int(freq_str.group(1))
+                            channel = self._freq_to_channel(freq)
+                            current_network['channel'] = channel
+                    except ValueError:
+                        pass
+
+                elif 'signal:' in line:
+                    try:
+                        signal_str = re.search(r'signal:([+-]?\d+)', line)
+                        if signal_str:
+                            rssi = int(signal_str.group(1))
+                            current_network['rssi_dbm'] = rssi
+                    except ValueError:
+                        pass
+
+            if current_network.get('ssid'):
+                networks.append(current_network)
+
+            return networks
+        except Exception as e:
+            self.escape_manager.debug_log(f"iw扫描失败: {e}")
+            return []
+
+    def _freq_to_channel(self, freq):
+        """将频率转换为信道"""
+        if 2412 <= freq <= 2484:
+            return (freq - 2407) // 5
+        elif 5170 <= freq <= 5825:
+            return (freq - 5000) // 5
+        return 0
+
     def analyze_channels_fast(self, networks):
         """快速分析信道使用情况（优化版）"""
         channel_stats = {}

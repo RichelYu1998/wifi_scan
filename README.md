@@ -2,6 +2,24 @@
 
 ## 🚀 快速启动
 
+### Web界面（推荐）
+
+使用启动脚本直接启动Web界面：
+
+**Linux/macOS**:
+```bash
+cd scripts
+./start.sh --web
+```
+
+**Windows**:
+```cmd
+cd scripts
+start.bat --web
+```
+
+Web界面访问地址：http://localhost:5001
+
 ### Windows用户
 
 **直接运行Python**：
@@ -36,6 +54,7 @@ start.bat
 - 自动检查并安装依赖库
 - 交互式菜单选择功能
 - 支持自定义参数运行
+- **支持直接启动Web界面（`--web`参数）**
 
 ## 📋 功能说明
 
@@ -169,6 +188,41 @@ wifi_scan/
 **解决**：使用智能搜索链接，系统会自动优化搜索参数
 
 ## 📝 版本信息
+
+### v3.5.0 (2026-05-09) - Linux支持与Web启动优化
+
+#### ✨ 新增功能
+1. **Linux WiFi扫描支持**
+   - 添加完整的Linux WiFi扫描实现
+   - 支持多种扫描方式：nmcli、iwlist、iw命令
+   - 自动检测无线网卡接口
+   - 频率自动转换为信道
+
+2. **启动脚本Web模式**
+   - 添加`--web`参数支持，直接启动Web界面
+   - Windows脚本支持：`start.bat --web`
+   - Linux/macOS脚本支持：`./start.sh --web`
+   - 自动检测并安装Flask依赖
+
+3. **Flask安装优化**
+   - 升级pip后再安装Flask
+   - 备用安装方案（指定版本flask==2.3.0）
+   - 自动验证Flask安装
+
+#### 🔧 代码优化
+1. **跨平台兼容性增强**
+   - Windows、macOS、Linux三大平台全面支持
+   - 统一的WiFi扫描接口
+
+2. **启动脚本改进**
+   - 命令行参数解析
+   - Web模式快速初始化
+   - 菜单模式保持不变
+
+#### ✅ 测试通过
+- ✅ Windows Web界面启动正常
+- ✅ Flask依赖自动安装
+- ✅ 跨平台脚本正常工作
 
 ### v3.4.0 (2026-04-28) - 代码精简与模块移除
 

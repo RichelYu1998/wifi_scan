@@ -12,6 +12,117 @@ cd "$SCRIPT_DIR/.."
 export PYTHONIOENCODING=utf-8
 export LANG=en_US.UTF-8
 
+# Check command line arguments
+START_MODE="menu"
+for arg in "$@"; do
+    case $arg in
+        --web)
+            START_MODE="web"
+            ;;
+        --menu)
+            START_MODE="menu"
+            ;;
+    esac
+done
+
+# Web Mode Quick Start
+web_mode_start() {
+    echo "============================================================"
+    echo "WiFi Scanner Web Interface - Quick Start"
+    echo "============================================================"
+    echo
+
+    # [1/3] Detect Python environment
+    echo "[1/3] Detecting Python environment..."
+    PYTHON_CMD=""
+
+    if command -v python3 &> /dev/null; then
+        PYTHON_CMD="python3"
+        echo "[INFO] Python version: $(python3 --version 2>&1 | awk '{print $2}')"
+    elif command -v python &> /dev/null; then
+        PYTHON_CMD="python"
+        echo "[INFO] Python version: $(python --version 2>&1 | awk '{print $2}')"
+    else
+        echo "[ERROR] Python environment detection failed"
+        exit 1
+    fi
+
+    # [2/3] Detect or create virtual environment
+    echo "[2/3] Detecting virtual environment..."
+    VENV_PATH=""
+
+    if [ -d "venv" ] && [ -f "venv/bin/python3" ]; then
+        VENV_PATH="venv"
+        echo "[INFO] Virtual environment detected: venv"
+    elif [ -d ".venv" ] && [ -f ".venv/bin/python3" ]; then
+        VENV_PATH=".venv"
+        echo "[INFO] Virtual environment detected: .venv"
+    elif [ -d "env" ] && [ -f "env/bin/python3" ]; then
+        VENV_PATH="env"
+        echo "[INFO] Virtual environment detected: env"
+    else
+        echo "[INFO] Creating virtual environment..."
+        if $PYTHON_CMD -m venv venv; then
+            VENV_PATH="venv"
+            echo "[INFO] Virtual environment created: venv"
+        else
+            echo "[ERROR] Failed to create virtual environment"
+            exit 1
+        fi
+    fi
+
+    PYTHON_EXE="$VENV_PATH/bin/python3"
+
+    # [3/3] Ensure Flask is installed
+    echo "[3/3] Checking Flask dependencies..."
+    PIP_MIRROR="-i https://mirrors.aliyun.com/pypi/simple/ --trusted-host mirrors.aliyun.com"
+
+    if $PYTHON_EXE -c "import flask" &> /dev/null; then
+        echo "[INFO] Flask installed"
+    else
+        echo "[INFO] Flask not found, installing..."
+        echo "[INFO] Upgrading pip..."
+        $PYTHON_EXE -m pip install --upgrade pip $PIP_MIRROR
+        echo
+        echo "[INFO] Installing Flask and flask-cors..."
+        $PYTHON_EXE -m pip install flask flask-cors $PIP_MIRROR
+        if [ $? -ne 0 ]; then
+            echo "[INFO] Trying alternative method..."
+            $PYTHON_EXE -m pip install flask==2.3.0 flask-cors==4.0.0 $PIP_MIRROR
+        fi
+    fi
+
+    echo
+    echo "============================================================"
+    echo "Configuration Complete"
+    echo "============================================================"
+    echo
+    echo "  Python: $PYTHON_EXE"
+    echo "  Virtual Environment: $VENV_PATH"
+    echo "  Port: 5001"
+    echo
+    echo "============================================================"
+    echo "Starting Web Server..."
+    echo "============================================================"
+    echo
+    echo "Please open your browser and visit:"
+    echo "  http://localhost:5001"
+    echo "  or"
+    echo "  http://127.0.0.1:5001"
+    echo
+    echo "Press Ctrl+C to stop the server"
+    echo "============================================================"
+    echo
+
+    $PYTHON_EXE wifi_scan.py --web
+}
+
+# If web mode is requested, start directly
+if [ "$START_MODE" = "web" ]; then
+    web_mode_start
+    exit 0
+fi
+
 # Logging functions
 log_section() {
     echo ""
@@ -275,9 +386,10 @@ menu() {
     echo "8. 更新硬件数据（网卡、GPU、投影仪）"
     echo "9. JSON文件管理"
     echo "10. 自定义参数运行"
+    echo "11. 启动Web界面"
     echo "0. 退出程序"
     echo "============================================================"
-    read -p "请选择功能 (0-10): " choice
+    read -p "请选择功能 (0-11): " choice
     echo
 }
 
@@ -360,6 +472,7 @@ while true; do
             echo "   --json-stats        显示JSON文件统计"
             echo "   --organize-json     重新组织JSON文件"
             echo "   --show-json-rules   显示JSON分类规则"
+            echo "   --web               启动Web界面"
             echo
             read -p "请输入参数 (例如: --hardware --debug): " custom_params
             if [ -z "$custom_params" ]; then
@@ -367,6 +480,44 @@ while true; do
             else
                 $PYTHON_EXE wifi_scan.py $custom_params
             fi
+            ;;
+        11)
+            echo "[信息] 检查Web界面依赖..."
+            echo
+
+            PIP_MIRROR="-i https://mirrors.aliyun.com/pypi/simple/ --trusted-host mirrors.aliyun.com"
+
+            if ! $PYTHON_EXE -c "import flask" &> /dev/null; then
+                echo "[信息] 正在升级pip..."
+                $PYTHON_EXE -m pip install --upgrade pip $PIP_MIRROR
+                echo
+                echo "[信息] 正在安装Flask和flask-cors..."
+                $PYTHON_EXE -m pip install flask flask-cors $PIP_MIRROR
+                if [ $? -ne 0 ]; then
+                    echo "[信息] 使用备用方法安装..."
+                    $PYTHON_EXE -m pip install flask==2.3.0 flask-cors==4.0.0 $PIP_MIRROR
+                    if [ $? -ne 0 ]; then
+                        echo "[错误] Flask安装失败"
+                        continue
+                    fi
+                fi
+            fi
+
+            echo
+            echo "============================================================"
+            echo "启动Web界面"
+            echo "============================================================"
+            echo
+            echo "请在浏览器中打开以下地址:"
+            echo "  http://localhost:5001"
+            echo "  或"
+            echo "  http://127.0.0.1:5001"
+            echo
+            echo "按 Ctrl+C 停止服务器"
+            echo "============================================================"
+            echo
+
+            $PYTHON_EXE wifi_scan.py --web
             ;;
         0)
             echo "[信息] 退出程序"
